@@ -26,6 +26,7 @@ export function RichTextEditor({ content, onChange }: RichTextEditorProps) {
       ImageExtension.configure({ inline: true }),
     ],
     content: content,
+    immediatelyRender: false,
     editorProps: {
       attributes: {
         // Class 'prose' này cần plugin @tailwindcss/typography để hoạt động

@@ -1,63 +1,76 @@
 import React from 'react';
-import { Plus } from 'lucide-react';
+import { Plus, Inbox } from 'lucide-react';
+import Link from 'next/link';
 import CourseListClient from './CourseListClient';
-import { Course } from '@/types/course';
+import { createClient } from '@/lib/supabase/server';
+import { Course, CourseStatus, CourseLevel } from '@/types/course';
 
-// Mock Data chuẩn theo ảnh UI
-const MOCK_COURSES: Course[] = [
-  {
-    id: '1',
-    title: 'Lập trình ReactJS Căn Bản',
-    description: 'Học ReactJS từ con số 0, xây dựng ứng dụng thực tế.',
-    thumbnail: 'https://images.unsplash.com/photo-1633356122544-f134324a6cee?w=800&auto=format&fit=crop',
-    instructor_name: 'Nguyễn Văn A',
-    instructor_avatar: 'https://i.pravatar.cc/150?u=1',
-    students_count: 1250,
-    status: 'published',
-  },
-  {
-    id: '2',
-    title: 'Thiết kế UI/UX Chuyên Nghiệp',
-    description: 'Làm chủ Figma và tư duy thiết kế sản phẩm số.',
-    thumbnail: 'https://images.unsplash.com/photo-1561070791-2526d30994b5?w=800&auto=format&fit=crop',
-    instructor_name: 'Trần Thị B',
-    instructor_avatar: 'https://i.pravatar.cc/150?u=2',
-    students_count: 890,
-    status: 'published',
-  },
-  {
-    id: '3',
-    title: 'Python cho Data Science',
-    description: 'Phân tích dữ liệu với Pandas, NumPy và Matplotlib.',
-    thumbnail: 'https://images.unsplash.com/photo-1526379095098-d400fd0bf935?w=800&auto=format&fit=crop',
-    instructor_name: 'Lê Văn C',
-    instructor_avatar: 'https://i.pravatar.cc/150?u=3',
-    students_count: 2100,
-    status: 'hidden',
-  },
-  {
-    id: '4',
-    title: 'Digital Marketing Toàn Tập',
-    description: 'Chiến lược SEO, Google Ads và Facebook Ads hiệu quả.',
-    thumbnail: 'https://images.unsplash.com/photo-1533750516457-a7f992034fec?w=800&auto=format&fit=crop',
-    instructor_name: 'Phạm Thị D',
-    instructor_avatar: 'https://i.pravatar.cc/150?u=4',
-    students_count: 560,
-    status: 'published',
-  },
-  {
-    id: '5',
-    title: 'Tiếng Anh Giao Tiếp Văn Phòng',
-    description: 'Tự tin giao tiếp trong môi trường công sở quốc tế.',
-    thumbnail: 'https://images.unsplash.com/photo-1543269865-cbf427effbad?w=800&auto=format&fit=crop',
-    instructor_name: 'Hoàng Văn E',
-    instructor_avatar: 'https://i.pravatar.cc/150?u=5',
-    students_count: 1020,
-    status: 'hidden',
-  },
-];
+// 1. Định nghĩa kiểu dữ liệu thô trả về từ Supabase (để không dùng any)
+interface SupabaseCourseResponse {
+  id: string;
+  title: string;
+  description: string | null;
+  thumbnail: string | null;
+  category: string | null;
+  level: string | null;
+  duration: string | null;
+  status: string | null;
+  rating: number | null;
+  created_at: string;
+  instructor_id: string | null;
+  // Quan hệ profiles (One-to-One hoặc Many-to-One) -> Trả về Object hoặc null
+  profiles: {
+    full_name: string | null;
+    avatar_url: string | null;
+  } | null;
+  // Quan hệ lessons (One-to-Many) -> Trả về mảng Object
+  lessons: {
+    count: number;
+  }[];
+}
 
-export default function CoursesPage() {
+export default async function CoursesPage() {
+  const supabase = await createClient();
+
+  // 2. Query Data với Select cụ thể
+  const { data: rawData, error } = await supabase
+    .from('courses')
+    .select(`
+      id, title, description, thumbnail, category, level, duration, status, rating, created_at, instructor_id,
+      profiles:instructor_id(full_name, avatar_url),
+      lessons:lessons(count)
+    `)
+    .order('created_at', { ascending: false });
+
+  if (error) {
+    console.error("Error fetching courses:", error);
+    return <div className="p-8 text-center text-red-500">Lỗi tải dữ liệu: {error.message}</div>;
+  }
+
+  // 3. Ép kiểu an toàn từ Supabase Response sang Type Raw đã định nghĩa
+  const coursesData = rawData as unknown as SupabaseCourseResponse[];
+
+  // 4. Map sang Interface Course chuẩn của ứng dụng
+  const formattedCourses: Course[] = coursesData.map((item) => ({
+    id: item.id,
+    title: item.title,
+    description: item.description || '',
+    thumbnail: item.thumbnail,
+    category: item.category || 'KHÁC',
+    level: (item.level as CourseLevel) || 'basic', // Ép kiểu an toàn cho Level
+    duration: item.duration || '0 phút',
+    status: (item.status as CourseStatus) || 'draft', // Ép kiểu an toàn cho Status
+    rating: item.rating || 5.0,
+    created_at: item.created_at,
+    
+    // Xử lý dữ liệu lồng nhau an toàn
+    lessons_count: item.lessons?.[0]?.count || 0,
+    students_count: 0, // Tạm thời hardcode
+    instructor_name: item.profiles?.full_name || 'Admin',
+    instructor_avatar: item.profiles?.avatar_url || null,
+    instructor_id: item.instructor_id || undefined
+  }));
+
   return (
     <div className="p-6 max-w-[1600px] mx-auto min-h-screen bg-slate-50 font-sans">
       {/* Header Section */}
@@ -70,18 +83,31 @@ export default function CoursesPage() {
           </div>
           <h1 className="text-3xl font-extrabold text-gray-900">Quản Lý Khóa Học</h1>
           <p className="text-gray-500 mt-2 max-w-2xl">
-            Quản lý danh sách, nội dung, bài giảng và theo dõi trạng thái các khóa học trên hệ thống.
+            Quản lý danh sách, nội dung, bài giảng và theo dõi trạng thái các khóa học.
           </p>
         </div>
-        
-        <button className="bg-sky-500 hover:bg-sky-600 text-white px-5 py-2.5 rounded-lg font-bold shadow-md shadow-sky-500/20 flex items-center gap-2 transition-all active:scale-95">
+
+        <Link href="/admin/courses/new" className="bg-sky-500 hover:bg-sky-600 text-white px-5 py-2.5 rounded-lg font-bold shadow-md shadow-sky-500/20 flex items-center gap-2 transition-all active:scale-95">
           <Plus className="w-5 h-5" />
           Thêm khóa học mới
-        </button>
+        </Link>
       </div>
 
       {/* Main Content */}
-      <CourseListClient initialData={MOCK_COURSES} />
+      {formattedCourses.length > 0 ? (
+        <CourseListClient initialData={formattedCourses} />
+      ) : (
+        <div className="bg-white rounded-xl p-12 text-center border border-dashed border-gray-300">
+          <div className="mx-auto w-16 h-16 bg-gray-50 rounded-full flex items-center justify-center mb-4">
+            <Inbox className="w-8 h-8 text-gray-400" />
+          </div>
+          <h3 className="text-lg font-bold text-gray-900">Chưa có khóa học nào</h3>
+          <p className="text-gray-500 mb-6">Hãy tạo khóa học đầu tiên để bắt đầu giảng dạy.</p>
+          <Link href="/admin/courses/new" className="text-sky-600 font-bold hover:underline">
+            + Tạo ngay
+          </Link>
+        </div>
+      )}
     </div>
   );
 }

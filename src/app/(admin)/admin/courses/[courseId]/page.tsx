@@ -1,47 +1,33 @@
-import React from 'react'
+// src/app/(admin)/admin/courses/[courseId]/page.tsx
 import { createClient } from '@/lib/supabase/server'
-import { notFound } from 'next/navigation'
-import CourseEditForm from './CourseEditForm'
-import { Course, Lesson } from '@/types/course'
+import { redirect } from 'next/navigation'
+import CourseEditor from '@/components/admin/courses/CourseEditor'
 
 interface PageProps {
-  params: Promise<{ courseId: string }>
+  params:Promise <{
+    courseId: string
+  }>
 }
 
-export default async function CourseDetailPage({ params }: PageProps) {
-  const { courseId } = await params;
+export default async function EditCoursePage({ params }: PageProps) {
   const supabase = await createClient()
+  const resolvedParams = await params;
 
-  // 1. Fetch Course + Lessons trực tiếp + Attachments
-  const { data, error } = await supabase
+  // Fetch dữ liệu khóa học
+  const { data: course } = await supabase
     .from('courses')
-    .select(`
-      *,
-      attachments:course_attachments(*),
-      lessons(*) 
-    `)
-    .eq('id', courseId)
+    .select('*')
+    .eq('id', resolvedParams.courseId)
     .single()
 
-  if (error || !data) {
-    console.error("Error fetching course:", error)
-    return notFound()
+  if (!course) {
+    redirect('/admin/courses')
   }
 
-  // 2. Ép kiểu an toàn
-  // Do Supabase trả về JSON, ta cần khẳng định kiểu
-  const courseData = data as unknown as Course;
-
-  // 3. Sắp xếp bài học theo thứ tự (order_index hoặc created_at)
-  const sortedLessons = courseData.lessons 
-    ? [...courseData.lessons].sort((a, b) => (a.order_index || 0) - (b.order_index || 0))
-    : [];
-
-  const formattedCourse: Course = {
-    ...courseData,
-    level: courseData.level || 'basic',
-    lessons: sortedLessons
-  }
-
-  return <CourseEditForm course={formattedCourse} />
+  return (
+    <div className="min-h-screen bg-slate-50">
+      {/* Gọi Component với isNew = false (mặc định) và truyền dữ liệu */}
+      <CourseEditor initialData={course} isNew={false} />
+    </div>
+  )
 }

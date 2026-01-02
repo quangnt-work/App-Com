@@ -8,8 +8,11 @@ import Image from 'next/image'
 // 1. Định nghĩa danh sách Link để dễ quản lý
 const ADMIN_LINKS = [
   { label: 'Tổng quan', href: '/admin/dashboard' },
-  { label: 'Khóa học', href: '/admin/courses' },
   { label: 'Học viên', href: '/admin/users' },
+  { label: 'Khóa học', href: '/admin/courses' },
+  { label: 'Luyện tập', href: '/admin/practice' },
+  { label: 'Kiểm tra', href: '/admin/exams' },
+  { label: 'Tài liệu', href: '/admin/documents' },
 ]
 
 const STUDENT_LINKS = [

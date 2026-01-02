@@ -1,46 +1,72 @@
 // src/middleware.ts
-import { type NextRequest, NextResponse } from "next/server";
-import { updateSession } from "@/lib/supabase/middleware";
-import { createClient } from "@/lib/supabase/server";
-
-// 1. Định nghĩa các Route Rules rõ ràng
-const ROUTES = {
-  auth: ['/login', '/register'],
-  admin: ['/admin'],
-  student: ['/student', '/learn'],
-  public: ['/']
-}
-
-function isRoute(path: string, routes: string[]) {
-  return routes.some(route => path.startsWith(route));
-}
+import { createServerClient, type CookieOptions } from '@supabase/ssr'
+import { NextResponse, type NextRequest } from 'next/server'
 
 export async function middleware(request: NextRequest) {
-  const response = await updateSession(request);
-  const supabase = await createClient();
-  const { data: { user } } = await supabase.auth.getUser();
-  const path = request.nextUrl.pathname;
-  const userRole = user?.user_metadata?.role || "student";
+  // 1. Tạo response khởi tạo (giữ nguyên header)
+  let response = NextResponse.next({
+    request: {
+      headers: request.headers,
+    },
+  })
 
-  // CASE 1: Chưa đăng nhập truy cập trang bảo vệ
-  if (!user) {
-    if (isRoute(path, ROUTES.admin) || isRoute(path, ROUTES.student)) {
-      return NextResponse.redirect(new URL("/login", request.url));
+  const supabase = createServerClient(
+    process.env.NEXT_PUBLIC_SUPABASE_URL!,
+    process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY!,
+    {
+      cookies: {
+        // Lấy tất cả cookie từ request
+        getAll() {
+          return request.cookies.getAll()
+        },
+        // Quan trọng: Logic set cookie cập nhật vào response
+        setAll(cookiesToSet) {
+          cookiesToSet.forEach(({ name, value, options }) => {
+            request.cookies.set(name, value)
+          })
+          
+          response = NextResponse.next({
+            request: {
+              headers: request.headers,
+            },
+          })
+          
+          cookiesToSet.forEach(({ name, value, options }) => {
+            response.cookies.set(name, value, options)
+          })
+        },
+      },
     }
-    return response;
+  )
+
+  // 2. QUAN TRỌNG: Sử dụng getUser() thay vì getSession()
+  // getUser() an toàn hơn và không gây ra lỗi refresh token lung tung
+  const {
+    data: { user },
+  } = await supabase.auth.getUser()
+
+  // 3. Logic bảo vệ Route (Nếu chưa login thì đá về trang login)
+  if (!user && request.nextUrl.pathname.startsWith('/admin')) {
+    return NextResponse.redirect(new URL('/login', request.url))
   }
 
-  // CASE 2: Đã đăng nhập nhưng vào trang Auth
-  if (isRoute(path, ROUTES.auth)) {
-    const redirectUrl = userRole === "admin" ? "/admin/dashboard" : "/student/courses";
-    return NextResponse.redirect(new URL(redirectUrl, request.url));
+  // Nếu đã login mà vào trang login thì đá về admin
+  if (user && request.nextUrl.pathname === '/login') {
+    return NextResponse.redirect(new URL('/admin/dashboard', request.url))
   }
 
-  // CASE 3: Role Based Access Control (RBAC)
-  if (isRoute(path, ROUTES.admin) && userRole !== "admin") {
-    // Không có quyền admin -> Đá về trang student
-    return NextResponse.redirect(new URL("/student/courses", request.url));
-  }
+  return response
+}
 
-  return response;
+export const config = {
+  matcher: [
+    /*
+     * Match all request paths except for the ones starting with:
+     * - _next/static (static files)
+     * - _next/image (image optimization files)
+     * - favicon.ico (favicon file)
+     * - public files (images, fonts, etc.)
+     */
+    '/((?!_next/static|_next/image|favicon.ico|.*\\.(?:svg|png|jpg|jpeg|gif|webp)$).*)',
+  ],
 }

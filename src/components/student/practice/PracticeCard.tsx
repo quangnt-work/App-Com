@@ -1,69 +1,94 @@
-import { Book, Languages, FileText, Headphones, Clock, Lock } from 'lucide-react'
-import { Button } from '@/components/ui/button'
-import { type PracticeExercise, type CategoryConfig, type PracticeCategory } from '@/types/practice'
+'use client';
 
-// Map cấu hình màu sắc và icon
-const CATEGORY_MAP: Record<PracticeCategory, CategoryConfig> = {
-  GRAMMAR: { label: 'Ngữ pháp', color: 'text-sky-600', bgColor: 'bg-sky-50', badgeColor: 'bg-sky-100 text-sky-700', icon: Book },
-  VOCAB: { label: 'Từ vựng', color: 'text-orange-600', bgColor: 'bg-orange-50', badgeColor: 'bg-orange-100 text-orange-700', icon: Languages },
-  READING: { label: 'Đọc hiểu', color: 'text-emerald-600', bgColor: 'bg-emerald-50', badgeColor: 'bg-emerald-100 text-emerald-700', icon: FileText },
-  LISTENING: { label: 'Nghe', color: 'text-purple-600', bgColor: 'bg-purple-50', badgeColor: 'bg-purple-100 text-purple-700', icon: Headphones },
-}
+import React from 'react';
+import Link from 'next/link';
+import { PracticeSetWithProgress } from '@/types/practice';
+import { Play, CheckCircle2, Clock, BarChart } from 'lucide-react';
 
-// Map màu cho độ khó
-const DIFFICULTY_COLOR = {
-  'Dễ': 'bg-green-100 text-green-700',
-  'Trung bình': 'bg-yellow-100 text-yellow-700',
-  'Khó': 'bg-red-100 text-red-700',
-}
+const SKILL_COLORS: Record<string, string> = {
+  reading: 'bg-blue-100 text-blue-700',
+  listening: 'bg-amber-100 text-amber-700',
+  speaking: 'bg-rose-100 text-rose-700',
+  writing: 'bg-emerald-100 text-emerald-700',
+  grammar: 'bg-purple-100 text-purple-700',
+  vocabulary: 'bg-cyan-100 text-cyan-700',
+};
 
-export function PracticeCard({ item }: { item: PracticeExercise }) {
-  const config = CATEGORY_MAP[item.category];
-  const Icon = config.icon;
+export function PracticeCard({ item }: { item: PracticeSetWithProgress }) {
+  const isCompleted = item.progress?.status === 'completed';
+  const skillColor = SKILL_COLORS[item.skill.toLowerCase()] || 'bg-gray-100 text-gray-700';
 
   return (
-    <div className="bg-white rounded-2xl border border-slate-100 overflow-hidden hover:shadow-lg transition-all duration-300 flex flex-col">
-      {/* Header màu */}
-      <div className={`h-24 ${config.bgColor} relative p-4 flex justify-between items-start`}>
-         <span className={`text-[10px] font-bold px-3 py-1 rounded-full bg-white ${config.color}`}>
-            {config.label}
-         </span>
-         <span className={`text-[10px] font-bold px-2 py-1 rounded ${DIFFICULTY_COLOR[item.difficulty]}`}>
-            {item.difficulty}
-         </span>
-         
-         {/* Icon chính giữa */}
-         <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2">
-            <Icon className={`h-10 w-10 ${config.color} opacity-80`} />
-            {item.is_premium && (
-               <div className="absolute -top-2 -right-2 bg-slate-100 rounded-full p-1 border border-white shadow-sm">
-                  <Lock className="h-3 w-3 text-slate-400" />
-               </div>
-            )}
-         </div>
+    <div className="group bg-white rounded-xl border border-gray-200 shadow-sm hover:shadow-md transition-all overflow-hidden flex flex-col h-full">
+      {/* Thumbnail area */}
+      <div className="h-32 bg-gray-50 relative overflow-hidden">
+        {item.thumbnail_url ? (
+            <img src={item.thumbnail_url} alt={item.title} className="w-full h-full object-cover" />
+        ) : (
+            <div className={`w-full h-full flex items-center justify-center opacity-20 ${skillColor.split(' ')[0]}`}>
+                <span className="text-4xl font-bold uppercase">{item.skill[0]}</span>
+            </div>
+        )}
+        
+        {/* Badge Skill */}
+        <div className="absolute top-3 left-3">
+          <span className={`px-2.5 py-1 rounded-md text-xs font-bold uppercase tracking-wider ${skillColor}`}>
+            {item.skill}
+          </span>
+        </div>
+
+        {/* Badge Level */}
+        <div className="absolute top-3 right-3">
+             <span className="bg-white/90 backdrop-blur text-gray-700 text-xs font-bold px-2 py-1 rounded shadow-sm border border-gray-100">
+                {item.level}
+             </span>
+        </div>
       </div>
 
       {/* Content */}
-      <div className="p-5 flex flex-col flex-1">
-         <h3 className="font-bold text-slate-900 text-lg mb-2 line-clamp-1">{item.title}</h3>
-         <p className="text-slate-500 text-sm mb-6 line-clamp-2 flex-1">{item.description}</p>
-
-         <div className="flex items-center justify-between mt-auto">
-            <div className="flex items-center gap-1.5 text-xs text-slate-500 font-medium">
-               <Clock className="h-4 w-4" /> {item.duration} phút
+      <div className="p-4 flex flex-col flex-1">
+        <h3 className="font-bold text-gray-900 line-clamp-2 mb-2 group-hover:text-sky-600 transition-colors">
+          {item.title}
+        </h3>
+        
+        <div className="mt-auto space-y-3">
+            {/* Meta info */}
+            <div className="flex items-center justify-between text-xs text-gray-500">
+                <div className="flex items-center gap-1">
+                    <Clock className="w-3.5 h-3.5" />
+                    <span>{item.total_questions} câu</span>
+                </div>
+                {item.progress && (
+                    <div className="flex items-center gap-1 font-medium text-sky-600">
+                        <BarChart className="w-3.5 h-3.5" />
+                        <span>Điểm: {item.progress.score.toFixed(1)}</span>
+                    </div>
+                )}
             </div>
 
-            {item.is_premium ? (
-               <Button variant="secondary" className="h-8 px-4 rounded-lg bg-slate-100 text-slate-600 hover:bg-slate-200 text-xs font-bold">
-                  Nâng cấp
-               </Button>
-            ) : (
-               <Button className="h-8 px-4 rounded-lg bg-sky-50 text-sky-600 hover:bg-sky-100 text-xs font-bold">
-                  Bắt đầu
-               </Button>
-            )}
-         </div>
+            {/* Action Button */}
+            <Link 
+                href={`/practice/${item.id}`} // Đường dẫn vào làm bài
+                className={`flex items-center justify-center w-full py-2.5 rounded-lg text-sm font-semibold transition-all ${
+                    isCompleted 
+                    ? 'bg-green-50 text-green-700 hover:bg-green-100 border border-green-200'
+                    : 'bg-sky-600 text-white hover:bg-sky-700 shadow-sm hover:shadow'
+                }`}
+            >
+                {isCompleted ? (
+                    <>
+                        <CheckCircle2 className="w-4 h-4 mr-2" />
+                        Làm lại
+                    </>
+                ) : (
+                    <>
+                        <Play className="w-4 h-4 mr-2" fill="currentColor" />
+                        {item.progress ? 'Tiếp tục' : 'Bắt đầu'}
+                    </>
+                )}
+            </Link>
+        </div>
       </div>
     </div>
-  )
+  );
 }

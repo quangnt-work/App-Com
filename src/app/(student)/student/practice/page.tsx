@@ -1,50 +1,38 @@
-import { createClient } from '@/lib/supabase/server'
-import { PracticeHeader } from '@/components/student/practice/PracticeHeader'
-import { PracticeFilter } from '@/components/student/practice/PracticeFilter'
-import { PracticeList } from '@/components/student/practice/PracticeList'
-import { PracticeStats } from '@/components/student/practice/PracticeStats'
-import { Inbox } from 'lucide-react'
+import { createClient } from '@/lib/supabase/server';
+import { redirect } from 'next/navigation';
+import { SkillCategoryCards } from '@/components/student/practice/SkillCategoryCards';
+import { PracticeStats } from '@/components/student/practice/PracticeStats'; // Nếu muốn giữ phần thống kê tổng quan
 
 export default async function PracticePage() {
-  const supabase = await createClient()
+  const supabase = await createClient();
 
-  // Fetch dữ liệu thật
-  const { data: practiceData, error } = await supabase
-    .from('practice_exercises')
-    .select('*')
-    .order('created_at', { ascending: false })
+  const { data: { user } } = await supabase.auth.getUser();
+  if (!user) redirect('/login');
 
-  const exercises = practiceData || []
-  const isEmpty = exercises.length === 0
+  // Lấy toàn bộ bài tập (để đếm số lượng cho từng skill)
+  const { data: allSets } = await supabase
+    .from('practice_sets')
+    .select('skill')
+    .eq('is_published', true);
+
+  // Tính toán số lượng bài cho mỗi skill
+  const stats = (allSets || []).reduce((acc: Record<string, number>, curr) => {
+    const key = curr.skill.toLowerCase();
+    acc[key] = (acc[key] || 0) + 1;
+    return acc;
+  }, {});
 
   return (
-    <div className="min-h-screen bg-slate-50 pb-20">
-      <div className="container mx-auto px-4 py-8">
-        <PracticeHeader />
-        
-        {/* Chỉ hiện Filter và List khi có dữ liệu */}
-        {!isEmpty ? (
-          <>
-            <PracticeFilter />
-            <PracticeList data={exercises} />
-            <PracticeStats />
-          </>
-        ) : (
-          <div className="py-20 text-center">
-            <div className="flex justify-center mb-4">
-              <div className="bg-white p-6 rounded-full shadow-sm">
-                 <Inbox className="h-12 w-12 text-slate-300" />
-              </div>
-            </div>
-            <h3 className="text-xl font-bold text-slate-900">Chưa có bài tập nào</h3>
-            <p className="text-slate-500 mt-2">Vui lòng quay lại sau khi Admin cập nhật nội dung.</p>
-          </div>
-        )}
+    <div className="min-h-screen bg-gray-50/50 pb-20">
+      <div className="max-w-[1200px] mx-auto px-6 pt-10">
+        <div className="text-center mb-12">
+          <h1 className="text-3xl font-bold text-gray-900">Thư viện Luyện tập</h1>
+          <p className="text-gray-500 mt-2 text-lg">Chọn một kỹ năng để bắt đầu hành trình của bạn.</p>
+        </div>
+
+        {/* Chỉ hiển thị 6 thẻ Skill */}
+        <SkillCategoryCards stats={stats} />
       </div>
-      
-      <footer className="mt-12 border-t pt-8 text-center text-xs text-slate-400">
-         © 2024 E-Learning Hub. All rights reserved.
-      </footer>
     </div>
-  )
+  );
 }

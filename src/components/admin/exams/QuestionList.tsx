@@ -1,107 +1,234 @@
-'use client'
-
-import React from 'react'
-import { PlusCircle, CloudUpload } from 'lucide-react'
+import React, { useState, useEffect } from 'react'
+import { Question, QuestionType } from '@/types/exam-editor'
 import { Button } from '@/components/ui/button'
+import { Badge } from '@/components/ui/badge'
+import { 
+  Plus, CheckSquare, AlignLeft, Layers, ChevronLeft, ChevronRight, 
+  UploadCloud, Flag, BookOpen 
+} from 'lucide-react'
+import { toast } from 'sonner'
 
-// Import các component con
-import { QuestionItem } from './QuestionItem'
+// Components imports
 import { QuestionForm } from './QuestionForm'
+import { QuestionItem } from './QuestionItem'
+import { FileImportDialog } from './FileImportDialog'
+import {
+  DropdownMenu,
+  DropdownMenuContent,
+  DropdownMenuItem,
+  DropdownMenuTrigger,
+  DropdownMenuLabel,
+  DropdownMenuSeparator
+} from "@/components/ui/dropdown-menu"
 
-interface Props {
-  questions: any[];
-  editingIndex: number | null; // null: không sửa, -1: đang tạo mới, 0...n: index đang sửa
+interface QuestionListProps {
+  questions: Question[];
+  editingIndex: number | null;
   setEditingIndex: (index: number | null) => void;
-  onSave: (questionData: any) => void;
+  onSave: (question: Question) => void;
   onDelete: (index: number) => void;
 }
 
-export function QuestionList({ questions, editingIndex, setEditingIndex, onSave, onDelete }: Props) {
+const ITEMS_PER_PAGE = 20; // Tăng lên 20 để xem được nhiều section hơn trong 1 trang
+
+export function QuestionList({ questions, editingIndex, setEditingIndex, onSave, onDelete }: QuestionListProps) {
+  
+  // State
+  const [currentPage, setCurrentPage] = useState(1);
+  const [newQuestionType, setNewQuestionType] = useState<QuestionType | null>(null);
+  const [isImportOpen, setIsImportOpen] = useState(false);
+
+  // Pagination Logic
+  const totalPages = Math.ceil(questions.length / ITEMS_PER_PAGE);
+  const startIndex = (currentPage - 1) * ITEMS_PER_PAGE;
+  const currentQuestions = questions.slice(startIndex, startIndex + ITEMS_PER_PAGE);
+
+  useEffect(() => {
+    if (currentPage > totalPages && totalPages > 0) setCurrentPage(totalPages);
+  }, [questions.length, totalPages, currentPage]);
+
+  // Handlers
+  const handleStartAdd = (type: QuestionType) => {
+      setNewQuestionType(type);
+      setEditingIndex(-1); 
+  };
+
+  const handleCancel = () => {
+      setEditingIndex(null);
+      setNewQuestionType(null);
+  };
+
+  const handleSaveWrapper = (q: Question) => {
+      onSave(q);
+      handleCancel();
+      if (editingIndex === -1) {
+          const newTotal = questions.length + 1;
+          setCurrentPage(Math.ceil(newTotal / ITEMS_PER_PAGE));
+      }
+  };
+
+  const handleDeleteWrapper = (indexInPage: number) => {
+      const realIndex = startIndex + indexInPage;
+      onDelete(realIndex);
+  };
+
+  const handleImportSuccess = (importedQuestions: Question[]) => {
+      importedQuestions.forEach(q => onSave(q));
+      toast.success(`Đã thêm thành công ${importedQuestions.length} câu hỏi!`);
+      const newTotal = questions.length + importedQuestions.length;
+      setCurrentPage(Math.ceil(newTotal / ITEMS_PER_PAGE));
+  };
+
+  const isAddingOrEditing = editingIndex !== null;
+
   return (
-    <div className="bg-white rounded-xl border border-slate-200 shadow-sm min-h-[500px] flex flex-col">
+    <div className="space-y-6">
       
-      {/* HEADER CỦA LIST */}
-      <div className="p-6 border-b border-slate-100 flex justify-between items-center bg-slate-50/50 rounded-t-xl">
-        <h3 className="font-bold text-slate-900 flex items-center gap-2 text-lg">
-            Nội dung đề thi 
-            <span className="bg-sky-100 text-sky-700 px-2 py-0.5 rounded-full text-xs font-bold border border-sky-200">
-              {questions.length} câu
-            </span>
-        </h3>
-        <div className="flex gap-3">
-            <Button variant="outline" size="sm" className="bg-white border-slate-200 hover:bg-slate-50 text-slate-600">
-                <CloudUpload className="w-4 h-4 mr-2" /> Import Excel
-            </Button>
-            <Button 
-                size="sm" 
-                onClick={() => setEditingIndex(-1)} 
-                disabled={editingIndex !== null} // Disable nếu đang sửa câu khác
-                className="bg-sky-500 hover:bg-sky-600 text-white font-bold shadow-md shadow-sky-500/20"
-            >
-                <PlusCircle className="w-4 h-4 mr-2" /> Thêm câu hỏi
-            </Button>
+      {/* 1. TOOLBAR (Ẩn khi đang Edit) */}
+      {!isAddingOrEditing && (
+         <div className="flex flex-col sm:flex-row gap-3 py-4 border-b border-slate-200">
+             
+             <DropdownMenu>
+                <DropdownMenuTrigger asChild>
+                    <Button className="bg-sky-600 hover:bg-sky-700 text-white shadow-sm gap-2">
+                        <Plus className="w-4 h-4" /> Thêm thủ công
+                    </Button>
+                </DropdownMenuTrigger>
+                <DropdownMenuContent className="w-56">
+                    <DropdownMenuLabel>Chọn loại câu hỏi</DropdownMenuLabel>
+                    <DropdownMenuSeparator />
+                    <DropdownMenuItem onClick={() => handleStartAdd('multiple_choice')}>
+                        <CheckSquare className="w-4 h-4 mr-2 text-green-600"/> Trắc nghiệm
+                    </DropdownMenuItem>
+                    <DropdownMenuItem onClick={() => handleStartAdd('essay')}>
+                        <AlignLeft className="w-4 h-4 mr-2 text-orange-600"/> Tự luận / Điền từ
+                    </DropdownMenuItem>
+                    <DropdownMenuSeparator />
+                    <DropdownMenuItem onClick={() => handleStartAdd('group')}>
+                        <Layers className="w-4 h-4 mr-2 text-purple-600"/> Câu hỏi Nhóm
+                    </DropdownMenuItem>
+                </DropdownMenuContent>
+             </DropdownMenu>
+
+             <Button 
+                variant="outline"
+                className="gap-2 border-dashed border-slate-300 hover:border-sky-500 hover:bg-sky-50 text-slate-600"
+                onClick={() => setIsImportOpen(true)}
+             >
+                <UploadCloud className="w-4 h-4"/> Import File Word
+             </Button>
+
+             <div className="ml-auto flex items-center text-sm text-slate-500">
+                Tổng: <strong className="ml-1 text-slate-900">{questions.length}</strong> câu
+             </div>
+         </div>
+      )}
+
+      {/* 2. EDITOR FORM */}
+      {isAddingOrEditing && (
+        <div className="animate-in fade-in slide-in-from-bottom-2 duration-300 mb-8">
+            <div className="bg-sky-50 border border-sky-100 p-2 rounded-t-lg text-sky-700 font-bold text-sm px-4">
+                {editingIndex === -1 ? 'Thêm câu hỏi mới' : 'Chỉnh sửa câu hỏi'}
+            </div>
+            <QuestionForm 
+                initialData={editingIndex !== -1 ? questions[editingIndex] : undefined}
+                initialType={editingIndex !== -1 ? questions[editingIndex].type : newQuestionType!}
+                onSave={handleSaveWrapper}
+                onCancel={handleCancel}
+            />
         </div>
-      </div>
+      )}
 
-      {/* BODY CỦA LIST */}
-      <div className="p-6 space-y-6 flex-1">
-        
-        {/* CASE 1: ĐANG TẠO MỚI (Form hiện ở đầu danh sách hoặc modal riêng - ở đây để đầu cho dễ thấy) */}
-        {editingIndex === -1 && (
-            <div className="animate-in slide-in-from-top-4 duration-300">
-                <QuestionForm 
-                    onSave={onSave} 
-                    onCancel={() => setEditingIndex(null)} 
-                />
+      {/* 3. QUESTION LIST (Grouped by Section) */}
+      <div className="space-y-4">
+        {questions.length === 0 && !isAddingOrEditing && (
+            <div className="text-center py-12 bg-slate-50 rounded-lg border border-dashed border-slate-200">
+                <p className="text-slate-500">Chưa có dữ liệu.</p>
+                <Button variant="link" onClick={() => setIsImportOpen(true)}>Import ngay</Button>
             </div>
         )}
 
-        {/* CASE 2: DANH SÁCH CÂU HỎI */}
-        {questions.length === 0 && editingIndex === null ? (
-            // Empty State
-            <div className="flex flex-col items-center justify-center py-16 text-slate-400 border-2 border-dashed border-slate-100 rounded-xl bg-slate-50/30">
-                <div className="w-16 h-16 bg-slate-100 rounded-full flex items-center justify-center mb-4">
-                    <PlusCircle className="w-8 h-8 text-slate-300" />
-                </div>
-                <p className="font-bold text-slate-600">Chưa có câu hỏi nào</p>
-                <p className="text-sm">Bấm "Thêm câu hỏi" để bắt đầu soạn đề thi.</p>
-            </div>
-        ) : (
-            questions.map((q, idx) => (
-                <div key={q.id || idx} className="transition-all duration-300">
-                    {editingIndex === idx ? (
-                        // Đang chỉnh sửa câu này -> Hiện Form
-                        <QuestionForm 
-                            initialData={q} 
-                            onSave={onSave} 
-                            onCancel={() => setEditingIndex(null)} 
-                        />
-                    ) : (
-                        // Bình thường -> Hiện Item
-                        <QuestionItem 
-                            question={q} 
-                            index={idx} 
-                            onEdit={() => setEditingIndex(idx)} 
-                            onDelete={() => onDelete(idx)} 
-                        />
+        {currentQuestions.map((q, idx) => {
+            const realIndex = startIndex + idx;
+            // Ẩn item đang edit
+            if (editingIndex === realIndex) return null;
+
+            // Logic kiểm tra Section thay đổi để hiển thị Header
+            // Nếu là item đầu tiên của trang HOẶC section khác item trước đó
+            const prevQ = idx > 0 ? currentQuestions[idx - 1] : null;
+            const showSectionHeader = !prevQ || (q.section !== prevQ.section);
+
+            return (
+                <div key={q.id || realIndex}>
+                    {/* SECTION HEADER */}
+                    {showSectionHeader && (
+                        <div className="flex items-center gap-2 mt-6 mb-3 pb-2 border-b border-slate-200">
+                            <BookOpen className="w-5 h-5 text-slate-500"/>
+                            <h3 className="font-bold text-lg text-slate-800 uppercase tracking-tight">
+                                {q.section || 'Phần chung'}
+                            </h3>
+                        </div>
                     )}
-                </div>
-            ))
-        )}
 
-        {/* NÚT THÊM NHANH Ở CUỐI (Placeholder) */}
-        {editingIndex === null && questions.length > 0 && (
-            <div 
-                onClick={() => setEditingIndex(-1)}
-                className="border-2 border-dashed border-slate-200 rounded-xl p-6 flex flex-col items-center justify-center hover:border-sky-400 hover:bg-sky-50 cursor-pointer transition-all group"
-            >
-                <div className="w-8 h-8 rounded-full bg-slate-100 flex items-center justify-center group-hover:bg-sky-500 group-hover:text-white mb-2 transition-colors text-slate-400">
-                    <PlusCircle className="w-5 h-5" />
+                    {/* QUESTION ITEM */}
+                    <div className="relative group">
+                        {/* Hiển thị Level CEFR bên cạnh STT */}
+                        <div className="absolute -left-3 top-4 z-10">
+                            {q.cefr_level && (
+                                <Badge className={`text-[10px] px-1 h-5 ${
+                                    q.cefr_level.startsWith('A') ? 'bg-green-500' : 
+                                    q.cefr_level.startsWith('B') ? 'bg-yellow-500' : 'bg-red-500'
+                                }`}>
+                                    {q.cefr_level}
+                                </Badge>
+                            )}
+                        </div>
+                        
+                        <QuestionItem 
+                            index={idx} 
+                            displayIndex={realIndex + 1}
+                            question={q} 
+                            onEdit={() => setEditingIndex(realIndex)}
+                            onDelete={() => handleDeleteWrapper(idx)}
+                        />
+                    </div>
                 </div>
-                <p className="text-xs font-bold text-slate-500 group-hover:text-sky-600 uppercase tracking-wide">Thêm câu hỏi tiếp theo</p>
+            )
+        })}
+
+        {/* 4. PAGINATION */}
+        {totalPages > 1 && !isAddingOrEditing && (
+            <div className="flex justify-center items-center gap-2 pt-8">
+                <Button 
+                    variant="outline" size="sm" 
+                    onClick={() => setCurrentPage(p => Math.max(1, p - 1))}
+                    disabled={currentPage === 1}
+                >
+                    <ChevronLeft className="w-4 h-4"/>
+                </Button>
+                
+                <span className="text-sm font-medium text-slate-600 px-2">
+                    Trang {currentPage} / {totalPages}
+                </span>
+
+                <Button 
+                    variant="outline" size="sm" 
+                    onClick={() => setCurrentPage(p => Math.min(totalPages, p + 1))}
+                    disabled={currentPage === totalPages}
+                >
+                    <ChevronRight className="w-4 h-4"/>
+                </Button>
             </div>
         )}
       </div>
+
+      {/* DIALOG IMPORT */}
+      <FileImportDialog 
+        open={isImportOpen} 
+        onOpenChange={setIsImportOpen}
+        onImport={handleImportSuccess}
+      />
+
     </div>
   )
 }

@@ -5,7 +5,7 @@ import { BackButton } from '@/components/common/BackButton'
 import { ExamFilters } from './components/ExamFilters'
 import { ExamTable } from './components/ExamTable'
 import { StatCard } from './components/StatCard' // Đảm bảo đường dẫn đúng
-import { ExamItem } from '@/types/exam-admin'
+import { ExamItem } from '@/types/exam-editor'
 import Link from 'next/link'
 
 export default async function ExamManagementPage() {

@@ -1,358 +1,309 @@
-'use client'
-
 import React, { useState } from 'react'
+import { Question, QuestionType } from '@/types/exam-editor'
 import { Button } from '@/components/ui/button'
 import { Input } from '@/components/ui/input'
+import { Label } from '@/components/ui/label'
 import { Textarea } from '@/components/ui/textarea'
-import { RichTextEditor } from '@/components/admin/courses/RichTextEditor'
-import { Plus, Trash2, Mic, FileText, X, GripVertical } from 'lucide-react'
-import { v4 as uuidv4 } from 'uuid' 
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select'
+import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogFooter } from '@/components/ui/dialog'
+import { Tabs, TabsList, TabsTrigger, TabsContent } from '@/components/ui/tabs'
+import { Check, X, Plus, Trash2, Edit2, Save, FileAudio, FileText, Layers, Circle } from 'lucide-react'
+import { toast } from 'sonner'
 
-interface Props {
-  initialData?: any;
-  onSave: (data: any) => void;
+// ... (Giữ nguyên interface QuestionFormProps và các imports khác)
+
+interface QuestionFormProps {
+  initialData?: Question;
+  initialType?: QuestionType;
+  onSave: (data: Question) => void;
   onCancel: () => void;
+  isSubQuestion?: boolean;
 }
 
-export function QuestionForm({ initialData, onSave, onCancel }: Props) {
-  // State phân biệt Mode: Group (Bài đọc/nghe) hay Single (Câu lẻ)
-  // Nếu initialData có type='group' -> Mode Group. Ngược lại -> Mode Single.
-  const isInitialGroup = initialData?.type === 'group';
-
-  // 1. STATE CHO GROUP (BÀI ĐỌC/NGHE)
-  const [qGroup, setQGroup] = useState(isInitialGroup ? initialData : {
-    id: uuidv4(),
-    type: 'group',
+export function QuestionForm({ initialData, initialType = 'multiple_choice', onSave, onCancel, isSubQuestion = false }: QuestionFormProps) {
+  
+  const [q, setQ] = useState<Question>(initialData || {
+    id: crypto.randomUUID(),
     content: '',
-    media_url: '',
-    score: 0,
-    sub_questions: []
-  })
-
-  // 2. STATE CHO SINGLE QUESTION (CÂU LẺ)
-  // Nếu đang sửa câu lẻ, dùng initialData. Nếu không, dùng default.
-  const [qSingle, setQSingle] = useState(!isInitialGroup ? (initialData || {
-    id: uuidv4(),
-    type: 'multiple_choice',
-    content: '',
+    type: initialType,
+    media_type: 'text',
     difficulty: 'medium',
-    score: 1,
-    options: ['', '', '', ''],
-    correct_answer: '0', // Index string
-    explanation: ''
-  }) : { // Fallback state
-    id: uuidv4(),
-    type: 'multiple_choice',
-    content: '',
-    score: 1,
-    options: ['', '', '', ''],
-    correct_answer: '0'
-  })
+    score: isSubQuestion ? 0.25 : 1,
+    options: ['', '', '', ''], // Mặc định 4 options
+    correct_answer: '',
+    sub_questions: []
+  });
 
-  // --- LOGIC CHO GROUP ---
-  const addSubQuestion = () => {
-    const newSub = {
-      id: uuidv4(),
-      parent_id: qGroup.id,
-      content: '',
-      type: 'multiple_choice',
-      options: ['', '', '', ''],
-      correct_answer: '0',
-      score: 1,
-      difficulty: 'medium'
+  const [subModalOpen, setSubModalOpen] = useState(false);
+  const [editingSubIndex, setEditingSubIndex] = useState<number | null>(null);
+
+  const updateField = (field: keyof Question, value: any) => setQ(prev => ({ ...prev, [field]: value }));
+
+  // --- LOGIC MỚI: THÊM / XÓA OPTION ---
+  const handleAddOption = () => {
+    setQ(prev => ({ ...prev, options: [...prev.options, ''] }));
+  };
+
+  const handleRemoveOption = (index: number) => {
+    if (q.options.length <= 2) {
+      return toast.error("Cần tối thiểu 2 lựa chọn!");
     }
-    setQGroup({ ...qGroup, sub_questions: [...(qGroup.sub_questions || []), newSub] })
-  }
+    setQ(prev => {
+      const newOpts = prev.options.filter((_, i) => i !== index);
+      // Nếu xóa trúng đáp án đúng -> reset correct_answer
+      const wasCorrect = prev.options[index] === prev.correct_answer;
+      return { 
+        ...prev, 
+        options: newOpts,
+        correct_answer: wasCorrect ? '' : prev.correct_answer
+      };
+    });
+  };
+  // -------------------------------------
 
-  const updateSubQuestion = (index: number, field: string, value: any) => {
-    const newSubs = [...qGroup.sub_questions]
-    newSubs[index] = { ...newSubs[index], [field]: value }
-    setQGroup({ ...qGroup, sub_questions: newSubs })
-  }
+  const handleSaveSubQuestion = (subQ: Question) => {
+    setQ(prev => {
+      const currentSubs = prev.sub_questions || [];
+      if (editingSubIndex === -1) {
+        return { ...prev, sub_questions: [...currentSubs, subQ] };
+      } else if (editingSubIndex !== null) {
+        const newSubs = [...currentSubs];
+        newSubs[editingSubIndex] = subQ;
+        return { ...prev, sub_questions: newSubs };
+      }
+      return prev;
+    });
+    setSubModalOpen(false);
+  };
 
-  const removeSubQuestion = (index: number) => {
-    const newSubs = qGroup.sub_questions.filter((_:any, i:number) => i !== index)
-    setQGroup({ ...qGroup, sub_questions: newSubs })
-  }
+  const handleSave = () => {
+    if (!q.content.trim() && q.media_type === 'text') return toast.error('Nội dung không được để trống');
+    if (q.type === 'multiple_choice') {
+       if (!q.correct_answer) return toast.error('Chưa chọn đáp án đúng');
+       if (q.options.some(o => !o.trim())) return toast.error('Có lựa chọn đang để trống');
+    }
+    if (q.type === 'group') {
+        const totalScore = q.sub_questions?.reduce((acc, curr) => acc + (curr.score || 0), 0) || 0;
+        q.score = totalScore;
+    }
+    onSave(q);
+  };
 
-  // --- LOGIC CHO SINGLE ---
-  const addOptionSingle = () => setQSingle({...qSingle, options: [...qSingle.options, '']})
-  const removeOptionSingle = (idx: number) => {
-    const newOpts = qSingle.options.filter((_:any, i:number) => i !== idx)
-    setQSingle({...qSingle, options: newOpts})
-  }
-
-  // --- RENDER ---
-  // Xác định đang ở mode nào dựa trên select box (hoặc initialData)
-  // Lưu ý: Ta dùng biến tạm isGroupMode để switch giao diện
-  const [mode, setMode] = useState<'single' | 'group'>(isInitialGroup ? 'group' : 'single');
-
-  return (
-    <div className="border-2 border-sky-500 rounded-xl p-6 bg-white shadow-lg space-y-5 animate-in fade-in zoom-in-95 duration-200">
-      
-      {/* HEADER & TYPE SELECTION */}
-      <div className="flex justify-between items-center border-b border-slate-100 pb-4">
-        <h3 className="font-bold text-sky-700 text-lg">
-           {initialData ? 'Chỉnh sửa nội dung' : 'Thêm nội dung mới'}
-        </h3>
-        <select 
-            className="h-9 px-3 border border-sky-200 rounded bg-sky-50 font-bold text-sky-700 outline-none focus:ring-2 ring-sky-200 cursor-pointer"
-            value={mode === 'group' ? 'group' : qSingle.type}
-            onChange={(e) => {
-                const val = e.target.value;
-                if(val === 'group') {
-                    setMode('group');
-                } else {
-                    setMode('single');
-                    setQSingle({...qSingle, type: val});
-                }
-            }}
-        >
-            <optgroup label="Câu hỏi đơn">
-                <option value="multiple_choice">Trắc nghiệm đơn</option>
-                <option value="essay">Tự luận / Viết lại câu</option>
-                <option value="error_id">Tìm lỗi sai</option>
-                <option value="reorder">Sắp xếp câu</option>
-                <option value="fill_in_blank">Điền từ</option>
-            </optgroup>
-            <optgroup label="Nhóm câu hỏi">
-                <option value="group">Bài Đọc / Bài Nghe (Kèm câu hỏi)</option>
-            </optgroup>
-        </select>
+  // --- RENDER FORM CHI TIẾT ---
+  const renderDetailForm = () => (
+    <div className="space-y-5">
+       <div className="space-y-2">
+        <Label>Nội dung câu hỏi <span className="text-red-500">*</span></Label>
+        <Textarea 
+          value={q.content} 
+          onChange={(e) => updateField('content', e.target.value)} 
+          placeholder="Nhập đề bài..." 
+          className="min-h-[100px]"
+        />
       </div>
 
-      {/* ================= BODY: GROUP MODE ================= */}
-      {mode === 'group' ? (
-        <div className="space-y-6">
-            {/* Context (Audio/Text) */}
-            <div className="bg-slate-50 p-4 rounded-lg border border-slate-200">
-                <label className="text-xs font-bold text-slate-500 mb-2 block uppercase">Nội dung bài Đọc / Link Audio</label>
-                
-                <div className="flex gap-2 mb-3">
-                    <div className="h-10 w-10 bg-white border rounded flex items-center justify-center text-slate-400"><Mic className="w-5 h-5" /></div>
+      {/* --- CẬP NHẬT UI TRẮC NGHIỆM --- */}
+      {q.type === 'multiple_choice' && (
+        <div className="bg-slate-50 p-4 rounded border border-slate-200">
+           <Label className="mb-3 block text-slate-700 font-semibold">Các lựa chọn & Đáp án đúng</Label>
+           <div className="space-y-3">
+             {q.options.map((opt, idx) => (
+               <div key={idx} className="flex gap-2 items-center group">
+                  {/* Nút chọn đáp án đúng */}
+                  <div 
+                    onClick={() => updateField('correct_answer', opt)}
+                    className={`w-10 h-10 flex shrink-0 items-center justify-center border rounded cursor-pointer transition-all ${q.correct_answer === opt && opt !== '' ? 'bg-green-600 text-white border-green-600' : 'bg-white hover:border-green-400 text-slate-400'}`}
+                    title="Đặt làm đáp án đúng"
+                  >
+                    {q.correct_answer === opt && opt !== '' ? <Check className="w-5 h-5"/> : <Circle className="w-4 h-4" />}
+                  </div>
+                  
+                  {/* Input nội dung option */}
+                  <div className="flex-1 relative">
+                    <span className="absolute left-3 top-2.5 text-xs text-slate-400 font-bold">{String.fromCharCode(65+idx)}.</span>
                     <Input 
-                        placeholder="Dán link file Audio (MP3) vào đây..." 
-                        value={qGroup.media_url || ''}
-                        onChange={(e) => setQGroup({...qGroup, media_url: e.target.value})}
+                        value={opt} 
+                        onChange={(e) => {
+                            const newOpts = [...q.options]; newOpts[idx] = e.target.value;
+                            setQ(prev => ({...prev, options: newOpts}));
+                        }} 
+                        className="pl-8"
+                        placeholder={`Nhập đáp án ${String.fromCharCode(65+idx)}...`} 
                     />
-                </div>
+                  </div>
 
-                <div className="min-h-[150px] bg-white rounded border border-slate-200 overflow-hidden">
-                     <RichTextEditor 
-                        content={qGroup.content} 
-                        onChange={(html) => setQGroup({...qGroup, content: html})} 
-                     />
-                </div>
-            </div>
-
-            {/* Sub Questions */}
-            <div className="space-y-4">
-                <div className="flex items-center justify-between">
-                    <label className="text-sm font-bold text-slate-700">Danh sách câu hỏi đi kèm ({qGroup.sub_questions?.length || 0})</label>
-                    <Button size="sm" onClick={addSubQuestion} variant="outline" className="border-sky-200 text-sky-600 hover:bg-sky-50">
-                        <Plus className="w-4 h-4 mr-2" /> Thêm câu hỏi con
-                    </Button>
-                </div>
-
-                {qGroup.sub_questions?.map((sub: any, idx: number) => (
-                    <div key={idx} className="border border-slate-200 rounded-lg p-4 bg-white relative group">
-                        <button onClick={() => removeSubQuestion(idx)} className="absolute right-2 top-2 text-slate-300 hover:text-red-500"><X className="w-4 h-4" /></button>
-                        
-                        <div className="flex gap-2 items-center mb-3">
-                            <span className="bg-slate-100 text-slate-600 text-xs font-bold px-2 py-1 rounded">Câu {idx + 1}</span>
-                            <select 
-                                className="text-xs border rounded px-2 py-1 bg-white outline-none focus:border-sky-500"
-                                value={sub.type}
-                                onChange={(e) => updateSubQuestion(idx, 'type', e.target.value)}
-                            >
-                                <option value="multiple_choice">Trắc nghiệm</option>
-                                <option value="fill_in_blank">Điền từ</option>
-                            </select>
-                        </div>
-
-                        <div className="mb-3">
-                            <Input 
-                                placeholder="Nhập câu hỏi..." 
-                                value={sub.content} 
-                                onChange={(e) => updateSubQuestion(idx, 'content', e.target.value)}
-                                className="h-9 text-sm font-medium"
-                            />
-                        </div>
-
-                        {sub.type === 'multiple_choice' && (
-                             <div className="grid grid-cols-2 gap-2">
-                                {sub.options?.map((opt: string, oIdx: number) => (
-                                    <div key={oIdx} className="flex items-center gap-2">
-                                        <input 
-                                            type="radio" 
-                                            name={`sub_ans_${idx}`} 
-                                            checked={sub.correct_answer === oIdx.toString()}
-                                            onChange={() => updateSubQuestion(idx, 'correct_answer', oIdx.toString())}
-                                            className="cursor-pointer accent-sky-500"
-                                        />
-                                        <Input 
-                                            value={opt}
-                                            onChange={(e) => {
-                                                const newOpts = [...sub.options];
-                                                newOpts[oIdx] = e.target.value;
-                                                updateSubQuestion(idx, 'options', newOpts);
-                                            }}
-                                            placeholder={`Đáp án ${String.fromCharCode(65+oIdx)}`}
-                                            className="h-8 text-xs"
-                                        />
-                                    </div>
-                                ))}
-                             </div>
-                        )}
-                         {sub.type === 'fill_in_blank' && (
-                            <Input 
-                                placeholder="Nhập từ cần điền (Đáp án đúng)..."
-                                value={sub.correct_answer}
-                                onChange={(e) => updateSubQuestion(idx, 'correct_answer', e.target.value)}
-                                className="border-green-200 bg-green-50/30 text-green-800 placeholder:text-green-800/50"
-                            />
-                         )}
-                    </div>
-                ))}
-            </div>
-            
-            <div className="flex justify-end gap-2 pt-4 border-t border-slate-100">
-                <Button variant="ghost" onClick={onCancel}>Hủy</Button>
-                <Button onClick={() => onSave(qGroup)} className="bg-sky-500 hover:bg-sky-600 text-white">Lưu Bài Đọc/Nghe</Button>
-            </div>
-        </div>
-      ) : (
-        
-        // ================= BODY: SINGLE QUESTION MODE =================
-        <div className="space-y-5">
-            
-            {/* Editor Nội dung câu hỏi */}
-            <div>
-                <label className="text-xs font-bold text-slate-500 mb-1.5 block">Nội dung câu hỏi</label>
-                <div className="min-h-[120px] border border-slate-200 rounded-lg overflow-hidden">
-                    <RichTextEditor 
-                        content={qSingle.content} 
-                        onChange={(html) => setQSingle({...qSingle, content: html})} 
-                    />
-                </div>
-            </div>
-
-            {/* A. TRẮC NGHIỆM */}
-            {qSingle.type === 'multiple_choice' && (
-                <div className="space-y-3">
-                    <label className="text-xs font-bold text-slate-500 block">Các lựa chọn (Tick chọn đáp án đúng)</label>
-                    <div className="grid gap-3">
-                        {qSingle.options.map((opt: string, idx: number) => (
-                            <div key={idx} className="flex items-center gap-3 group">
-                                <input 
-                                    type="radio" 
-                                    name="single_correct_ans" 
-                                    checked={qSingle.correct_answer === idx.toString()} 
-                                    onChange={() => setQSingle({...qSingle, correct_answer: idx.toString()})}
-                                    className="w-5 h-5 text-sky-500 cursor-pointer accent-sky-500"
-                                />
-                                <div className="flex-1 relative">
-                                    <span className="absolute left-3 top-1/2 -translate-y-1/2 text-xs font-bold text-slate-400">
-                                        {String.fromCharCode(65 + idx)}
-                                    </span>
-                                    <Input 
-                                        value={opt} 
-                                        onChange={(e) => {
-                                            const newOpts = [...qSingle.options];
-                                            newOpts[idx] = e.target.value;
-                                            setQSingle({...qSingle, options: newOpts})
-                                        }}
-                                        className="pl-8"
-                                        placeholder={`Nhập nội dung đáp án ${String.fromCharCode(65 + idx)}...`} 
-                                    />
-                                </div>
-                                <button onClick={() => removeOptionSingle(idx)} className="text-slate-300 hover:text-red-500 opacity-0 group-hover:opacity-100 transition-opacity">
-                                    <X className="w-5 h-5" />
-                                </button>
-                            </div>
-                        ))}
-                    </div>
-                    <button onClick={addOptionSingle} className="text-xs font-bold text-sky-600 hover:bg-sky-50 px-3 py-1.5 rounded flex items-center gap-1 transition-colors border border-transparent hover:border-sky-200 w-fit">
-                        <Plus className="w-3 h-3" /> Thêm lựa chọn
-                    </button>
-                </div>
-            )}
-
-            {/* B. TỰ LUẬN / VIẾT LẠI CÂU */}
-            {(qSingle.type === 'essay' || qSingle.type === 'fill_in_blank') && (
-                <div className="space-y-3">
-                    <div>
-                        <label className="text-xs font-bold text-slate-500 mb-1 block">Đáp án mẫu / Gợi ý chấm điểm</label>
-                        <Textarea 
-                            value={qSingle.explanation || ''} 
-                            onChange={(e) => setQSingle({...qSingle, explanation: e.target.value})}
-                            placeholder="Nhập đáp án đúng hoặc hướng dẫn chấm điểm chi tiết..."
-                            className="bg-slate-50 min-h-[100px]"
-                        />
-                    </div>
-                </div>
-            )}
-
-            {/* C. SẮP XẾP CÂU */}
-            {qSingle.type === 'reorder' && (
-                 <div className="space-y-3">
-                    <label className="text-xs font-bold text-slate-500 block">Các thành phần (Nhập theo thứ tự ĐÚNG)</label>
-                    <div className="space-y-2">
-                        {qSingle.options.map((opt: string, idx: number) => (
-                            <div key={idx} className="flex items-center gap-3 bg-slate-50 p-2 rounded border border-slate-100">
-                                <GripVertical className="w-4 h-4 text-slate-400 cursor-move" />
-                                <span className="text-xs font-bold text-slate-500 w-5">{idx + 1}.</span>
-                                <Input 
-                                    value={opt} 
-                                    onChange={(e) => {
-                                        const newOpts = [...qSingle.options];
-                                        newOpts[idx] = e.target.value;
-                                        setQSingle({...qSingle, options: newOpts})
-                                    }}
-                                    placeholder={`Thành phần thứ ${idx + 1}`}
-                                    className="bg-white" 
-                                />
-                                <button onClick={() => removeOptionSingle(idx)} className="text-slate-400 hover:text-red-500"><X className="w-4 h-4" /></button>
-                            </div>
-                        ))}
-                    </div>
-                    <button onClick={addOptionSingle} className="text-xs font-bold text-sky-600 hover:underline flex items-center gap-1 mt-2">
-                        <Plus className="w-3 h-3" /> Thêm thành phần
-                    </button>
-                 </div>
-            )}
-
-            {/* FOOTER COMMON (Điểm & Độ khó) */}
-            <div className="flex flex-col sm:flex-row justify-between items-center gap-4 pt-4 border-t border-slate-100 mt-6">
-                <div className="flex items-center gap-4 w-full sm:w-auto">
-                    <div className="flex items-center gap-2">
-                        <span className="text-xs font-bold text-slate-500 whitespace-nowrap">Điểm số:</span>
-                        <Input 
-                            type="number" 
-                            value={qSingle.score} 
-                            onChange={(e) => setQSingle({...qSingle, score: Number(e.target.value)})} 
-                            className="w-20 h-9 text-center font-bold" 
-                        />
-                    </div>
-                    <select 
-                        value={qSingle.difficulty}
-                        onChange={(e) => setQSingle({...qSingle, difficulty: e.target.value})}
-                        className="h-9 text-xs font-medium border rounded px-3 bg-slate-50 outline-none focus:border-sky-500 cursor-pointer"
-                    >
-                        <option value="easy">Dễ</option>
-                        <option value="medium">Trung bình</option>
-                        <option value="hard">Khó</option>
-                    </select>
-                </div>
-                <div className="flex gap-2 w-full sm:w-auto justify-end">
-                    <Button variant="ghost" onClick={onCancel} className="text-slate-500 hover:bg-slate-100">Hủy</Button>
-                    <Button onClick={() => onSave(qSingle)} className="bg-sky-500 hover:bg-sky-600 text-white font-bold shadow-md shadow-sky-200">
-                        Lưu Câu Hỏi
-                    </Button>
-                </div>
-            </div>
+                  {/* Nút xóa option */}
+                  <Button 
+                    variant="ghost" 
+                    size="icon" 
+                    className="text-slate-400 hover:text-red-600 hover:bg-red-50"
+                    onClick={() => handleRemoveOption(idx)}
+                    disabled={q.options.length <= 2}
+                  >
+                    <X className="w-4 h-4" />
+                  </Button>
+               </div>
+             ))}
+           </div>
+           
+           <Button variant="outline" size="sm" onClick={handleAddOption} className="mt-4 w-full border-dashed text-sky-600 hover:text-sky-700 hover:bg-sky-50">
+             <Plus className="w-4 h-4 mr-2" /> Thêm lựa chọn khác
+           </Button>
         </div>
       )}
+
+      {(q.type === 'essay' || q.type === 'fill_in_blank') && (
+        <div className="space-y-2">
+            <Label>Đáp án gợi ý / Từ khóa</Label>
+            <Textarea value={q.correct_answer} onChange={(e) => updateField('correct_answer', e.target.value)} />
+        </div>
+      )}
+
+      <div className="grid grid-cols-2 gap-4">
+        <div className="space-y-2">
+            <Label>Điểm số</Label>
+            <Input type="number" step={0.25} value={q.score} onChange={(e) => updateField('score', parseFloat(e.target.value))} />
+        </div>
+        <div className="space-y-2">
+            <Label>Độ khó</Label>
+            <Select value={q.difficulty} onValueChange={(v: any) => updateField('difficulty', v)}>
+                <SelectTrigger><SelectValue /></SelectTrigger>
+                <SelectContent>
+                    <SelectItem value="easy">Dễ</SelectItem>
+                    <SelectItem value="medium">Trung bình</SelectItem>
+                    <SelectItem value="hard">Khó</SelectItem>
+                </SelectContent>
+            </Select>
+        </div>
+      </div>
+    </div>
+  );
+
+  // ... (Phần render Group và Main Wrapper giữ nguyên như code cũ, chỉ thay đổi phần SubQuestionWrapper bên dưới)
+
+  // -- Wrapper cho Sub Question --
+  // Logic Group Form gọi renderDetailForm() bên trong Modal -> tự động có tính năng thêm/xóa option
+  
+  if (q.type === 'group' && !isSubQuestion) {
+     // ... (Code render Group Form giống bài trước)
+     // Chỉ cần đảm bảo SubQuestionWrapper gọi QuestionForm thì tính năng thêm/xóa option sẽ tự có
+     return (
+        <div className="bg-white p-6 rounded-lg shadow-sm border border-purple-100 space-y-6">
+            {/* ... Header Group ... */}
+            <div className="flex justify-between items-start border-b pb-4">
+                {/* ... */}
+                 <div>
+                    <h3 className="text-lg font-bold text-purple-700 flex items-center gap-2"><Layers className="w-5 h-5"/> Câu hỏi Nhóm</h3>
+                </div>
+                 <div className="flex gap-2">
+                    <Button variant="outline" onClick={onCancel}>Hủy</Button>
+                    <Button onClick={handleSave} className="bg-purple-600 hover:bg-purple-700 text-white"><Save className="w-4 h-4 mr-2"/> Lưu Nhóm</Button>
+                </div>
+            </div>
+
+             {/* ... Tabs Content ... */}
+             <div className="space-y-3">
+                <Label className="text-base font-semibold">1. Nội dung bài gốc</Label>
+                 <Tabs defaultValue="text" value={q.media_type || 'text'} onValueChange={(v: any) => updateField('media_type', v)}>
+                    <TabsList>
+                        <TabsTrigger value="text"><FileText className="w-4 h-4 mr-2"/> Bài Đọc</TabsTrigger>
+                        <TabsTrigger value="audio"><FileAudio className="w-4 h-4 mr-2"/> Bài Nghe</TabsTrigger>
+                    </TabsList>
+                    <TabsContent value="text" className="pt-2">
+                        <Textarea 
+                            value={q.content}
+                            onChange={(e) => updateField('content', e.target.value)}
+                            className="min-h-[150px] font-serif text-lg leading-relaxed bg-slate-50"
+                            placeholder="Nội dung bài đọc..."
+                        />
+                    </TabsContent>
+                    <TabsContent value="audio" className="pt-2">
+                        <Input value={q.media_url || ''} onChange={(e) => updateField('media_url', e.target.value)} placeholder="URL Audio..." />
+                    </TabsContent>
+                </Tabs>
+             </div>
+
+             {/* ... Sub Questions List ... */}
+             <div className="space-y-3">
+                <div className="flex justify-between items-center bg-slate-100 p-3 rounded">
+                    <Label className="text-base font-semibold">2. Danh sách câu hỏi ({q.sub_questions?.length || 0})</Label>
+                    <Button size="sm" onClick={() => { setEditingSubIndex(-1); setSubModalOpen(true); }} className="bg-white text-purple-700 border border-purple-200">
+                        <Plus className="w-4 h-4 mr-2"/> Thêm câu con
+                    </Button>
+                </div>
+                <div className="grid gap-2">
+                    {q.sub_questions?.map((sub, idx) => (
+                        <div key={idx} className="flex items-center justify-between p-3 bg-white border rounded shadow-sm">
+                             <div className="flex items-center gap-3">
+                                <span className="bg-slate-100 text-xs font-bold px-2 py-1 rounded">#{idx+1}</span>
+                                <span className="font-bold text-xs uppercase text-slate-500">{sub.type === 'multiple_choice' ? 'TN' : 'TL'}</span>
+                                <span className="text-sm truncate max-w-[300px] font-medium">{sub.content}</span>
+                             </div>
+                             <div className="flex gap-2">
+                                <Button size="icon" variant="ghost" className="h-8 w-8 text-blue-600" onClick={() => { setEditingSubIndex(idx); setSubModalOpen(true); }}><Edit2 className="w-4 h-4"/></Button>
+                                <Button size="icon" variant="ghost" className="h-8 w-8 text-red-600" onClick={() => {
+                                    const newSubs = q.sub_questions?.filter((_, i) => i !== idx);
+                                    setQ({...q, sub_questions: newSubs});
+                                }}><Trash2 className="w-4 h-4"/></Button>
+                             </div>
+                        </div>
+                    ))}
+                </div>
+             </div>
+
+             <Dialog open={subModalOpen} onOpenChange={setSubModalOpen}>
+                <DialogContent className="max-w-2xl max-h-[90vh] overflow-y-auto">
+                    <DialogHeader><DialogTitle>{editingSubIndex === -1 ? 'Thêm câu hỏi con' : 'Sửa câu hỏi con'}</DialogTitle></DialogHeader>
+                    <SubQuestionWrapper 
+                        initialData={editingSubIndex === -1 ? undefined : q.sub_questions?.[editingSubIndex!]}
+                        onSave={handleSaveSubQuestion}
+                        onCancel={() => setSubModalOpen(false)}
+                    />
+                </DialogContent>
+            </Dialog>
+        </div>
+     )
+  }
+
+  return (
+    <div className={`space-y-6 ${!isSubQuestion ? 'bg-white p-6 rounded-lg shadow-sm border border-sky-100' : ''}`}>
+       {!isSubQuestion && (
+         <div className="flex justify-between items-center border-b pb-4 mb-4">
+             <h3 className="text-lg font-bold text-slate-800">
+                {q.type === 'multiple_choice' ? 'Trắc nghiệm' : 'Tự luận'}
+             </h3>
+             <div className="flex gap-2">
+                 <Button variant="ghost" onClick={onCancel}>Hủy</Button>
+                 <Button onClick={handleSave} className="bg-sky-600 text-white"><Save className="w-4 h-4 mr-2"/> Lưu</Button>
+             </div>
+         </div>
+       )}
+
+       {isSubQuestion && (
+         <div className="mb-4">
+            <Label>Loại câu hỏi</Label>
+            <Select value={q.type} onValueChange={(v: any) => updateField('type', v)}>
+                <SelectTrigger><SelectValue /></SelectTrigger>
+                <SelectContent>
+                    <SelectItem value="multiple_choice">Trắc nghiệm</SelectItem>
+                    <SelectItem value="essay">Tự luận</SelectItem>
+                </SelectContent>
+            </Select>
+         </div>
+       )}
+
+       {renderDetailForm()}
+
+       {isSubQuestion && (
+         <DialogFooter className="mt-6">
+            <Button variant="outline" onClick={onCancel}>Hủy</Button>
+            <Button onClick={handleSave} className="bg-blue-600 text-white">Xác nhận</Button>
+         </DialogFooter>
+       )}
     </div>
   )
+}
+
+function SubQuestionWrapper(props: QuestionFormProps) {
+    return <QuestionForm key={props.initialData?.id || 'new'} {...props} isSubQuestion={true} />
 }

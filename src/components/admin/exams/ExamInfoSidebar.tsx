@@ -1,109 +1,137 @@
-'use client'
+import React from 'react'
+import { ExamData, ExamLevel, ExamStatus } from '@/types/exam-editor'
+import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
+import { Label } from '@/components/ui/label'
 import { Input } from '@/components/ui/input'
-import { Textarea } from '@/components/ui/textarea' // Dùng shadcn textarea
-import { Button } from '@/components/ui/button'
-import { CloudUpload, Info } from 'lucide-react'
+import { Textarea } from '@/components/ui/textarea'
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from '@/components/ui/select'
+import { Settings, Clock, BarChart, FileText, Globe } from 'lucide-react'
 
-// Mock Data cho Select
-const SUBJECTS = ['Toán học', 'Vật lý', 'Tiếng Anh', 'Hóa học']
-const LEVELS = ['easy', 'medium', 'hard']
-
-interface Props {
-  exam: any;
-  setExam: (val: any) => void;
+interface ExamInfoSidebarProps {
+  exam: ExamData;
+  setExam: (exam: ExamData) => void;
 }
 
-export function ExamInfoSidebar({ exam, setExam }: Props) {
-  const handleChange = (field: string, value: any) => {
-    setExam({ ...exam, [field]: value })
-  }
+export function ExamInfoSidebar({ exam, setExam }: ExamInfoSidebarProps) {
+  
+  const handleChange = (field: keyof ExamData, value: string | number) => {
+    setExam({ ...exam, [field]: value });
+  };
+
+  // Helper đổi màu badge trạng thái
+  const getStatusColor = (status: ExamStatus) => {
+    switch (status) {
+      case 'published': return 'text-green-600 bg-green-50 border-green-200';
+      case 'hidden': return 'text-slate-500 bg-slate-100 border-slate-200';
+      default: return 'text-orange-600 bg-orange-50 border-orange-200';
+    }
+  };
 
   return (
-    <div className="bg-white p-6 rounded-xl border border-slate-200 shadow-sm space-y-6 h-fit sticky top-24">
-      <div className="flex items-center gap-2 font-bold text-slate-800 text-lg">
-        <div className="p-1.5 bg-sky-100 rounded-lg">
-            <Info className="w-5 h-5 text-sky-600" />
-        </div>
-        Thông tin chung
-      </div>
-
-      <div className="space-y-4">
-        <div>
-          <label className="text-xs font-bold text-slate-700 mb-1 block">Tên đề thi <span className="text-red-500">*</span></label>
+    <Card className="shadow-sm border-slate-200 h-fit sticky top-24">
+      <CardHeader className="pb-3 border-b bg-slate-50/50">
+        <CardTitle className="text-base font-bold flex items-center gap-2 text-slate-800">
+          <Settings className="w-4 h-4 text-sky-500" />
+          Thiết lập chung
+        </CardTitle>
+      </CardHeader>
+      
+      <CardContent className="space-y-5 pt-5">
+        
+        {/* 1. TÊN ĐỀ THI (Quan trọng nhất) */}
+        <div className="space-y-2">
+          <Label className="text-slate-700 font-semibold flex items-center gap-1.5">
+            <FileText className="w-3.5 h-3.5"/> Tên đề thi <span className="text-red-500">*</span>
+          </Label>
           <Input 
             value={exam.title} 
-            onChange={(e) => handleChange('title', e.target.value)} 
-            placeholder="Ví dụ: Kiểm tra giữa kỳ II - Toán Cao Cấp"
-            className="bg-slate-50"
+            onChange={(e) => handleChange('title', e.target.value)}
+            placeholder="VD: Kiểm tra 15 phút Đại số..."
+            className="font-medium bg-white"
           />
         </div>
 
+        {/* 2. TRẠNG THÁI (Quyết định hiển thị) */}
+        <div className="space-y-2">
+          <Label className="text-slate-700 font-semibold flex items-center gap-1.5">
+            <Globe className="w-3.5 h-3.5"/> Trạng thái phát hành
+          </Label>
+          <Select 
+            value={exam.status} 
+            onValueChange={(val) => handleChange('status', val as ExamStatus)}
+          >
+            <SelectTrigger className={`font-medium border ${getStatusColor(exam.status)}`}>
+              <SelectValue />
+            </SelectTrigger>
+            <SelectContent>
+              <SelectItem value="draft">📝 Bản nháp (Draft)</SelectItem>
+              <SelectItem value="published">✅ Công khai (Published)</SelectItem>
+              <SelectItem value="hidden">🔒 Đang ẩn (Hidden)</SelectItem>
+            </SelectContent>
+          </Select>
+          <p className="text-[11px] text-slate-500 italic ml-1">
+            * Chỉ đề thi "Công khai" mới hiển thị cho học sinh.
+          </p>
+        </div>
+
+        <div className="border-t border-dashed border-slate-200 my-2"></div>
+
+        {/* 3. THỜI GIAN & ĐỘ KHÓ (Thông số kỹ thuật) */}
         <div className="grid grid-cols-2 gap-4">
-          <div>
-            <label className="text-xs font-bold text-slate-700 mb-1 block">Môn học</label>
-            <select 
-              className="w-full h-10 px-3 rounded-md border border-slate-200 bg-slate-50 text-sm"
-              value={exam.subject}
-              onChange={(e) => handleChange('subject', e.target.value)}
-            >
-              {SUBJECTS.map(s => <option key={s} value={s}>{s}</option>)}
-            </select>
-          </div>
-          <div>
-            <label className="text-xs font-bold text-slate-700 mb-1 block">Cấp độ</label>
-            <select 
-              className="w-full h-10 px-3 rounded-md border border-slate-200 bg-slate-50 text-sm capitalize"
-              value={exam.level}
-              onChange={(e) => handleChange('level', e.target.value)}
-            >
-              {LEVELS.map(l => <option key={l} value={l}>{l}</option>)}
-            </select>
-          </div>
-        </div>
-
-        <div className="grid grid-cols-2 gap-4">
-          <div>
-            <label className="text-xs font-bold text-slate-700 mb-1 block">Thời gian (phút)</label>
-            <Input type="number" value={exam.duration} onChange={(e) => handleChange('duration', Number(e.target.value))} className="bg-slate-50" />
-          </div>
-          <div>
-            <label className="text-xs font-bold text-slate-700 mb-1 block">Tổng điểm</label>
-            <Input type="number" value={exam.total_score || 100} readOnly className="bg-slate-100 text-slate-500" />
-          </div>
-        </div>
-
-        {/* Upload Area */}
-        <div className="border-2 border-dashed border-slate-200 rounded-xl p-6 text-center hover:bg-slate-50 cursor-pointer transition-colors">
-            <CloudUpload className="w-8 h-8 text-slate-400 mx-auto mb-2" />
-            <p className="text-xs text-slate-500">Kéo thả hoặc nhấn để tải lên file đề (PDF/DOCX)</p>
-        </div>
-
-        <div>
-            <label className="text-xs font-bold text-slate-700 mb-1 block">Mô tả / Ghi chú</label>
-            <Textarea 
-                value={exam.description} 
-                onChange={(e) => handleChange('description', e.target.value)}
-                placeholder="Nhập ghi chú cho đề thi..." 
-                className="bg-slate-50 min-h-[100px]" 
-            />
-        </div>
-
-        <div className="flex items-center justify-between pt-2">
-            <span className="text-sm font-medium text-slate-700">Trạng thái</span>
-            <div className="flex items-center gap-2">
-                <span className={`text-xs font-bold ${exam.status === 'published' ? 'text-sky-600' : 'text-slate-500'}`}>
-                    {exam.status === 'published' ? 'Công khai' : 'Nháp'}
-                </span>
-                {/* Custom Toggle Switch Simplification */}
-                <button 
-                    onClick={() => handleChange('status', exam.status === 'published' ? 'draft' : 'published')}
-                    className={`w-10 h-5 rounded-full relative transition-colors ${exam.status === 'published' ? 'bg-sky-500' : 'bg-slate-300'}`}
-                >
-                    <div className={`w-3 h-3 bg-white rounded-full absolute top-1 transition-all ${exam.status === 'published' ? 'left-6' : 'left-1'}`} />
-                </button>
+          <div className="space-y-2">
+            <Label className="flex items-center gap-1.5 text-slate-600 text-xs uppercase font-bold">
+                <Clock className="w-3.5 h-3.5"/> Thời gian
+            </Label>
+            <div className="relative">
+                <Input 
+                type="number" 
+                min={0}
+                value={exam.duration}
+                onChange={(e) => handleChange('duration', parseInt(e.target.value) || 0)}
+                className="pr-10"
+                />
+                <span className="absolute right-3 top-2.5 text-xs text-slate-400 font-medium">Phút</span>
             </div>
+          </div>
+
+          <div className="space-y-2">
+            <Label className="flex items-center gap-1.5 text-slate-600 text-xs uppercase font-bold">
+                <BarChart className="w-3.5 h-3.5"/> Độ khó
+            </Label>
+            <Select 
+              value={exam.level} 
+              onValueChange={(val) => handleChange('level', val as ExamLevel)}
+            >
+              <SelectTrigger>
+                <SelectValue />
+              </SelectTrigger>
+              <SelectContent>
+                <SelectItem value="easy">🟢 Dễ</SelectItem>
+                <SelectItem value="medium">🟡 Trung bình</SelectItem>
+                <SelectItem value="hard">🔴 Khó</SelectItem>
+              </SelectContent>
+            </Select>
+          </div>
         </div>
-      </div>
-    </div>
+
+        {/* 4. MÔ TẢ */}
+        <div className="space-y-2">
+          <Label className="text-slate-600 text-xs uppercase font-bold">Hướng dẫn / Ghi chú</Label>
+          <Textarea 
+            rows={5}
+            value={exam.description}
+            onChange={(e) => handleChange('description', e.target.value)}
+            placeholder="Nhập hướng dẫn làm bài cho học sinh..."
+            className="resize-none bg-slate-50 focus:bg-white transition-colors text-sm"
+          />
+        </div>
+      </CardContent>
+    </Card>
   )
 }

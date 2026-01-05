@@ -1,57 +1,68 @@
-'use client'
+import React from 'react'
+import { Question } from '@/types/exam-editor'
+import { Card, CardContent } from '@/components/ui/card'
+import { Layers, CheckCircle2, AlertCircle } from 'lucide-react'
 
-import React, { useMemo } from 'react'
-import { LayoutList, CheckSquare, AlignLeft, HelpCircle } from 'lucide-react'
-
-interface Props {
-  questions: any[];
+interface StatsCardsProps {
+  questions: Question[];
 }
 
-export function StatsCards({ questions }: Props) {
-  // Sử dụng useMemo để tự động tính toán lại khi danh sách câu hỏi thay đổi
-  const stats = useMemo(() => {
-    return {
-      total: questions.length,
-      multipleChoice: questions.filter(q => q.type === 'multiple_choice').length,
-      essay: questions.filter(q => q.type === 'essay').length,
-      others: questions.filter(q => !['multiple_choice', 'essay'].includes(q.type)).length
-    }
-  }, [questions])
+export function StatsCards({ questions }: StatsCardsProps) {
+  // Tính toán thống kê
+  const totalQuestions = questions.reduce((acc, q) => {
+    // Nếu là nhóm câu hỏi, cộng số câu con, ngược lại cộng 1
+    return acc + (q.type === 'group' ? (q.sub_questions?.length || 0) : 1);
+  }, 0);
+
+  const totalScoreCurrent = questions.reduce((acc, q) => {
+     if (q.type === 'group') {
+       return acc + (q.sub_questions?.reduce((sAcc, sQ) => sAcc + (sQ.score || 0), 0) || 0);
+     }
+     return acc + (q.score || 0);
+  }, 0);
 
   return (
     <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
-      {/* Card 1: Tổng số */}
-      <div className="bg-white p-4 rounded-xl border border-slate-200 shadow-sm flex items-center gap-4 transition-all hover:shadow-md">
-        <div className="w-12 h-12 bg-purple-100 rounded-lg flex items-center justify-center text-purple-600 shadow-sm">
-            <LayoutList className="w-6 h-6" />
-        </div>
-        <div>
-            <p className="text-[10px] text-slate-500 font-bold uppercase tracking-wider">Tổng câu hỏi</p>
-            <p className="text-2xl font-extrabold text-slate-900">{stats.total}</p>
-        </div>
-      </div>
+      <Card>
+        <CardContent className="p-4 flex items-center justify-between">
+          <div>
+            <p className="text-sm font-medium text-slate-500">Số câu hỏi</p>
+            <h3 className="text-2xl font-bold text-slate-800">{totalQuestions}</h3>
+          </div>
+          <div className="p-2 bg-blue-50 rounded-full text-blue-600">
+            <Layers className="w-5 h-5" />
+          </div>
+        </CardContent>
+      </Card>
 
-      {/* Card 2: Trắc nghiệm */}
-      <div className="bg-white p-4 rounded-xl border border-slate-200 shadow-sm flex items-center gap-4 transition-all hover:shadow-md">
-        <div className="w-12 h-12 bg-orange-100 rounded-lg flex items-center justify-center text-orange-600 shadow-sm">
-            <CheckSquare className="w-6 h-6" />
-        </div>
-        <div>
-            <p className="text-[10px] text-slate-500 font-bold uppercase tracking-wider">Trắc nghiệm</p>
-            <p className="text-2xl font-extrabold text-slate-900">{stats.multipleChoice}</p>
-        </div>
-      </div>
+      <Card>
+        <CardContent className="p-4 flex items-center justify-between">
+          <div>
+            <p className="text-sm font-medium text-slate-500">Tổng điểm hiện tại</p>
+            <h3 className={`text-2xl font-bold ${totalScoreCurrent > 100 ? 'text-red-500' : 'text-slate-800'}`}>
+              {totalScoreCurrent}
+            </h3>
+          </div>
+          <div className={`p-2 rounded-full ${totalScoreCurrent === 100 ? 'bg-green-50 text-green-600' : 'bg-orange-50 text-orange-600'}`}>
+            <CheckCircle2 className="w-5 h-5" />
+          </div>
+        </CardContent>
+      </Card>
 
-      {/* Card 3: Tự luận & Khác */}
-      <div className="bg-white p-4 rounded-xl border border-slate-200 shadow-sm flex items-center gap-4 transition-all hover:shadow-md">
-        <div className="w-12 h-12 bg-emerald-100 rounded-lg flex items-center justify-center text-emerald-600 shadow-sm">
-            {stats.others > 0 ? <HelpCircle className="w-6 h-6" /> : <AlignLeft className="w-6 h-6" />}
-        </div>
-        <div>
-            <p className="text-[10px] text-slate-500 font-bold uppercase tracking-wider">Tự luận / Khác</p>
-            <p className="text-2xl font-extrabold text-slate-900">{stats.essay + stats.others}</p>
-        </div>
-      </div>
+      <Card>
+        <CardContent className="p-4 flex items-center justify-between">
+          <div>
+            <p className="text-sm font-medium text-slate-500">Dạng câu hỏi</p>
+            <div className="flex gap-2 text-xs mt-1">
+              <span className="bg-slate-100 px-2 py-0.5 rounded text-slate-600">TN: {questions.filter(q => q.type === 'multiple_choice').length}</span>
+              <span className="bg-slate-100 px-2 py-0.5 rounded text-slate-600">Group: {questions.filter(q => q.type === 'group').length}</span>
+            </div>
+          </div>
+          <div className="p-2 bg-purple-50 rounded-full text-purple-600">
+            <AlertCircle className="w-5 h-5" />
+          </div>
+        </CardContent>
+      </Card>
     </div>
   )
 }

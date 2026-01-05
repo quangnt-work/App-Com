@@ -3,7 +3,7 @@
 import React, { useState } from 'react'
 import { createClient } from '@/lib/supabase/client'
 import { Edit, Trash2, ChevronLeft, ChevronRight, Inbox, Eye, Loader2 } from 'lucide-react'
-import { ExamItem, ExamLevel, ExamStatus } from '@/types/exam-admin'
+import { ExamItem, ExamLevel, ExamStatus } from '@/types/exam-editor'
 import { Button } from '@/components/ui/button'
 import { toast } from 'sonner'
 import Link from 'next/link'

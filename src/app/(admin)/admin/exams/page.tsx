@@ -2,11 +2,12 @@ import { createClient } from '@/lib/supabase/server'
 import { Plus, FileQuestion, BarChart3, CalendarRange } from 'lucide-react'
 import { Button } from '@/components/ui/button'
 import { BackButton } from '@/components/common/BackButton'
-import { ExamFilters } from './components/ExamFilters'
-import { ExamTable } from './components/ExamTable'
-import { StatCard } from './components/StatCard' // Đảm bảo đường dẫn đúng
+import { ExamFilters } from '../../../../components/admin/exams/ExamFilters'
+import { ExamTable } from '../../../../components/admin/exams/ExamTable'
+import { StatCard } from '../../../../components/admin/exams/StatCard' // Đảm bảo đường dẫn đúng
 import { ExamItem } from '@/types/exam-editor'
 import Link from 'next/link'
+import { Database } from '@/types/supabase';
 
 export default async function ExamManagementPage() {
   const supabase = await createClient()
@@ -16,21 +17,22 @@ export default async function ExamManagementPage() {
     .from('exams')
     .select('*')
     .order('created_at', { ascending: false })
+    .returns<Database['public']['Tables']['exams']['Row'][]>();
 
   if (error) {
     console.error('Lỗi tải đề thi:', error)
   }
 
   // 2. Map dữ liệu & Xử lý Type
-  const exams: ExamItem[] = (rawExams || []).map((item: any) => ({
+  const exams: ExamItem[] = (rawExams || []).map((item) => ({
     id: item.id,
     title: item.title,
-    code: item.code,
-    subject: item.subject,
-    level: item.level,
+    code: item.code || 'N/A',
+    subject: item.subject || 'Tổng hợp',
+    level: (item.level as any) || 'medium',
     duration: item.duration,
     question_count: item.question_count,
-    status: item.status,
+    status: (item.status as any) || 'draft',
     created_at: item.created_at
   }))
 

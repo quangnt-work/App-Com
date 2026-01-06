@@ -6,12 +6,14 @@ import { createClient } from '@/lib/supabase/client'
 import { Folder, Cloud, CheckCircle, Upload, Loader2, AlertCircle } from 'lucide-react'
 import { Button } from '@/components/ui/button'
 import { BackButton } from '@/components/common/BackButton'
-import { StatCard } from './components/StatCard'
-import { DocumentFilters } from './components/DocumentFilters'
-import { DocumentTable } from './components/DocumentTable'
-import UploadDocumentModal from './components/UploadDocumentModal'
-import { DocumentItem } from '@/types/document'
+import { StatCard } from '../../../../components/admin/documents/StatCard'
+import { DocumentFilters } from '../../../../components/admin/documents/DocumentFilters'
+import { DocumentTable } from '../../../../components/admin/documents/DocumentTable'
+import UploadDocumentModal from '../../../../components/admin/documents/UploadDocumentModal'
 import { toast } from 'sonner'
+import { APP_CONFIG } from '@/lib/constants';
+import { DocumentWithRelations } from '@/types/index';// Import mới
+import { DocumentItem } from '@/types/document'
 
 // --- HELPER FUNCTIONS (Xử lý đơn vị dung lượng) ---
 
@@ -48,38 +50,40 @@ export default function DocumentsManagementPage() {
   const fetchDocuments = async () => {
     setIsLoading(true)
     try {
-      const { data: rawDocs, error } = await supabase
+      const { data, error } = await supabase
         .from('documents')
         .select(`
           *,
           profiles:uploaded_by(full_name),
           courses:course_id(title)
         `)
-        .order('created_at', { ascending: false });
+        .order('created_at', { ascending: false })
+        .returns<DocumentWithRelations[]>();
 
-      if (error) throw error;
+      if (error) {
+        console.error("Error:", error);
+        return <div>Error loading documents</div>;
+      }
 
       // Map dữ liệu từ Supabase sang Type UI chuẩn
-      const mappedDocs: DocumentItem[] = (rawDocs || []).map((doc: any) => ({
+      const mappedDocs = (data || []).map((doc) => ({
         id: doc.id,
         title: doc.title,
         file_url: doc.file_url,
         file_type: doc.file_type,
         file_size: doc.file_size || '0 KB',
-        created_at: new Date(doc.created_at).toLocaleDateString('vi-VN', { 
-            year: 'numeric', month: '2-digit', day: '2-digit' 
-        }),
-        original_date: new Date(doc.created_at), // Giữ date gốc để tính toán
+        created_at: new Date(doc.created_at).toLocaleDateString(APP_CONFIG.DATE_FORMAT.VI, APP_CONFIG.DATE_FORMAT.DEFAULT),
+        original_date: new Date(doc.created_at).toLocaleDateString('vi-VN'),
         uploader_name: doc.profiles?.full_name || 'Admin',
         course_name: doc.courses?.title || 'Chung'
       }));
 
-      setDocuments(mappedDocs)
-    } catch (error: any) {
-      console.error("Fetch error:", error)
-      toast.error("Không thể tải danh sách tài liệu")
+      setDocuments(mappedDocs);
+    } catch (error: unknown) { // Dùng unknown thay vì any để an toàn hơn
+      console.error("Fetch error:", error);
+      toast.error("Không thể tải danh sách tài liệu");
     } finally {
-      setIsLoading(false)
+      setIsLoading(false);
     }
   }
 
@@ -107,7 +111,7 @@ export default function DocumentsManagementPage() {
     const currentYear = now.getFullYear();
     
     // Lưu ý: Cần dùng object date gốc (original_date) để so sánh chính xác
-    const newDocsCount = documents.filter((doc: any) => {
+    const newDocsCount = documents.filter((doc) => {
       const docDate = doc.original_date;
       return docDate && docDate.getMonth() === currentMonth && docDate.getFullYear() === currentYear;
     }).length;

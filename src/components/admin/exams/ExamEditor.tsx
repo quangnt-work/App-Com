@@ -1,217 +1,253 @@
-// src/components/admin/exams/ExamEditor.tsx
-'use client'
+"use client";
 
-import React, { useState } from 'react'
-import { useRouter } from 'next/navigation'
-import { createClient } from '@/lib/supabase/client'
-import { Button } from '@/components/ui/button'
-import { toast } from 'sonner'
-import { Save, Eye, Loader2 } from 'lucide-react'
+import { useState } from "react";
+import { useRouter } from "next/navigation";
+import { createClient } from "@/lib/supabase/client";
+import { toast } from "sonner";
+import { DbExam, DbQuestion, UIQuestion } from "@/types";
 
-// Types & Hooks
-import { ExamData, Question } from '@/types/exam-editor'
-import { useExamForm } from '@/hooks/useExamForm' // (Hoặc import logic trong file nếu bạn không tách file)
-
-// Components
-import { ExamInfoSidebar } from './ExamInfoSidebar'
-import { StatsCards } from './stats-cards'
-import { QuestionList } from './QuestionList'
-import { ExamPreviewModal } from './ExamPreviewModal'
-
-interface Props {
-  initialExam?: ExamData;
-  initialQuestions?: Question[]; // Dữ liệu phẳng từ DB
-  isNew: boolean;
+interface ExamEditorProps {
+  initialExam?: DbExam | null;
+  initialQuestions?: DbQuestion[];
 }
 
-export default function ExamEditor({ initialExam, initialQuestions, isNew }: Props) {
-  const router = useRouter()
-  const supabase = createClient()
+export default function ExamEditor({ initialExam, initialQuestions = [] }: ExamEditorProps) {
+  const router = useRouter();
+  const supabase = createClient();
+  const [loading, setLoading] = useState(false);
 
-  // Sử dụng Custom Hook quản lý dữ liệu
-  const { 
-    exam, setExam, 
-    questions, 
-    addOrUpdateQuestion, 
-    deleteQuestion 
-  } = useExamForm(initialExam, initialQuestions);
+  // 1. State Exam Info (Dựa trên DbExam)
+  const [examData, setExamData] = useState({
+    title: initialExam?.title || "",
+    description: initialExam?.description || "",
+    duration: initialExam?.duration || 45,
+    code: initialExam?.code || `EXAM-${Date.now()}`, // Tạo code mặc định nếu chưa có
+    subject: initialExam?.subject || "ENGLISH",
+    level: initialExam?.level || "B1",
+  });
 
-  // UI States
-  const [editingIndex, setEditingIndex] = useState<number | null>(null)
-  const [isPreviewOpen, setIsPreviewOpen] = useState(false)
-  const [isSaving, setIsSaving] = useState(false)
+  // 2. State Questions (Convert DbQuestion -> UIQuestion)
+  // Vì 'options' từ DB về là Json, ta cần ép kiểu sang string[] để dễ thao tác trên UI
+  const [questions, setQuestions] = useState<UIQuestion[]>(
+    initialQuestions.map(q => ({
+      ...q,
+      options: Array.isArray(q.options) ? (q.options as string[]) : ["A", "B", "C", "D"]
+    }))
+  );
 
-  // --- Wrapper Handlers cho UI ---
-  const handleSaveQuestionUI = (qData: Question) => {
-    // Đảm bảo ID luôn tồn tại
-    const questionWithId = qData.id ? qData : { ...qData, id: crypto.randomUUID() };
-    addOrUpdateQuestion(questionWithId, editingIndex);
-    setEditingIndex(null);
-  }
+  // -- Helpers xử lý câu hỏi --
+  const addQuestion = () => {
+    setQuestions([
+      ...questions,
+      {
+        content: "Câu hỏi mới...",
+        options: ["Option A", "Option B", "Option C", "Option D"],
+        correct_answer: "Option A",
+        order_index: questions.length,
+        type: "multiple_choice", // Default value từ Enum
+        score: 1,
+        // Các trường bắt buộc khác của DB nếu cần, gán null/default
+        exam_id: null,
+        created_at: new Date().toISOString(),
+        difficulty: 'medium',
+        explanation: null,
+        media_url: null,
+        parent_id: null
+      }
+    ]);
+  };
 
-  const handleDeleteQuestionUI = (index: number) => {
-    if (confirm('Bạn có chắc chắn muốn xóa nội dung này? (Các câu hỏi con bên trong cũng sẽ bị xóa)')) {
-      deleteQuestion(index);
-    }
-  }
+  const updateQuestion = (index: number, field: keyof UIQuestion, value: any) => {
+    const newQ = [...questions];
+    newQ[index] = { ...newQ[index], [field]: value };
+    setQuestions(newQ);
+  };
 
-  // --- CORE SAVE LOGIC ---
-  const handleSaveExam = async () => {
-    if (!exam.title.trim()) return toast.error('Vui lòng nhập tên đề thi')
+  const updateOption = (qIndex: number, optIndex: number, value: string) => {
+    const newQ = [...questions];
+    const newOpts = [...newQ[qIndex].options];
+    newOpts[optIndex] = value;
+    newQ[qIndex].options = newOpts;
+    setQuestions(newQ);
+  };
+
+  const removeQuestion = (index: number) => {
+    setQuestions(questions.filter((_, i) => i !== index));
+  };
+
+  // -- Handle Save --
+  const handleSave = async () => {
+    if (!examData.title) return toast.error("Vui lòng nhập tên đề thi");
     
-    setIsSaving(true)
+    setLoading(true);
     try {
-      let currentExamId = exam.id
-
-      // 1. Prepare Payload
+      // 1. Upsert Exam Header
       const examPayload = {
-        title: exam.title,
-        subject: exam.subject,
-        level: exam.level,
-        duration: exam.duration,
-        status: exam.status,
-        description: exam.description,
-        total_score: exam.total_score,
-        code: exam.code || `EXAM-${Date.now().toString().slice(-6)}`,
-        // Đếm tổng số câu hỏi (bao gồm câu con trong group)
-        question_count: questions.reduce((acc, q) => acc + (q.type === 'group' ? (q.sub_questions?.length || 0) : 1), 0)
-      }
+        title: examData.title,
+        description: examData.description,
+        duration: examData.duration,
+        code: examData.code,
+        subject: examData.subject,
+        level: examData.level,
+        question_count: questions.length, // Tự động cập nhật số câu
+        status: initialExam?.status || 'active',
+        // Update ID if exists
+        ...(initialExam?.id ? { id: initialExam.id } : {})
+      };
 
-      // 2. Insert/Update Exam
-      if (isNew) {
-        const { data, error } = await supabase.from('exams').insert([examPayload]).select().single()
-        if (error) throw error
-        currentExamId = data.id
-      } else {
-        if (!currentExamId) throw new Error("Missing Exam ID for update");
-        const { error } = await supabase.from('exams').update(examPayload).eq('id', currentExamId)
-        if (error) throw error
-      }
+      const { data: savedExam, error: examError } = await supabase
+        .from('exams')
+        .upsert(examPayload as any)
+        .select()
+        .single();
 
-      // 3. Handle Questions (Strategy: Delete All -> Insert All)
-      if (!isNew && currentExamId) {
-        await supabase.from('exam_questions').delete().eq('exam_id', currentExamId)
-      }
+      if (examError) throw examError;
 
-      // Helper: Map Question object to DB Payload
-      const createQuestionPayload = (q: Question, examId: string, parentId: string | null, index: number) => ({
-        exam_id: examId,
-        parent_id: parentId,
+      const examId = savedExam.id;
+
+      // 2. Prepare Data for RPC Transaction
+      // Map UIQuestion -> format Jsonb mà RPC yêu cầu
+      const questionsPayload = questions.map((q, idx) => ({
         content: q.content,
-        type: q.type,
-        difficulty: q.difficulty || 'medium',
-        score: q.score || 0,
-        options: q.options || [],
+        options: q.options, // Gửi mảng string, RPC sẽ cast sang jsonb
         correct_answer: q.correct_answer,
-        explanation: q.explanation,
-        media_url: q.media_url,
-        order_index: index,
+        order_index: idx,
+        type: q.type || 'multiple_choice',
+        score: q.score || 1,
+        explanation: q.explanation || null
+      }));
+
+      // 3. Call RPC
+      const { error: rpcError } = await supabase.rpc('update_exam_questions', {
+        p_exam_id: examId,
+        p_questions: questionsPayload as any // Cast any vì Json type definition của TS hơi cứng nhắc
       });
 
-      // Loop & Insert
-      for (let i = 0; i < questions.length; i++) {
-        const q = questions[i];
-        
-        // A. Insert Parent
-        const parentPayload = createQuestionPayload(q, currentExamId!, null, i);
-        
-        const { data: parentData, error: pError } = await supabase
-          .from('exam_questions')
-          .insert(parentPayload)
-          .select()
-          .single();
-        
-        if (pError) throw pError;
+      if (rpcError) throw rpcError;
 
-        // B. Insert Children (if Group)
-        if (q.type === 'group' && q.sub_questions && q.sub_questions.length > 0) {
-          const childrenPayloads = q.sub_questions.map((sub, sIdx) => 
-            createQuestionPayload(sub, currentExamId!, parentData.id, sIdx)
-          );
-
-          const { error: cError } = await supabase.from('exam_questions').insert(childrenPayloads);
-          if (cError) throw cError;
-        }
-      }
-
-      toast.success(isNew ? 'Đã tạo đề thi thành công!' : 'Đã lưu thay đổi!')
-      router.push('/admin/exams')
-      router.refresh()
+      toast.success("Lưu đề thi thành công!");
+      router.push("/admin/exams");
+      router.refresh();
 
     } catch (error: any) {
-      console.error('Save failed:', error)
-      toast.error(`Lỗi hệ thống: ${error.message}`)
+      console.error(error);
+      toast.error("Lỗi: " + error.message);
     } finally {
-      setIsSaving(false)
+      setLoading(false);
     }
-  }
+  };
 
   return (
-    <div className="min-h-screen bg-slate-50 pb-20 font-sans text-slate-900">
-      {/* 1. HEADER */}
-      <div className="sticky top-0 z-30 bg-white/95 backdrop-blur-sm border-b border-slate-200 px-6 py-4 flex justify-between items-center shadow-sm">
-        <div className="flex flex-col">
-          <div className="flex items-center gap-2 text-xs text-slate-500 mb-1 font-medium">
-            <span className="cursor-pointer hover:text-sky-600 transition-colors" onClick={() => router.push('/admin/dashboard')}>Trang chủ</span>
-            <span className="text-slate-300">/</span>
-            <span className="cursor-pointer hover:text-sky-600 transition-colors" onClick={() => router.push('/admin/exams')}>Quản lý đề thi</span>
-            <span className="text-slate-300">/</span>
-            <span className="text-slate-900">{isNew ? 'Thêm mới' : 'Biên tập'}</span>
+    <div className="max-w-5xl mx-auto p-4 space-y-6">
+      {/* Exam Header Form */}
+      <div className="bg-white p-6 rounded shadow border space-y-4">
+        <h2 className="text-lg font-bold">Thông tin chung</h2>
+        <div className="grid grid-cols-2 gap-4">
+          <div>
+            <label className="block text-sm font-medium">Tên đề thi</label>
+            <input 
+              className="w-full border p-2 rounded" 
+              value={examData.title} onChange={(e) => setExamData({...examData, title: e.target.value})} 
+            />
           </div>
-          <h1 className="text-xl md:text-2xl font-bold text-slate-900 flex items-center gap-2">
-            {isNew ? 'Soạn Thảo Đề Thi Mới' : `Biên tập: ${exam.title}`}
-          </h1>
-        </div>
-
-        <div className="flex gap-3">
-          <Button variant="outline" className="hidden md:flex bg-white" onClick={() => setIsPreviewOpen(true)}>
-            <Eye className="w-4 h-4 mr-2" /> Xem trước
-          </Button>
-          <Button variant="ghost" onClick={() => router.back()} className="text-slate-500 hover:text-red-500 hover:bg-red-50">
-            Hủy bỏ
-          </Button>
-          <Button 
-            onClick={handleSaveExam} 
-            disabled={isSaving}
-            className="bg-sky-500 hover:bg-sky-600 text-white font-bold shadow-lg shadow-sky-500/20 min-w-[140px]"
-          >
-            {isSaving ? <Loader2 className="w-4 h-4 animate-spin mr-2" /> : <Save className="w-4 h-4 mr-2" />}
-            {isNew ? 'Lưu đề thi' : 'Lưu thay đổi'}
-          </Button>
-        </div>
-      </div>
-
-      {/* 2. BODY LAYOUT */}
-      <div className="max-w-[1600px] mx-auto p-6 grid grid-cols-1 xl:grid-cols-12 gap-6 md:gap-8">
-        {/* CỘT TRÁI (3/12): Thông tin chung */}
-        <div className="xl:col-span-3">
-          <ExamInfoSidebar 
-            exam={exam} 
-            setExam={setExam} 
-          />
-        </div>
-
-        {/* CỘT PHẢI (9/12): Danh sách câu hỏi */}
-        <div className="xl:col-span-9 space-y-6">
-          <StatsCards questions={questions} />
-          
-          <QuestionList 
-            questions={questions}
-            editingIndex={editingIndex}
-            setEditingIndex={setEditingIndex}
-            onSave={handleSaveQuestionUI}
-            onDelete={handleDeleteQuestionUI}
-          />
+          <div>
+            <label className="block text-sm font-medium">Mã đề (Code)</label>
+            <input 
+              className="w-full border p-2 rounded" 
+              value={examData.code} onChange={(e) => setExamData({...examData, code: e.target.value})} 
+            />
+          </div>
+          <div>
+            <label className="block text-sm font-medium">Thời gian (phút)</label>
+            <input 
+              type="number" className="w-full border p-2 rounded" 
+              value={examData.duration} onChange={(e) => setExamData({...examData, duration: Number(e.target.value)})} 
+            />
+          </div>
+          <div>
+            <label className="block text-sm font-medium">Trình độ</label>
+            <select 
+              className="w-full border p-2 rounded"
+              value={examData.level} onChange={(e) => setExamData({...examData, level: e.target.value})}
+            >
+              <option value="A1">A1</option>
+              <option value="A2">A2</option>
+              <option value="B1">B1</option>
+              <option value="B2">B2</option>
+            </select>
+          </div>
         </div>
       </div>
 
-      {/* 3. MODAL PREVIEW */}
-      <ExamPreviewModal
-        isOpen={isPreviewOpen}
-        onClose={() => setIsPreviewOpen(false)}
-        exam={exam}
-        questions={questions}
-      />
+      {/* Questions List */}
+      <div className="space-y-4">
+        <div className="flex justify-between items-center">
+          <h2 className="text-xl font-bold">Danh sách câu hỏi ({questions.length})</h2>
+          <button onClick={addQuestion} className="bg-green-600 text-white px-4 py-2 rounded shadow hover:bg-green-700">
+            + Thêm câu hỏi
+          </button>
+        </div>
+
+        {questions.map((q, index) => (
+          <div key={index} className="bg-white p-6 rounded shadow border relative">
+            <div className="absolute top-4 right-4 text-red-500 cursor-pointer" onClick={() => removeQuestion(index)}>
+              <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M3 6h18"/><path d="M19 6v14c0 1-1 2-2 2H7c-1 0-2-1-2-2V6"/><path d="M8 6V4c0-1 1-2 2-2h4c1 0 2 1 2 2v2"/></svg>
+            </div>
+            
+            <div className="mb-4">
+              <label className="font-bold text-gray-700">Câu {index + 1}: Nội dung</label>
+              <textarea 
+                className="w-full border p-2 rounded mt-1"
+                value={q.content}
+                onChange={(e) => updateQuestion(index, 'content', e.target.value)}
+              />
+            </div>
+
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+              {q.options.map((opt, oIdx) => (
+                <div key={oIdx} className="flex items-center gap-2">
+                  <input 
+                    type="radio"
+                    name={`correct-${index}`}
+                    checked={q.correct_answer === opt}
+                    onChange={() => updateQuestion(index, 'correct_answer', opt)}
+                    className="w-4 h-4 text-blue-600"
+                  />
+                  <input 
+                    className={`flex-1 border p-2 rounded ${q.correct_answer === opt ? 'border-blue-500 bg-blue-50' : ''}`}
+                    value={opt}
+                    onChange={(e) => updateOption(index, oIdx, e.target.value)}
+                    placeholder={`Đáp án ${oIdx + 1}`}
+                  />
+                </div>
+              ))}
+            </div>
+            
+            <div className="mt-4 p-2 bg-gray-50 text-sm text-gray-600 rounded">
+              Giải thích (Optional):
+              <input 
+                className="w-full bg-transparent border-b outline-none ml-2"
+                value={q.explanation || ""}
+                onChange={(e) => updateQuestion(index, 'explanation', e.target.value)}
+                placeholder="Nhập giải thích đáp án..."
+              />
+            </div>
+          </div>
+        ))}
+      </div>
+
+      <div className="fixed bottom-0 left-0 w-full bg-white border-t p-4 z-10 flex justify-end gap-4 shadow-lg">
+         <span className="self-center font-bold text-gray-600">Tổng: {questions.length} câu | {examData.duration} phút</span>
+         <button 
+          onClick={handleSave}
+          disabled={loading}
+          className="bg-blue-600 text-white px-8 py-3 rounded font-bold hover:bg-blue-700 disabled:opacity-50"
+        >
+          {loading ? "ĐANG LƯU..." : "LƯU ĐỀ THI"}
+        </button>
+      </div>
+      {/* Spacer để tránh button che content cuối */}
+      <div className="h-24"></div>
     </div>
-  )
+  );
 }

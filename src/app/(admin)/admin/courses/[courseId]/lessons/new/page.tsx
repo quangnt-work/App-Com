@@ -2,9 +2,9 @@
 import LessonEditor from '@/components/admin/lessons/LessonEditor';
 
 interface PageProps {
-  params: {
+  params: Promise<{
     courseId: string;
-  };
+  }>;
 }
 
 export default async function CreateLessonPage({ params }: PageProps) {

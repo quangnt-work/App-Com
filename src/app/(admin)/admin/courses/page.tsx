@@ -3,31 +3,9 @@ import { Plus, Inbox } from 'lucide-react';
 import Link from 'next/link';
 import CourseListClient from './CourseListClient';
 import { createClient } from '@/lib/supabase/server';
-import { Course, CourseStatus, CourseLevel } from '@/types/course';
+import { CourseWithRelations } from '@/types';
 
 // 1. Định nghĩa kiểu dữ liệu thô trả về từ Supabase (để không dùng any)
-interface SupabaseCourseResponse {
-  id: string;
-  title: string;
-  description: string | null;
-  thumbnail: string | null;
-  category: string | null;
-  level: string | null;
-  duration: string | null;
-  status: string | null;
-  rating: number | null;
-  created_at: string;
-  instructor_id: string | null;
-  // Quan hệ profiles (One-to-One hoặc Many-to-One) -> Trả về Object hoặc null
-  profiles: {
-    full_name: string | null;
-    avatar_url: string | null;
-  } | null;
-  // Quan hệ lessons (One-to-Many) -> Trả về mảng Object
-  lessons: {
-    count: number;
-  }[];
-}
 
 export default async function CoursesPage() {
   const supabase = await createClient();
@@ -36,11 +14,12 @@ export default async function CoursesPage() {
   const { data: rawData, error } = await supabase
     .from('courses')
     .select(`
-      id, title, description, thumbnail, category, level, duration, status, rating, created_at, instructor_id,
+      *,
       profiles:instructor_id(full_name, avatar_url),
       lessons:lessons(count)
     `)
-    .order('created_at', { ascending: false });
+    .order('created_at', { ascending: false })
+    .returns<CourseWithRelations[]>();
 
   if (error) {
     console.error("Error fetching courses:", error);
@@ -48,10 +27,8 @@ export default async function CoursesPage() {
   }
 
   // 3. Ép kiểu an toàn từ Supabase Response sang Type Raw đã định nghĩa
-  const coursesData = rawData as unknown as SupabaseCourseResponse[];
-
   // 4. Map sang Interface Course chuẩn của ứng dụng
-  const formattedCourses: Course[] = coursesData.map((item) => ({
+  const formattedCourses = (rawData || []).map((item) => ({
     id: item.id,
     title: item.title,
     description: item.description || '',
@@ -67,6 +44,7 @@ export default async function CoursesPage() {
     lessons_count: item.lessons?.[0]?.count || 0,
     students_count: 0, // Tạm thời hardcode
     instructor_name: item.profiles?.full_name || 'Admin',
+    instructor: item.profiles?.full_name || 'Unknown',
     instructor_avatar: item.profiles?.avatar_url || null,
     instructor_id: item.instructor_id || undefined
   }));

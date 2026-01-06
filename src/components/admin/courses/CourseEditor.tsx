@@ -1,190 +1,171 @@
-// src/components/admin/courses/CourseEditor.tsx
-'use client'
+"use client";
 
-import React, { useState, useEffect } from 'react'
-import { useRouter } from 'next/navigation'
-import { Button } from '@/components/ui/button'
-import { toast } from 'sonner'
-import { Save, ChevronLeft, Loader2, PlusCircle, LayoutTemplate } from 'lucide-react'
-import { createClient } from '@/lib/supabase/client'
-
-// Imports Component con
-import GeneralInfo from '@/components/admin/lessons/GeneralInfo'
-import LessonContent from '@/components/admin/lessons/LessonContent'
-import AudioSection from '@/components/admin/lessons/AudioSection'
-import QuizSection, { Question } from '@/components/admin/lessons/QuizSection'
+import { useState } from "react";
+import { useRouter } from "next/navigation";
+import { createClient } from "@/lib/supabase/client"; 
+import { toast } from "sonner";
+import { DbCourse, DbLesson } from "@/types"; // Import type chuẩn
 
 interface CourseEditorProps {
-  initialData?: any;
-  isNew?: boolean;
+  initialCourse?: DbCourse | null;
+  initialLesson?: DbLesson | null;
 }
 
-export default function CourseEditor({ initialData, isNew = false }: CourseEditorProps) {
-  const router = useRouter()
-  const supabase = createClient()
-  const [isSaving, setIsSaving] = useState(false)
+export default function CourseEditor({ initialCourse, initialLesson }: CourseEditorProps) {
+  const router = useRouter();
+  const supabase = createClient();
+  const [loading, setLoading] = useState(false);
 
-  // --- STATE ---
-  const [title, setTitle] = useState(initialData?.title || '')
-  const [description, setDescription] = useState(initialData?.description || '')
-  
-  const [lessonId, setLessonId] = useState<string | null>(null)
-  const [contentType, setContentType] = useState<'upload' | 'editor'>('upload')
-  const [contentHtml, setContentHtml] = useState('')
-  const [fileUrl, setFileUrl] = useState<string | null>(null)
-  const [audioUrl, setAudioUrl] = useState<string | null>(null)
-  const [questions, setQuestions] = useState<Question[]>([])
+  // State quản lý form
+  const [formData, setFormData] = useState({
+    // Course Fields
+    title: initialCourse?.title || "",
+    description: initialCourse?.description || "",
+    category: initialCourse?.category || "TIENG_ANH",
+    thumbnail: initialCourse?.thumbnail || "", // Mapping đúng cột 'thumbnail' trong DB
+    
+    // Lesson Fields (Logic 1-1)
+    videoUrl: initialLesson?.video_url || "",
+    content: initialLesson?.content || "",
+  });
 
-  // --- LOAD DATA ---
-  useEffect(() => {
-    if (isNew || !initialData?.id) return;
-
-    const fetchLesson = async () => {
-      const { data: lessons } = await supabase
-        .from('lessons')
-        .select('*')
-        .eq('course_id', initialData.id)
-        .limit(1)
-
-      if (lessons && lessons.length > 0) {
-        const l = lessons[0]
-        setLessonId(l.id)
-        setQuestions(l.questions || [])
-        setAudioUrl(l.audio_url || null)
-
-        if (l.content && l.content.startsWith('http')) {
-            setContentType('upload')
-            setFileUrl(l.content)
-        } else {
-            setContentType('editor')
-            setContentHtml(l.content || '')
-        }
-      }
-    }
-    fetchLesson()
-  }, [initialData, isNew])
-
-  // --- SAVE FUNCTION ---
   const handleSave = async () => {
-    if (!title.trim()) {
-      toast.error('Vui lòng nhập tên khóa học');
-      return;
-    }
+    if (!formData.title) return toast.error("Vui lòng nhập tên khóa học");
 
-    setIsSaving(true)
     try {
-      let currentCourseId = initialData?.id;
+      setLoading(true);
+      
+      // 1. Prepare Course Data (Type Safe Insert/Update)
+      const courseData = {
+        title: formData.title,
+        description: formData.description,
+        category: formData.category,
+        thumbnail: formData.thumbnail,
+        // Nếu edit thì giữ ID, nếu tạo mới thì để undefined (DB tự sinh)
+        ...(initialCourse?.id ? { id: initialCourse.id, updated_at: new Date().toISOString() } : {}), 
+      };
 
-      // 1. Course Table
-      if (isNew) {
-        const { data: newCourse, error } = await supabase
-          .from('courses')
-          .insert([{ title, description }])
-          .select().single()
-        if (error) throw error;
-        currentCourseId = newCourse.id;
-      } else {
-        const { error } = await supabase
-          .from('courses')
-          .update({ title, description })
-          .eq('id', currentCourseId)
-        if (error) throw error;
-      }
+      // Upsert Course
+      const { data: savedCourse, error: courseError } = await supabase
+        .from('courses')
+        .upsert(courseData as any) // Cast any tạm để bypass strict check của upsert id optional
+        .select()
+        .single();
 
-      // 2. Lesson Table
-      const finalContent = contentType === 'upload' ? fileUrl : contentHtml;
-      const lessonPayload = {
-        course_id: currentCourseId,
-        title: title,
-        description: description,
-        content: finalContent,
-        audio_url: audioUrl,
-        questions: questions
-      }
+      if (courseError) throw courseError;
+      
+      const courseId = savedCourse.id;
 
-      if (lessonId && !isNew) {
-        await supabase.from('lessons').update(lessonPayload).eq('id', lessonId)
-      } else {
-        await supabase.from('lessons').insert([lessonPayload])
-      }
+      // 2. Prepare Lesson Data
+      // Logic: Tìm lesson theo course_id. 
+      const lessonData = {
+        course_id: courseId,
+        title: formData.title, // Tên bài học giống tên khóa học
+        video_url: formData.videoUrl,
+        content: formData.content,
+        // Nếu đã có lesson cũ thì dùng ID cũ để update, nếu không thì tạo mới
+        ...(initialLesson?.id ? { id: initialLesson.id } : {})
+      };
 
-      toast.success(isNew ? 'Đã tạo mới thành công!' : 'Đã lưu thay đổi!')
-      router.push('/admin/courses')
-      router.refresh()
+      // Upsert Lesson (Yêu cầu DB: unique constraint on course_id hoặc dùng ID)
+      const { error: lessonError } = await supabase
+        .from('lessons')
+        .upsert(lessonData as any)
+        .select();
+
+      if (lessonError) throw lessonError;
+
+      toast.success("Lưu thành công!");
+      router.push("/admin/courses");
+      router.refresh();
 
     } catch (error: any) {
-      console.error(error)
-      toast.error(`Lỗi: ${error.message}`)
+      console.error(error);
+      toast.error("Lỗi: " + error.message);
     } finally {
-      setIsSaving(false)
+      setLoading(false);
     }
-  }
+  };
 
   return (
-    // THAY ĐỔI 1: Xóa max-w-5xl, dùng w-full và min-h-screen
-    <div className="w-full min-h-screen bg-slate-50 flex flex-col font-sans text-slate-900">
-      
-      {/* HEADER: Full Width & Sticky */}
-      <div className="sticky top-0 z-50 bg-white border-b border-slate-200 shadow-sm px-6 py-3">
-        <div className="flex justify-between items-center w-full">
-          <div className="flex items-center gap-4">
-             <Button variant="ghost" size="icon" onClick={() => router.back()} className="text-slate-500 hover:text-sky-600">
-                <ChevronLeft className="w-6 h-6" />
-             </Button>
-             <div>
-                <h1 className="text-lg font-bold text-slate-800 flex items-center gap-2">
-                   {isNew ? 'Thêm khóa học mới' : 'Biên tập nội dung'}
-                </h1>
-                <p className="text-xs text-slate-500">
-                   {isNew ? 'Bản nháp chưa lưu' : `Đang chỉnh sửa: ${title}`}
-                </p>
-             </div>
+    <div className="space-y-6 max-w-4xl mx-auto p-6 bg-white rounded-lg shadow-sm border">
+      {/* Header */}
+      <h2 className="text-xl font-bold border-b pb-2">
+        {initialCourse ? "Chỉnh sửa khóa học" : "Tạo khóa học mới"}
+      </h2>
+
+      {/* Form Fields */}
+      <div className="grid gap-4">
+        <div>
+          <label className="block text-sm font-medium mb-1">Tên khóa học</label>
+          <input 
+            className="w-full border p-2 rounded focus:ring-2 focus:ring-blue-500 outline-none"
+            value={formData.title}
+            onChange={(e) => setFormData({...formData, title: e.target.value})}
+          />
+        </div>
+
+        <div>
+          <label className="block text-sm font-medium mb-1">Mô tả</label>
+          <textarea 
+            rows={3}
+            className="w-full border p-2 rounded focus:ring-2 focus:ring-blue-500 outline-none"
+            value={formData.description}
+            onChange={(e) => setFormData({...formData, description: e.target.value})}
+          />
+        </div>
+
+        <div>
+           <label className="block text-sm font-medium mb-1">Link Thumbnail</label>
+           <input 
+            className="w-full border p-2 rounded"
+            value={formData.thumbnail}
+            onChange={(e) => setFormData({...formData, thumbnail: e.target.value})}
+            placeholder="https://..."
+          />
+        </div>
+
+        {/* Lesson Section */}
+        <div className="pt-4 border-t mt-4 bg-gray-50 p-4 rounded">
+          <h3 className="text-md font-bold mb-3 text-blue-700">Nội dung bài giảng (Video/Content)</h3>
+          
+          <div className="mb-4">
+            <label className="block text-sm font-medium mb-1">Video URL (Youtube/Drive)</label>
+            <input 
+              className="w-full border p-2 rounded"
+              value={formData.videoUrl}
+              onChange={(e) => setFormData({...formData, videoUrl: e.target.value})}
+              placeholder="https://youtube.com/..."
+            />
           </div>
 
-          <div className="flex gap-3">
-             <Button variant="outline" className="hidden sm:flex">Xem trước</Button>
-             <Button disabled={isSaving} onClick={handleSave} className="bg-sky-600 hover:bg-sky-700 text-white font-bold shadow-md shadow-sky-600/20">
-               {isSaving ? <Loader2 className="w-4 h-4 animate-spin" /> : <Save className="w-4 h-4 mr-2" />}
-               {isNew ? 'Lưu bài mới' : 'Lưu thay đổi'}
-             </Button>
+          <div>
+            <label className="block text-sm font-medium mb-1">Nội dung chi tiết (HTML/Text)</label>
+            <textarea 
+              rows={6}
+              className="w-full border p-2 rounded"
+              value={formData.content}
+              onChange={(e) => setFormData({...formData, content: e.target.value})}
+            />
           </div>
         </div>
       </div>
 
-      {/* BODY: Layout Grid 2 Cột */}
-      <div className="flex-1 p-6">
-        <div className="grid grid-cols-1 xl:grid-cols-12 gap-8 h-full">
-          
-          {/* CỘT TRÁI (MAIN): Nội dung bài học (Chiếm 8 phần trên màn lớn) */}
-          <div className="xl:col-span-8 space-y-6">
-             <div className="bg-white p-1 rounded-xl border border-slate-200 shadow-sm">
-                <LessonContent 
-                    contentType={contentType} setContentType={setContentType}
-                    contentHtml={contentHtml} setContentHtml={setContentHtml}
-                    fileUrl={fileUrl} setFileUrl={setFileUrl}
-                />
-             </div>
-          </div>
-
-          {/* CỘT PHẢI (SIDEBAR): Thông tin & Cấu hình (Chiếm 4 phần) */}
-          <div className="xl:col-span-4 space-y-6">
-             {/* Sticky Wrapper: Giúp cột phải trượt theo khi cuộn content dài */}
-             <div className="sticky top-24 space-y-6">
-                
-                <GeneralInfo 
-                    title={title} setTitle={setTitle} 
-                    description={description} setDescription={setDescription} 
-                />
-
-                <AudioSection audioUrl={audioUrl} setAudioUrl={setAudioUrl} />
-
-                <QuizSection questions={questions} setQuestions={setQuestions} />
-
-             </div>
-          </div>
-
-        </div>
+      <div className="flex justify-end gap-3 pt-4">
+        <button 
+          onClick={() => router.back()}
+          className="px-4 py-2 text-gray-600 hover:bg-gray-100 rounded"
+        >
+          Hủy
+        </button>
+        <button 
+          onClick={handleSave}
+          disabled={loading}
+          className="px-6 py-2 bg-blue-600 text-white rounded hover:bg-blue-700 disabled:opacity-50 font-medium"
+        >
+          {loading ? "Đang lưu..." : "Lưu tất cả"}
+        </button>
       </div>
     </div>
-  )
+  );
 }

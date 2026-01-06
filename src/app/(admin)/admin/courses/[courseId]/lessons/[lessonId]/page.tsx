@@ -3,14 +3,15 @@ import LessonEditor from '@/components/admin/lessons/LessonEditor'; // Import t�
 import { redirect } from 'next/navigation';
 
 interface PageProps {
-  params: {
+  params: Promise<{
     courseId: string;
     lessonId: string;
-  };
+  }>;
 }
 
 export default async function LessonPage({ params }: PageProps) {
-  const isNew = params.lessonId === 'new';
+  const resolvedParams = await params;
+  const isNew = resolvedParams.lessonId === 'new';
   let initialData = null;
 
   if (!isNew) {
@@ -18,12 +19,12 @@ export default async function LessonPage({ params }: PageProps) {
     const { data, error } = await supabase
       .from('lessons')
       .select('*')
-      .eq('id', params.lessonId)
+      .eq('id', resolvedParams.lessonId)
       .single();
 
     if (error || !data) {
        // redirect về danh sách nếu lỗi
-       return redirect(`/admin/courses/${params.courseId}`);
+       return redirect(`/admin/courses/${resolvedParams.courseId}`);
     }
     initialData = data;
   }
@@ -31,7 +32,7 @@ export default async function LessonPage({ params }: PageProps) {
   return (
     <div className="min-h-screen bg-slate-50 pb-20">
       <LessonEditor
-        courseId={params.courseId}
+        courseId={resolvedParams.courseId}
         initialData={initialData}
         isNew={isNew}
       />

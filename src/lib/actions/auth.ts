@@ -33,7 +33,7 @@ export async function signup(data: SignupData){
   const { fullName, username, password } = data
   
   // Tạo email giả định
-  const fakeEmail = `${username}@student.local`
+  const fakeEmail = `${username}@test.qa`
 
   const { error } = await supabase.auth.signUp({
     email: fakeEmail,

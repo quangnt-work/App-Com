@@ -85,11 +85,15 @@
 import { getCourses } from "@/actions/course-actions";
 import CourseTable from "@/components/admin/courses/CourseTable";
 
-export default async function CoursesPage({
-  searchParams,
-}: {
-  searchParams: { page?: string; query?: string };
+type SearchParams = Promise<{
+  page?: string;
+  query?: string;
+}>;
+
+export default async function CoursesPage(props: {
+  searchParams: SearchParams 
 }) {
+  const searchParams = await props.searchParams;
   const page = Number(searchParams.page) || 1;
   const pageSize = 10;
   

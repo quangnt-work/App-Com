@@ -16,7 +16,6 @@ export interface Lesson {
   file_size: number | null;
 
   // Quản lý
-  price: number;
   instructor_id: string | null;
   category: string;
   tags: string[] | null;
@@ -36,7 +35,8 @@ export interface LessonInput {
   type: LessonType;
   content?: string;
   file_url?: string;
-  price: number;
+  file_mime_type?: string;
+  file_size?: number;
   category: string;
   status: boolean; // Mapper từ UI (switch) sang DB ('published'/'draft')
 }

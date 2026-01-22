@@ -11,7 +11,7 @@ async function getDashboardStats() {
   // Sử dụng Promise.all để chạy các query song song -> Tăng tốc độ
   const [
     { count: studentCount },
-    { count: courseCount },
+    { count: lessonCount },
     { count: docCount },
     { count: examCount },
     { count: practiceCount },
@@ -21,7 +21,7 @@ async function getDashboardStats() {
     supabase.from('profiles').select('*', { count: 'exact', head: true }).eq('role', 'student'),
     
     // 2. Đếm Khóa học
-    supabase.from('courses').select('*', { count: 'exact', head: true }),
+    supabase.from('lessons').select('*', { count: 'exact', head: true }),
     
     // 3. Đếm Tài liệu
     supabase.from('documents').select('*', { count: 'exact', head: true }),
@@ -43,7 +43,7 @@ async function getDashboardStats() {
   return {
     stats: {
       totalStudents: studentCount || 0,
-      totalCourses: courseCount || 0,
+      totalLessons: lessonCount || 0,
       totalResources: (docCount || 0) + (examCount || 0),
       totalPractice: practiceCount || 0,
     },

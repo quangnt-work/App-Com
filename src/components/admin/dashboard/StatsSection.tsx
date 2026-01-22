@@ -4,7 +4,7 @@ import { Users, BookOpen, FileText, Activity, type LucideIcon } from 'lucide-rea
 
 interface DashboardStats {
   totalStudents: number;
-  totalCourses: number;
+  totalLessons: number;
   totalResources: number;
   totalPractice: number;
 }
@@ -32,13 +32,13 @@ export function StatsSection({ stats }: { stats: DashboardStats }) {
       href: '/admin/users' // 3. ĐIỀU HƯỚNG TỚI TRANG USER VỪA TẠO
     },
     { 
-      label: 'Tổng khóa học', 
-      val: stats.totalCourses.toString(), 
+      label: 'Tổng bài học', 
+      val: stats.totalLessons.toString(), 
       sub: 'Khóa học public', 
       color: 'text-blue-500', 
       icon: BookOpen, 
       bg: 'bg-blue-50',
-      href: '/admin/courses' // (Placeholder)
+      href: '/admin/lessons' // (Placeholder)
     },
     { 
       label: 'Kho tài nguyên', 

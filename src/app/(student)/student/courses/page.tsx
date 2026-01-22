@@ -3,21 +3,21 @@ import { CourseHero } from '@/components/student/courses/CourseHero'
 import { CourseSection } from '@/components/student/courses/CourseSection'
 import { Button } from '@/components/ui/button'
 import { Inbox } from 'lucide-react'
-import { getCourses } from '@/actions/course-actions'
+import { getLessons } from '@/actions/lesson-actions'
 
-export default async function CoursesPage() {
+export default async function LessonsPage() {
   // 1. Fetch dữ liệu thật
-  const allCourses = await getCourses();
+  const alllessons = await getLessons();
 
   // 2. Phân loại khóa học (Filtering in Memory)
   // Lưu ý: Nếu dữ liệu lớn, nên filter từ câu query Supabase. Với demo nhỏ thì filter JS ok.
-  const englishCourses = allCourses.filter(c => c.category === 'TIẾNG ANH')
-  const russianCourses = allCourses.filter(c => c.category === 'TIẾNG NGA')
-  const itCourses = allCourses.filter(c => c.category === 'CNTT')
-  const otherCourses = allCourses.filter(c => c.category === 'KHÁC')
+  const englishLessons = alllessons.filter(c => c.category === 'TIẾNG ANH')
+  const russianLessons = alllessons.filter(c => c.category === 'TIẾNG NGA')
+  const itLessons = alllessons.filter(c => c.category === 'CNTT')
+  const otherLessons = alllessons.filter(c => c.category === 'KHÁC')
 
   // 3. Kiểm tra Empty State (Nếu cả DB trống trơn)
-  const isEmpty = allCourses.length === 0;
+  const isEmpty = alllessons.length === 0;
 
   return (
     <div className="min-h-screen bg-white pb-20">
@@ -43,25 +43,25 @@ export default async function CoursesPage() {
       <CourseSection 
         title="Khóa tiếng Anh" 
         icon="english"
-        courses={englishCourses} 
+        courses={englishLessons} 
       />
 
       <CourseSection 
         title="Khóa tiếng Nga" 
         icon="russian"
-        courses={russianCourses} 
+        courses={russianLessons} 
       />
 
        <CourseSection 
         title="Công nghệ thông tin" 
         icon="it"
-        courses={itCourses} 
+        courses={itLessons} 
       />
 
       <CourseSection 
         title="Khóa học khác" 
         icon="other"
-        courses={otherCourses} 
+        courses={otherLessons} 
       />
 
       {/* Chỉ hiện nút Xem thêm nếu có ít nhất 1 khóa học */}

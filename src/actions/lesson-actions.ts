@@ -1,7 +1,7 @@
 'use server'
 
 import { createClient } from "@/lib/supabase/server";
-import { LessonInput } from "@/types/lesson-new";
+import { LessonInput } from "@/types/lesson";
 import { revalidatePath } from "next/cache";
 
 // Lấy danh sách bài giảng (có phân trang & lọc)
@@ -43,7 +43,6 @@ export async function upsertLesson(data: LessonInput) {
     type: data.type,
     content: data.type === 'text' ? data.content : null,
     file_url: data.type !== 'text' ? data.file_url : null,
-    price: data.price,
     category: data.category,
     status: data.status ? 'published' : 'draft', // Convert boolean sang text
     updated_at: new Date().toISOString(),

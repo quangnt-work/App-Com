@@ -11,7 +11,7 @@ import { toast } from 'sonner';
 
 import { useCourseFilter } from '@/hooks/useCourseFilter';
 import { CourseFilters } from '../../../../components/admin/courses/CourseFilters';
-import { CourseTable } from '../../../../components/admin/courses/CourseTable';
+import { CourseTable } from '@/components/admin/courses/CourseTable';
 import { deleteCourse } from './actions'; // Giả sử bạn có server action này
 import type { Course } from '@/types/course';
 

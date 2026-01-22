@@ -61,7 +61,7 @@ export default function DocumentsManagementPage() {
         .select(`
           *,
           profiles:uploaded_by(full_name),
-          courses:course_id(title)
+          courses:lesson_id(title)
         `)
         .order('created_at', { ascending: false })
         .returns<DocumentWithRelations[]>();

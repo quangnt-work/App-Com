@@ -1,4 +1,4 @@
-// src/components/admin/courses/CourseTable.tsx
+// src/components/admin/lessons/LessonTable.tsx
 "use client";
 
 import { useRouter, useSearchParams } from "next/navigation";
@@ -15,19 +15,19 @@ import {
 import { Badge } from "@/components/ui/badge";
 import { Edit, Trash2, ChevronLeft, ChevronRight } from "lucide-react"; // Icons
 
-interface CourseTableProps {
-  data: any[]; // Nên define Type Course đầy đủ thay vì any
+interface LessonTableProps {
+  data: any[]; // Nên define Type Lesson đầy đủ thay vì any
   totalCount: number;
   currentPage: number;
   pageSize: number;
 }
 
-export default function CourseTable({
+export default function LessonTable({
   data,
   totalCount,
   currentPage,
   pageSize,
-}: CourseTableProps) {
+}: LessonTableProps) {
   const router = useRouter();
   const searchParams = useSearchParams();
 
@@ -44,7 +44,7 @@ export default function CourseTable({
   };
 
   const handleEdit = (id: string) => {
-    router.push(`/admin/courses/${id}`);
+    router.push(`/admin/lessons/${id}`);
   };
 
   return (
@@ -54,7 +54,7 @@ export default function CourseTable({
         <Table>
           <TableHeader>
             <TableRow>
-              <TableHead>Tên khóa học</TableHead>
+              <TableHead>Tên bài học</TableHead>
               <TableHead>Danh mục</TableHead>
               <TableHead>Giá</TableHead>
               <TableHead>Trạng thái</TableHead>
@@ -65,27 +65,27 @@ export default function CourseTable({
             {data.length === 0 ? (
               <TableRow>
                 <TableCell colSpan={5} className="h-24 text-center">
-                  Không tìm thấy khóa học nào.
+                  Không tìm thấy bài học nào.
                 </TableCell>
               </TableRow>
             ) : (
-              data.map((course) => (
-                <TableRow key={course.id}>
-                  <TableCell className="font-medium">{course.title}</TableCell>
+              data.map((lesson) => (
+                <TableRow key={lesson.id}>
+                  <TableCell className="font-medium">{lesson.title}</TableCell>
                   <TableCell>
-                    <Badge variant="outline">{course.category}</Badge>
+                    <Badge variant="outline">{lesson.category}</Badge>
                   </TableCell>
-                  <TableCell>{formatCurrency(course.price)}</TableCell>
+                  <TableCell>{formatCurrency(lesson.price)}</TableCell>
                   <TableCell>
-                    <Badge variant={course.is_published ? "default" : "secondary"}>
-                      {course.is_published ? "Công khai" : "Nháp"}
+                    <Badge variant={lesson.is_published ? "default" : "secondary"}>
+                      {lesson.is_published ? "Công khai" : "Nháp"}
                     </Badge>
                   </TableCell>
                   <TableCell className="text-right">
                     <Button
                       variant="ghost"
                       size="icon"
-                      onClick={() => handleEdit(course.id)}
+                      onClick={() => handleEdit(lesson.id)}
                     >
                       <Edit className="h-4 w-4" />
                     </Button>
@@ -103,7 +103,7 @@ export default function CourseTable({
         <div className="text-sm text-muted-foreground">
           Hiển thị <strong>{(currentPage - 1) * pageSize + 1}</strong> đến{" "}
           <strong>{Math.min(currentPage * pageSize, totalCount)}</strong> trong tổng số{" "}
-          <strong>{totalCount}</strong> khóa học
+          <strong>{totalCount}</strong> bài học
         </div>
         
         <div className="flex items-center space-x-2">

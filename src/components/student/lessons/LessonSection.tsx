@@ -1,17 +1,17 @@
 import Link from 'next/link'
-import { CourseCard } from './CourseCard'
-import { type Course } from '@/types/course'
+import { LessonCard } from './LessonCard'
+import { type Lesson } from '@/types/lesson'
 import { Globe, Book, Monitor, Layout } from 'lucide-react'
 
-interface CourseSectionProps {
+interface LessonSectionProps {
   title: string;
   icon?: 'english' | 'russian' | 'it' | 'other';
-  courses: Course[];
+  lessons: Lesson[];
 }
 
-export function CourseSection({ title, icon, courses }: CourseSectionProps) {
+export function LessonSection({ title, icon, lessons }: LessonSectionProps) {
   // === LOGIC QUAN TRỌNG: Nếu không có bài nào -> Không hiển thị gì ===
-  if (!courses || courses.length === 0) {
+  if (!lessons || lessons.length === 0) {
     return null; 
   }
 
@@ -31,8 +31,8 @@ export function CourseSection({ title, icon, courses }: CourseSectionProps) {
       </div>
 
       <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
-        {courses.map((course) => (
-          <CourseCard key={course.id} course={course} />
+        {lessons.map((lesson) => (
+          <LessonCard key={lesson.id} lesson={lesson} />
         ))}
       </div>
     </section>

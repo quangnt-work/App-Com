@@ -39,7 +39,7 @@ export function UserInfoCard({ fullName, username, userId, joinDate }: UserInfoC
         <div className="grid grid-cols-2 w-full gap-4 text-center border-t border-slate-100 pt-6">
           <div>
             <div className="font-bold text-2xl text-slate-900">12</div>
-            <div className="text-xs text-slate-500 uppercase tracking-wider">Khóa học</div>
+            <div className="text-xs text-slate-500 uppercase tracking-wider">Bài học</div>
           </div>
           <div>
             <div className="font-bold text-2xl text-slate-900">45h</div>
@@ -56,7 +56,7 @@ export function UserInfoCard({ fullName, username, userId, joinDate }: UserInfoC
         <nav className="flex flex-col">
           <SidebarLink icon={LayoutDashboard} label="Hồ sơ học tập" active />
           <SidebarLink icon={BookOpen} label="Tổng quan" />
-          <SidebarLink icon={FileText} label="Khóa học của tôi" />
+          <SidebarLink icon={FileText} label="Bài học của tôi" />
           <SidebarLink icon={Calendar} label="Lịch thi" />
         </nav>
       </Card>

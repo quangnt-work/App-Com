@@ -13,7 +13,7 @@ export default function AuthLayout({ children }: { children: React.ReactNode }) 
           </div>
           <h2 className="text-4xl font-bold leading-tight">Học mọi lúc, mọi nơi</h2>
           <p className="text-slate-300 text-lg">
-            Tham gia cộng đồng học tập trực tuyến lớn nhất với hàng ngàn khóa học chất lượng cao.
+            Tham gia cộng đồng học tập trực tuyến lớn nhất với hàng ngàn bài học chất lượng cao.
           </p>
           {/* Testimonial avatars */}
           <div className="flex items-center gap-4 pt-4">

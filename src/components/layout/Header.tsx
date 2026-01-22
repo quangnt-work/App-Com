@@ -9,14 +9,14 @@ import Image from 'next/image'
 const ADMIN_LINKS = [
   { label: 'Tổng quan', href: '/admin/dashboard' },
   { label: 'Học viên', href: '/admin/users' },
-  { label: 'Khóa học', href: '/admin/courses' },
+  { label: 'Bài học', href: '/admin/lessons' },
   { label: 'Luyện tập', href: '/admin/practice' },
   { label: 'Kiểm tra', href: '/admin/exams' },
   { label: 'Tài liệu', href: '/admin/documents' },
 ]
 
 const STUDENT_LINKS = [
-  { label: 'Khóa học', href: '/student/courses' }, // Trang danh sách khóa học
+  { label: 'Bài học', href: '/student/lessons' }, // Trang danh sách bài học
   { label: 'Luyện tập', href: '/student/practice' },
   { label: 'Kiểm tra', href: '/student/exams' },
   { label: 'Tài liệu', href: '/student/documents' },
@@ -50,7 +50,7 @@ export async function Header() {
   // Logic xác định Logo sẽ dẫn về đâu
   const logoHref = role === 'admin' 
     ? '/admin/dashboard' 
-    : (role === 'student' ? '/student/courses' : '/')
+    : (role === 'student' ? '/student/lessons' : '/')
 
   return (
     <header className="sticky top-0 z-50 w-full border-b bg-white/95 backdrop-blur supports-[backdrop-filter]:bg-white/60">
@@ -91,7 +91,7 @@ export async function Header() {
            <div className="hidden lg:flex relative">
              <input 
                 type="text" 
-                placeholder="Tìm kiếm khóa học..." 
+                placeholder="Tìm kiếm bài học..." 
                 className="pl-10 pr-4 py-2 rounded-full bg-slate-100 text-sm focus:outline-none focus:ring-2 focus:ring-sky-500 w-64 transition-all" 
              />
              <svg xmlns="http://www.w3.org/2000/svg" className="h-5 w-5 absolute left-3 top-1/2 -translate-y-1/2 text-slate-400" fill="none" viewBox="0 0 24 24" stroke="currentColor">

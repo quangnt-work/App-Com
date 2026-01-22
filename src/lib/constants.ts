@@ -20,8 +20,8 @@ export const APP_CONFIG = {
   },
   STORAGE: {
     BUCKETS: {
-      COURSE_MATERIALS: 'course-materials',
-      COURSE_ASSETS: 'course-assets',
+      COURSE_MATERIALS: 'lesson-materials',
+      COURSE_ASSETS: 'lesson-assets',
       LESSON_IMAGES: 'lesson-images',
     }
   },

@@ -8,10 +8,6 @@ export type Enums<T extends keyof Database["public"]["Enums"]> =
   Database["public"]["Enums"][T];
 
 // Định nghĩa Business Types
-export type Course = Tables<"courses"> & {
-  lessons_count?: number; // Trường ảo khi join
-};
-
 export type Lesson = Tables<"lessons">;
 export type Exam = Tables<"exams">;
 export type Question = Tables<"exam_questions">;

@@ -50,7 +50,7 @@ export function SettingsSection({ email, fullName }: { email: string, fullName: 
               <input type="checkbox" id="email-notif" className="mt-1 h-4 w-4 text-sky-500 rounded border-slate-300 focus:ring-sky-500" defaultChecked />
               <label htmlFor="email-notif">
                 <p className="text-sm font-bold text-slate-900">Thông báo qua Email</p>
-                <p className="text-xs text-slate-500">Nhận cập nhật về khóa học và bài kiểm tra</p>
+                <p className="text-xs text-slate-500">Nhận cập nhật về bài học và bài kiểm tra</p>
               </label>
             </div>
           </div>

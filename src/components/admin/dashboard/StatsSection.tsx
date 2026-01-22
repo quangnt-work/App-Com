@@ -34,7 +34,7 @@ export function StatsSection({ stats }: { stats: DashboardStats }) {
     { 
       label: 'Tổng bài học', 
       val: stats.totalLessons.toString(), 
-      sub: 'Khóa học public', 
+      sub: 'Bài học public', 
       color: 'text-blue-500', 
       icon: BookOpen, 
       bg: 'bg-blue-50',

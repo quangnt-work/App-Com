@@ -1,11 +1,11 @@
-// src/app/(admin)/admin/courses/new/page.tsx
-import CourseEditor from '@/components/admin/courses/CourseEditor'
+// src/app/(admin)/admin/lessons/new/page.tsx
+import LessonEditor from '@/components/admin/lessons/LessonEditor'
 
-export default function NewCoursePage() {
+export default function NewLessonPage() {
   return (
     <div className="min-h-screen bg-slate-50">
       {/* Gọi Component với cờ isNew = true */}
-      <CourseEditor isNew={true} />
+      <LessonEditor isNew={true} />
     </div>
   )
 }

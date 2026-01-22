@@ -1,4 +1,4 @@
-// src/app/(admin)/admin/courses/CourseListClient.tsx
+// src/app/(admin)/admin/lessons/LessonListClient.tsx
 "use client"
 
 
@@ -9,41 +9,41 @@ import Link from 'next/link';
 import { toast } from 'sonner';
 
 
-import { useCourseFilter } from '@/hooks/useCourseFilter';
-import { CourseFilters } from '../../../../components/admin/courses/CourseFilters';
-import { CourseTable } from '@/components/admin/courses/CourseTable';
-import { deleteCourse } from './actions'; // Giả sử bạn có server action này
-import type { Course } from '@/types/course';
+import { useLessonFilter } from '@/hooks/useLessonFilter';
+import { LessonFilters } from '../../../../components/admin/lessons/LessonFilters';
+import { LessonTable } from '@/components/admin/lessons/LessonTable';
+import { deleteLesson } from './actions'; // Giả sử bạn có server action này
+import type { Lesson } from '@/types/lesson';
 
 
-import CourseDetailModal from '@/components/admin/courses/CourseDetailModal';
+import LessonDetailModal from '@/components/admin/lessons/LessonDetailModal';
 
 
 interface Props {
-  initialData: Course[];
+  initialData: Lesson[];
 }
 
 
-export default function CourseListClient({ initialData }: Props) {
+export default function LessonListClient({ initialData }: Props) {
   const router = useRouter();
   const [isDeletingId, setIsDeletingId] = useState<string | null>(null);
-  const [selectedCourse, setSelectedCourse] = useState<Course | null>(null);
+  const [selectedLesson, setSelectedLesson] = useState<Lesson | null>(null);
  
   // Sử dụng custom hook để lấy data đã lọc
-  const { filteredData, searchTerm, setSearchTerm, statusFilter, setStatusFilter } = useCourseFilter(initialData);
+  const { filteredData, searchTerm, setSearchTerm, statusFilter, setStatusFilter } = useLessonFilter(initialData);
 
 
   const handleDelete = async (id: string) => {
-    if (!confirm('Bạn có chắc chắn muốn xóa khóa học này?')) return;
+    if (!confirm('Bạn có chắc chắn muốn xóa bài học này?')) return;
    
     setIsDeletingId(id);
     try {
-      const res = await deleteCourse(id);
+      const res = await deleteLesson(id);
       if (res.success) {
-        toast.success('Đã xóa khóa học thành công');
+        toast.success('Đã xóa bài học thành công');
         router.refresh();
       } else {
-        toast.error('Không thể xóa khóa học');
+        toast.error('Không thể xóa bài học');
       }
     } catch (error) {
       toast.error('Đã có lỗi xảy ra');
@@ -56,29 +56,29 @@ export default function CourseListClient({ initialData }: Props) {
   return (
     <div className="space-y-6">
       <div className="bg-white p-6 rounded-xl shadow-sm border border-gray-200">
-        <CourseFilters
+        <LessonFilters
           searchTerm={searchTerm}
           onSearchChange={setSearchTerm}
           statusFilter={statusFilter}
           onStatusChange={setStatusFilter}
         />
        
-        <CourseTable
-          courses={filteredData}
+        <LessonTable
+          lessons={filteredData}
           onDelete={handleDelete}
-          onView={(course) => setSelectedCourse(course)}
+          onView={(lesson) => setSelectedLesson(lesson)}
           isDeletingId={isDeletingId}
         />
        
         <div className="mt-4 text-sm text-gray-500 text-right">
-          Hiển thị {filteredData.length} / {initialData.length} khóa học
+          Hiển thị {filteredData.length} / {initialData.length} bài học
         </div>
 
 
-        <CourseDetailModal
-          course={selectedCourse}
-          isOpen={!!selectedCourse}
-          onClose={() => setSelectedCourse(null)}
+        <LessonDetailModal
+          lesson={selectedLesson}
+          isOpen={!!selectedLesson}
+          onClose={() => setSelectedLesson(null)}
         />
       </div>
     </div>

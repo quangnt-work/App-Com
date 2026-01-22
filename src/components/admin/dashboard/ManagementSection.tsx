@@ -20,7 +20,7 @@ export function ManagementSection() {
          />
 
          {/* Các mục khác bạn có thể để tạm href="#" hoặc đường dẫn tương ứng sau này */}
-         <ManageCard icon={BookOpen} title="Khóa học" desc="Tạo bài giảng" href="/admin/courses" />
+         <ManageCard icon={BookOpen} title="Bài học" desc="Tạo bài giảng" href="/admin/lessons" />
          <ManageCard icon={HelpCircle} title="Đề thi" desc="Soạn câu hỏi" href="/admin/exams" />
          <ManageCard icon={FileText} title="Tài liệu" desc="Upload file" href="/admin/documents" />
          <ManageCard icon={Activity} title="Báo cáo" desc="Xem thống kê" href="/admin/reports" />

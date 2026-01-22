@@ -49,13 +49,13 @@ export default function HomePage() {
                 {/* Bạn sẽ thay thẻ Image thật vào đây */}
                 <div className="absolute inset-0 flex items-center justify-center text-slate-400">Image Placeholder</div>
                 
-                {/* Floating Card: Hoàn thành khóa học */}
+                {/* Floating Card: Hoàn thành bài học */}
                 <div className="absolute bottom-8 left-8 bg-white p-4 rounded-xl shadow-lg flex items-center gap-3 animate-bounce">
                   <div className="bg-green-100 p-2 rounded-full">
                     <CheckCircle className="h-6 w-6 text-green-600" />
                   </div>
                   <div>
-                    <p className="font-bold text-slate-900">Hoàn thành khóa học</p>
+                    <p className="font-bold text-slate-900">Hoàn thành bài học</p>
                     <p className="text-xs text-slate-500">Chứng chỉ được cấp ngay</p>
                   </div>
                 </div>

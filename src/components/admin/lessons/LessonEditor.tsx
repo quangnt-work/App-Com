@@ -13,7 +13,7 @@ import { Textarea } from "@/components/ui/textarea";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { Switch } from "@/components/ui/switch";
 import { Label } from "@/components/ui/label";
-import { RichTextEditor } from "../courses/RichTextEditor"; // Component có sẵn của bạn
+import { RichTextEditor } from "./RichTextEditor"; // Component có sẵn của bạn
 import { handleImageUpload } from "@/components/editor/ImageUploadHandler"; // Component upload ảnh của bạn
 
 export default function LessonEditor({ initialData, isNew }: { initialData?: any, isNew: boolean }) {
@@ -51,7 +51,7 @@ export default function LessonEditor({ initialData, isNew }: { initialData?: any
     <div className="max-w-4xl mx-auto bg-white p-6 rounded-xl shadow-sm border">
       <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-8">
         
-        {/* 1. THÔNG TIN CƠ BẢN (Gộp từ Course cũ) */}
+        {/* 1. THÔNG TIN CƠ BẢN (Gộp từ Lesson cũ) */}
         <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
           <div className="space-y-4">
              <div>

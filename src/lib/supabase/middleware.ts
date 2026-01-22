@@ -78,7 +78,7 @@ export async function updateSession(request: NextRequest) {
       if (role === 'admin' || role === 'ADMIN') {
         url.pathname = '/admin/dashboard'
       } else {
-        url.pathname = '/student/courses' // Hoặc trang chủ học viên
+        url.pathname = '/student/lessons' // Hoặc trang chủ học viên
       }
       return NextResponse.redirect(url)
     }
@@ -86,7 +86,7 @@ export async function updateSession(request: NextRequest) {
     // 2. Bảo vệ trang Admin: Nếu không phải Admin mà cố vào /admin -> Đá về trang học viên
     if (path.startsWith(protectedRoutes.admin) && role !== 'admin' && role !== 'ADMIN') {
       const url = request.nextUrl.clone()
-      url.pathname = '/student/courses' // Hoặc trang 403 Forbidden
+      url.pathname = '/student/lessons' // Hoặc trang 403 Forbidden
       return NextResponse.redirect(url)
     }
   }

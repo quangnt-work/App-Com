@@ -10,7 +10,7 @@ export default function StudentLayout({
       {/* Navbar dùng chung cho toàn bộ khu vực Student */}
       <Header /> 
       
-      {/* Nội dung thay đổi (Profile, Course, Lesson...) */}
+      {/* Nội dung thay đổi (Profile, Lesson, Lesson...) */}
       <main className="pt-4">
         {children}
       </main>

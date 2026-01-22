@@ -61,7 +61,7 @@ export default function DocumentsManagementPage() {
         .select(`
           *,
           profiles:uploaded_by(full_name),
-          courses:lesson_id(title)
+          lessons:lesson_id(title)
         `)
         .order('created_at', { ascending: false })
         .returns<DocumentWithRelations[]>();
@@ -83,7 +83,7 @@ export default function DocumentsManagementPage() {
         created_at: new Date(doc.created_at).toLocaleDateString(APP_CONFIG.DATE_FORMAT.VI, APP_CONFIG.DATE_FORMAT.DEFAULT),
         original_date: new Date(doc.created_at).toLocaleDateString('vi-VN'),
         uploader_name: doc.profiles?.full_name || 'Admin',
-        course_name: doc.courses?.title || 'Chung'
+        course_name: doc.lessons?.title || 'Chung'
       }));
 
 

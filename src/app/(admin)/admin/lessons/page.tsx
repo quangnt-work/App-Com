@@ -1,5 +1,5 @@
 import { getLessons } from "@/actions/lesson-actions";
-import LessonTable from "@/components/admin/courses/CourseTable"; // Bạn cần đổi tên CourseTable -> LessonTable
+import LessonTable from "@/components/admin/lessons/LessonTable";
 import { Button } from "@/components/ui/button";
 import Link from "next/link";
 import { Plus } from "lucide-react";
@@ -22,7 +22,7 @@ export default async function LessonsPage({
       <div className="flex justify-between items-center">
         <div>
            <h1 className="text-2xl font-bold">Quản lý bài học</h1>
-           <p className="text-gray-500">Quản lý tất cả khóa học và tài liệu lẻ tại đây.</p>
+           <p className="text-gray-500">Quản lý tất cả bài học và tài liệu lẻ tại đây.</p>
         </div>
         <Link href="/admin/lessons/new">
           <Button className="bg-sky-600 text-white gap-2">
@@ -30,8 +30,7 @@ export default async function LessonsPage({
           </Button>
         </Link>
       </div>
-
-      {/* Tái sử dụng CourseTable cũ, đổi tên thành LessonTable và chỉnh cột hiển thị */}
+      
       <LessonTable
         data={data || []}
         totalCount={count || 0}

@@ -20,7 +20,7 @@ async function getDashboardStats() {
     // 1. Đếm Student
     supabase.from('profiles').select('*', { count: 'exact', head: true }).eq('role', 'student'),
     
-    // 2. Đếm Khóa học
+    // 2. Đếm Bài học
     supabase.from('lessons').select('*', { count: 'exact', head: true }),
     
     // 3. Đếm Tài liệu

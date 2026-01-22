@@ -1,7 +1,7 @@
 import { Button } from '../../ui/button'
 import Image from 'next/image'
 
-export function CourseHero() {
+export function LessonHero() {
   return (
     <div className="bg-white border-b border-slate-100 py-12 mb-12">
       <div className="container mx-auto px-4">
@@ -26,7 +26,7 @@ export function CourseHero() {
            <div className="flex-1 relative w-full h-64 md:h-96">
              {/* Bạn nhớ thay ảnh thật vào đây */}
              <Image 
-               src="/hero-course.png" 
+               src="/hero-lesson.png" 
                alt="Learning Banner" 
                fill 
                className="object-cover rounded-2xl object-center md:object-right"

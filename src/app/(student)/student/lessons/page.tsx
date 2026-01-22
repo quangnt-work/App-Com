@@ -1,6 +1,6 @@
 import { createClient } from '@/lib/supabase/server'
-import { CourseHero } from '@/components/student/courses/CourseHero'
-import { CourseSection } from '@/components/student/courses/CourseSection'
+import { LessonHero } from '@/components/student/lessons/LessonHero'
+import { LessonSection } from '@/components/student/lessons/LessonSection'
 import { Button } from '@/components/ui/button'
 import { Inbox } from 'lucide-react'
 import { getLessons } from '@/actions/lesson-actions'
@@ -9,7 +9,7 @@ export default async function LessonsPage() {
   // 1. Fetch dữ liệu thật
   const alllessons = await getLessons();
 
-  // 2. Phân loại khóa học (Filtering in Memory)
+  // 2. Phân loại bài học (Filtering in Memory)
   // Lưu ý: Nếu dữ liệu lớn, nên filter từ câu query Supabase. Với demo nhỏ thì filter JS ok.
   const englishLessons = alllessons.filter(c => c.category === 'TIẾNG ANH')
   const russianLessons = alllessons.filter(c => c.category === 'TIẾNG NGA')
@@ -22,7 +22,7 @@ export default async function LessonsPage() {
   return (
     <div className="min-h-screen bg-white pb-20">
       {/* Hero luôn hiển thị để trang không bị trống hơ trống hoác */}
-      <CourseHero />
+      <LessonHero />
 
       {/* CASE 1: Chưa có bài giảng nào trong DB */}
       {isEmpty && (
@@ -32,43 +32,43 @@ export default async function LessonsPage() {
                <Inbox className="h-12 w-12 text-slate-300" />
              </div>
            </div>
-           <h3 className="text-xl font-bold text-slate-900">Chưa có khóa học nào</h3>
+           <h3 className="text-xl font-bold text-slate-900">Chưa có bài học nào</h3>
            <p className="text-slate-500 mt-2">Hệ thống đang được cập nhật. Vui lòng quay lại sau.</p>
         </div>
       )}
 
       {/* CASE 2: Hiển thị các Section (Chỉ hiện nếu có bài) */}
-      {/* Component CourseSection đã có logic: if empty -> return null */}
+      {/* Component LessonSection đã có logic: if empty -> return null */}
       
-      <CourseSection 
+      <LessonSection 
         title="Khóa tiếng Anh" 
         icon="english"
-        courses={englishLessons} 
+        lessons={englishLessons} 
       />
 
-      <CourseSection 
+      <LessonSection 
         title="Khóa tiếng Nga" 
         icon="russian"
-        courses={russianLessons} 
+        lessons={russianLessons} 
       />
 
-       <CourseSection 
+       <LessonSection 
         title="Công nghệ thông tin" 
         icon="it"
-        courses={itLessons} 
+        lessons={itLessons} 
       />
 
-      <CourseSection 
-        title="Khóa học khác" 
+      <LessonSection 
+        title="Bài học khác" 
         icon="other"
-        courses={otherLessons} 
+        lessons={otherLessons} 
       />
 
-      {/* Chỉ hiện nút Xem thêm nếu có ít nhất 1 khóa học */}
+      {/* Chỉ hiện nút Xem thêm nếu có ít nhất 1 bài học */}
       {!isEmpty && (
         <div className="flex justify-center mt-12">
             <Button variant="outline" className="border-sky-500 text-sky-600 hover:bg-sky-50 px-8 rounded-full">
-            Xem tất cả khóa học ↓
+            Xem tất cả bài học ↓
             </Button>
         </div>
       )}

@@ -17,7 +17,7 @@ export default function LessonHeader({ courseId, title, onSave }: Props) {
         <div className="flex items-center gap-2 text-xs text-slate-500 mb-3 font-medium">
           <Link href="/admin/dashboard" className="hover:text-sky-600">Trang chủ</Link>
           <ChevronRight className="w-3 h-3" />
-          <Link href="/admin/courses" className="hover:text-sky-600">Quản lý khóa học</Link>
+          <Link href="/admin/lessons" className="hover:text-sky-600">Quản lý bài học</Link>
           <ChevronRight className="w-3 h-3" />
           <span className="text-slate-900">Chỉnh sửa bài học</span>
         </div>

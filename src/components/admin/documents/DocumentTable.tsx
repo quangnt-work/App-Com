@@ -15,7 +15,7 @@ const getFileConfig = (type: string) => {
   }
 }
 
-const getCourseBadgeColor = (courseName: string) => {
+const getLessonBadgeColor = (courseName: string) => {
     if(courseName.includes('React')) return 'bg-blue-100 text-blue-700';
     if(courseName.includes('Python')) return 'bg-yellow-100 text-yellow-700';
     if(courseName.includes('UI/UX')) return 'bg-purple-100 text-purple-700';
@@ -68,7 +68,7 @@ export function DocumentTable({ documents }: { documents: DocumentItem[] }) {
               <th className="p-4">Định dạng</th>
               <th className="p-4">Kích thước</th>
               <th className="p-4">Ngày tải lên</th>
-              <th className="p-4">Khóa học</th>
+              <th className="p-4">Bài học</th>
               <th className="p-4 text-right">Hành động</th>
             </tr>
           </thead>
@@ -99,7 +99,7 @@ export function DocumentTable({ documents }: { documents: DocumentItem[] }) {
                   <td className="p-4 text-slate-600 font-mono text-xs">{doc.file_size}</td>
                   <td className="p-4 text-slate-600">{doc.created_at}</td>
                   <td className="p-4">
-                      <span className={`flex items-center gap-2 px-2 py-1 rounded-full text-xs font-bold w-fit ${getCourseBadgeColor(doc.course_name)}`}>
+                      <span className={`flex items-center gap-2 px-2 py-1 rounded-full text-xs font-bold w-fit ${getLessonBadgeColor(doc.course_name)}`}>
                           <span className="w-5 h-5 rounded-full bg-white/50 flex items-center justify-center text-[10px]">
                               {doc.course_name.charAt(0)}
                           </span>

@@ -7,5 +7,5 @@ export interface DocumentItem {
   file_size: string;
   created_at: string;
   uploader_name: string; // Join từ profiles
-  course_name: string;   // Join từ courses
+  course_name: string;   // Join từ lessons
 }

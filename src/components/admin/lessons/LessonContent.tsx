@@ -4,7 +4,7 @@
 import React, { useState, useRef } from 'react'
 import { CloudUpload, FileText, File as FileIcon, Trash2, Eye, Loader2 } from 'lucide-react'
 import { Button } from '@/components/ui/button'
-import { RichTextEditor } from '@/components/admin/courses/RichTextEditor' 
+import { RichTextEditor } from './RichTextEditor' 
 import { uploadFileToStorage } from '@/lib/upload'
 import Link from 'next/link'
 

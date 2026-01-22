@@ -24,7 +24,7 @@ export default async function LessonPage({ params }: PageProps) {
 
     if (error || !data) {
        // redirect về danh sách nếu lỗi
-       return redirect(`/admin/courses/${resolvedParams.courseId}`);
+       return redirect(`/admin/lessons/${resolvedParams.courseId}`);
     }
     initialData = data;
   }
@@ -32,7 +32,7 @@ export default async function LessonPage({ params }: PageProps) {
   return (
     <div className="min-h-screen bg-slate-50 pb-20">
       <LessonEditor
-        courseId={resolvedParams.courseId}
+        lessonId={resolvedParams.lessonId}
         initialData={initialData}
         isNew={isNew}
       />

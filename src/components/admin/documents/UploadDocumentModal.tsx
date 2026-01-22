@@ -68,14 +68,14 @@ export default function UploadDocumentModal({ isOpen, onClose, onSuccess }: Prop
       const filePath = `documents/${fileName}`
 
       const { error: uploadError } = await supabase.storage
-        .from('course-materials') // Hoặc bucket bạn dùng lưu tài liệu
+        .from('lesson-materials') // Hoặc bucket bạn dùng lưu tài liệu
         .upload(filePath, selectedFile)
 
       if (uploadError) throw uploadError
 
       // 2. Lấy Public URL
       const { data: urlData } = supabase.storage
-        .from('course-materials')
+        .from('lesson-materials')
         .getPublicUrl(filePath)
 
       // 3. Lưu thông tin vào Database
@@ -89,7 +89,7 @@ export default function UploadDocumentModal({ isOpen, onClose, onSuccess }: Prop
         file_size: sizeMB,
         // Mô tả có thể lưu vào cột description nếu DB có (nếu chưa có thì bỏ qua)
         // description: description, 
-        // Bỏ qua course_id vì yêu cầu bỏ trường khóa học liên quan
+        // Bỏ qua course_id vì yêu cầu bỏ trường bài học liên quan
       })
 
       if (dbError) throw dbError

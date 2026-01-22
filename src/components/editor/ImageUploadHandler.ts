@@ -19,14 +19,14 @@ export const handleImageUpload = async (file: File): Promise<string> => {
     // 3. Upload ảnh đã nén lên Supabase
     const fileName = `${Date.now()}-${compressedFile.name}`;
     const { data, error } = await supabase.storage
-      .from('course-assets') // Tên bucket của bạn
+      .from('lesson-assets') // Tên bucket của bạn
       .upload(fileName, compressedFile);
 
     if (error) throw error;
 
     // 4. Lấy Public URL để hiển thị trong Editor
     const { data: { publicUrl } } = supabase.storage
-      .from('course-assets')
+      .from('lesson-assets')
       .getPublicUrl(fileName);
 
     return publicUrl;

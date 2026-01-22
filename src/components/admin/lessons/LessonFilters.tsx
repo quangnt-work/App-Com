@@ -1,26 +1,26 @@
-// src/app/(admin)/admin/courses/components/CourseFilters.tsx
+// src/app/(admin)/admin/lessons/components/LessonFilters.tsx
 import { Search } from 'lucide-react';
-import type { CourseFilterStatus } from '@/types/course'; // Import type vừa tạo
+import type { LessonStatus } from '@/types/lesson'; // Import type vừa tạo
 
-interface CourseFiltersProps {
+interface LessonFiltersProps {
   searchTerm: string;
   onSearchChange: (value: string) => void;
-  statusFilter: CourseFilterStatus; // Strict type
-  onStatusChange: (value: CourseFilterStatus) => void; // Strict type
+  statusFilter: LessonStatus; // Strict type
+  onStatusChange: (value: LessonStatus) => void; // Strict type
 }
 
-export function CourseFilters({ 
+export function LessonFilters({ 
   searchTerm, 
   onSearchChange, 
   statusFilter, 
   onStatusChange 
-}: CourseFiltersProps) {
+}: LessonFiltersProps) {
   
   // Hàm xử lý thay đổi select an toàn
   const handleStatusChange = (e: React.ChangeEvent<HTMLSelectElement>) => {
-    // Ép kiểu giá trị từ string sang CourseFilterStatus
+    // Ép kiểu giá trị từ string sang LessonFilterStatus
     // Vì các thẻ <option> bên dưới đã được hardcode đúng value, việc này là an toàn.
-    const value = e.target.value as CourseFilterStatus;
+    const value = e.target.value as LessonStatus;
     onStatusChange(value);
   };
 
@@ -31,7 +31,7 @@ export function CourseFilters({
         <Search className="absolute left-3 top-1/2 -translate-y-1/2 text-gray-400 w-4 h-4" />
         <input
           type="text"
-          placeholder="Tìm kiếm khóa học..."
+          placeholder="Tìm kiếm bài học..."
           value={searchTerm}
           onChange={(e) => onSearchChange(e.target.value)}
           className="w-full pl-10 pr-4 py-2 border border-gray-200 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent"

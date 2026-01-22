@@ -1,5 +1,5 @@
 // src/types/index.ts
-import { Database } from './supabase';
+import { Database } from './database.type';
 
 // 1. Helper Types cho các bảng (Sử dụng trực tiếp từ DB)
 export type DbProfile = Database['public']['Tables']['profiles']['Row'];

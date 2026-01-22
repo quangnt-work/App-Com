@@ -1,6 +1,6 @@
 import React, { useState, useRef } from 'react'
 import mammoth from 'mammoth'
-import { Question, QuestionType, CEFRLevel } from '@/types/exam-editor'
+import { Question, QuestionType, CEFRLevel } from '@/types/exam-custom'
 import { Button } from '@/components/ui/button'
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogFooter } from '@/components/ui/dialog'
 import { Loader2, FileText, CheckCircle2, AlertTriangle, Info } from 'lucide-react'

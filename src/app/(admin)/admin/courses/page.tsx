@@ -1,91 +1,83 @@
-import React from 'react';
-import { Plus, Inbox } from 'lucide-react';
-import Link from 'next/link';
-import CourseListClient from './CourseListClient';
-import { createClient } from '@/lib/supabase/server';
-import { CourseWithRelations } from '@/types';
+import { getCourses } from "@/actions/course-actions";
+import { AdminPageHeader } from "@/components/admin/common/AdminPageHeader";
+import { StatusBadge } from "@/components/admin/common/StatusBadge";
+import { CourseTableActions } from "./_components/course-table-actions"; // Component chứa nút Edit/Delete (Client Component)
+import { BookOpen, Layers } from "lucide-react";
+import {
+  Table, TableBody, TableCell, TableHead, TableHeader, TableRow
+} from "@/components/ui/table";
 
-// 1. Định nghĩa kiểu dữ liệu thô trả về từ Supabase (để không dùng any)
-
+// Server Component - Async mặc định
 export default async function CoursesPage() {
-  const supabase = await createClient();
+  // 1. Fetch data từ Action (Logic tách biệt)
+  const { data: courses, error } = await getCourses();
 
-  // 2. Query Data với Select cụ thể
-  const { data: rawData, error } = await supabase
-    .from('courses')
-    .select(`
-      *,
-      profiles:instructor_id(full_name, avatar_url),
-      lessons:lessons(count)
-    `)
-    .order('created_at', { ascending: false })
-    .returns<CourseWithRelations[]>();
-
-  if (error) {
-    console.error("Error fetching courses:", error);
-    return <div className="p-8 text-center text-red-500">Lỗi tải dữ liệu: {error.message}</div>;
-  }
-
-  // 3. Ép kiểu an toàn từ Supabase Response sang Type Raw đã định nghĩa
-  // 4. Map sang Interface Course chuẩn của ứng dụng
-  const formattedCourses = (rawData || []).map((item) => ({
-    id: item.id,
-    title: item.title,
-    description: item.description || '',
-    thumbnail: item.thumbnail,
-    category: item.category || 'KHÁC',
-    level: (item.level as CourseLevel) || 'basic', // Ép kiểu an toàn cho Level
-    duration: item.duration || '0 phút',
-    status: (item.status as CourseStatus) || 'draft', // Ép kiểu an toàn cho Status
-    rating: item.rating || 5.0,
-    created_at: item.created_at,
-    
-    // Xử lý dữ liệu lồng nhau an toàn
-    lessons_count: item.lessons?.[0]?.count || 0,
-    students_count: 0, // Tạm thời hardcode
-    instructor_name: item.profiles?.full_name || 'Admin',
-    instructor: item.profiles?.full_name || 'Unknown',
-    instructor_avatar: item.profiles?.avatar_url || null,
-    instructor_id: item.instructor_id || undefined
-  }));
+  if (error) return <div>Error loading courses</div>;
 
   return (
-    <div className="p-6 max-w-[1600px] mx-auto min-h-screen bg-slate-50 font-sans">
-      {/* Header Section */}
-      <div className="mb-8 flex flex-col md:flex-row md:items-end justify-between gap-4">
-        <div>
-          <div className="flex items-center gap-2 text-sm text-gray-500 mb-1">
-            <span>Trang chủ</span>
-            <span>/</span>
-            <span className="text-gray-900 font-medium">Quản lý khóa học</span>
-          </div>
-          <h1 className="text-3xl font-extrabold text-gray-900">Quản Lý Khóa Học</h1>
-          <p className="text-gray-500 mt-2 max-w-2xl">
-            Quản lý danh sách, nội dung, bài giảng và theo dõi trạng thái các khóa học.
-          </p>
-        </div>
+    <div className="p-6 max-w-7xl mx-auto">
+      {/* 2. Sử dụng Header chung */}
+      <AdminPageHeader 
+        title="Quản lý Khóa học" 
+        description="Quản lý các khóa học, chương trình đào tạo và tài liệu đính kèm."
+        icon={BookOpen}
+        action={{
+          label: "Tạo khóa học mới",
+          href: "/admin/courses/create",
+          icon: Layers
+        }}
+      />
 
-        <Link href="/admin/courses/new" className="bg-sky-500 hover:bg-sky-600 text-white px-5 py-2.5 rounded-lg font-bold shadow-md shadow-sky-500/20 flex items-center gap-2 transition-all active:scale-95">
-          <Plus className="w-5 h-5" />
-          Thêm khóa học mới
-        </Link>
+      {/* 3. Render Table (Có thể tách ra CourseTable component nếu muốn gọn hơn nữa) */}
+      <div className="border rounded-md shadow-sm bg-white">
+        <Table>
+          <TableHeader>
+            <TableRow className="bg-slate-50">
+              <TableHead>Tên khóa học</TableHead>
+              <TableHead>Trạng thái</TableHead>
+              <TableHead>Giá</TableHead>
+              <TableHead className="text-right">Hành động</TableHead>
+            </TableRow>
+          </TableHeader>
+          <TableBody>
+            {courses?.length === 0 ? (
+              <TableRow>
+                <TableCell colSpan={4} className="h-24 text-center text-slate-500">
+                  Chưa có khóa học nào. Hãy tạo mới!
+                </TableCell>
+              </TableRow>
+            ) : (
+              courses?.map((course) => (
+                <TableRow key={course.id}>
+                  <TableCell className="font-medium">
+                    <div className="flex flex-col">
+                      <span>{course.title}</span>
+                      <span className="text-xs text-slate-400">ID: {course.id.slice(0, 8)}...</span>
+                    </div>
+                  </TableCell>
+                  <TableCell>
+                    {/* Sử dụng StatusBadge chung */}
+                    <StatusBadge 
+                      status={course.is_published || false} 
+                      labels={{ 'true': 'Đang bán', 'false': 'Nháp' }} 
+                    />
+                  </TableCell>
+                  <TableCell>
+                    {course.price === 0 
+                      ? <span className="text-green-600 font-semibold">Miễn phí</span> 
+                      : new Intl.NumberFormat('vi-VN', { style: 'currency', currency: 'VND' }).format(course.price || 0)
+                    }
+                  </TableCell>
+                  <TableCell className="text-right">
+                    {/* Client Component xử lý sự kiện Delete/Edit */}
+                    <CourseTableActions course={course} />
+                  </TableCell>
+                </TableRow>
+              ))
+            )}
+          </TableBody>
+        </Table>
       </div>
-
-      {/* Main Content */}
-      {formattedCourses.length > 0 ? (
-        <CourseListClient initialData={formattedCourses} />
-      ) : (
-        <div className="bg-white rounded-xl p-12 text-center border border-dashed border-gray-300">
-          <div className="mx-auto w-16 h-16 bg-gray-50 rounded-full flex items-center justify-center mb-4">
-            <Inbox className="w-8 h-8 text-gray-400" />
-          </div>
-          <h3 className="text-lg font-bold text-gray-900">Chưa có khóa học nào</h3>
-          <p className="text-gray-500 mb-6">Hãy tạo khóa học đầu tiên để bắt đầu giảng dạy.</p>
-          <Link href="/admin/courses/new" className="text-sky-600 font-bold hover:underline">
-            + Tạo ngay
-          </Link>
-        </div>
-      )}
     </div>
   );
 }

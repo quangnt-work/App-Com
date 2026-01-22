@@ -1,6 +1,7 @@
 // src/app/(admin)/admin/documents/page.tsx
 'use client'
 
+
 import React, { useState, useEffect, useMemo } from 'react'
 import { createClient } from '@/lib/supabase/client'
 import { Folder, Cloud, CheckCircle, Upload, Loader2, AlertCircle } from 'lucide-react'
@@ -15,7 +16,9 @@ import { APP_CONFIG } from '@/lib/constants';
 import { DocumentWithRelations } from '@/types/index';// Import mới
 import { DocumentItem } from '@/types/document'
 
+
 // --- HELPER FUNCTIONS (Xử lý đơn vị dung lượng) ---
+
 
 // 1. Chuyển đổi chuỗi (VD: "2.4 MB") thành số Bytes để tính tổng
 const parseSizeToBytes = (sizeStr: string | null) => {
@@ -23,11 +26,12 @@ const parseSizeToBytes = (sizeStr: string | null) => {
   const units: { [key: string]: number } = { 'KB': 1024, 'MB': 1024 * 1024, 'GB': 1024 * 1024 * 1024 };
   const match = sizeStr.match(/([\d.]+)\s*(KB|MB|GB)/i);
   if (!match) return 0;
-  
+ 
   const value = parseFloat(match[1]);
   const unit = match[2].toUpperCase();
   return value * (units[unit] || 0);
 };
+
 
 // 2. Format số Bytes ngược lại thành chuỗi hiển thị (GB, MB)
 const formatBytes = (bytes: number) => {
@@ -38,13 +42,15 @@ const formatBytes = (bytes: number) => {
   return parseFloat((bytes / Math.pow(k, i)).toFixed(1)) + ' ' + sizes[i];
 };
 
+
 export default function DocumentsManagementPage() {
   const supabase = createClient()
-  
+ 
   // --- STATE ---
   const [documents, setDocuments] = useState<DocumentItem[]>([])
   const [isLoading, setIsLoading] = useState(true)
   const [isUploadModalOpen, setIsUploadModalOpen] = useState(false)
+
 
   // --- FETCH DATA ---
   const fetchDocuments = async () => {
@@ -60,10 +66,12 @@ export default function DocumentsManagementPage() {
         .order('created_at', { ascending: false })
         .returns<DocumentWithRelations[]>();
 
+
       if (error) {
         console.error("Error:", error);
         return <div>Error loading documents</div>;
       }
+
 
       // Map dữ liệu từ Supabase sang Type UI chuẩn
       const mappedDocs = (data || []).map((doc) => ({
@@ -78,6 +86,7 @@ export default function DocumentsManagementPage() {
         course_name: doc.courses?.title || 'Chung'
       }));
 
+
       setDocuments(mappedDocs);
     } catch (error: unknown) { // Dùng unknown thay vì any để an toàn hơn
       console.error("Fetch error:", error);
@@ -87,42 +96,48 @@ export default function DocumentsManagementPage() {
     }
   }
 
+
   // Load dữ liệu khi vào trang
   useEffect(() => {
     fetchDocuments()
   }, [])
+
 
   // --- STATS CALCULATION (Sử dụng useMemo để tối ưu hiệu năng) ---
   const stats = useMemo(() => {
     // 1. Tổng số file
     const totalDocs = documents.length;
 
+
     // 2. Tổng dung lượng
     const totalBytes = documents.reduce((acc, doc) => acc + parseSizeToBytes(doc.file_size), 0);
     const totalStorageDisplay = formatBytes(totalBytes);
-    
+   
     // Giả định Quota là 5GB (Bạn có thể lấy số này từ DB config nếu có)
-    const STORAGE_QUOTA = 5 * 1024 * 1024 * 1024; 
+    const STORAGE_QUOTA = 5 * 1024 * 1024 * 1024;
     const storagePercentage = Math.min((totalBytes / STORAGE_QUOTA) * 100, 100);
+
 
     // 3. File mới trong tháng này
     const now = new Date();
     const currentMonth = now.getMonth();
     const currentYear = now.getFullYear();
-    
+   
     // Lưu ý: Cần dùng object date gốc (original_date) để so sánh chính xác
     const newDocsCount = documents.filter((doc) => {
       const docDate = doc.original_date;
       return docDate && docDate.getMonth() === currentMonth && docDate.getFullYear() === currentYear;
     }).length;
 
+
     return { totalDocs, totalStorageDisplay, storagePercentage, newDocsCount };
   }, [documents]);
+
 
   // --- RENDER ---
   return (
     <div className="min-h-screen bg-slate-50 p-6 space-y-8 font-sans text-slate-900">
-      
+     
       {/* 1. HEADER SECTION */}
       <div className="flex flex-col md:flex-row justify-between items-start md:items-center gap-4">
         <div>
@@ -136,8 +151,8 @@ export default function DocumentsManagementPage() {
             Quản lý tập trung tất cả tài liệu học tập, bài giảng và tài nguyên.
           </p>
         </div>
-        
-        <Button 
+       
+        <Button
           onClick={() => setIsUploadModalOpen(true)}
           className="bg-sky-500 hover:bg-sky-600 text-white font-bold shadow-md shadow-sky-500/20 transition-all hover:scale-105"
         >
@@ -145,29 +160,30 @@ export default function DocumentsManagementPage() {
         </Button>
       </div>
 
+
       {/* 2. STATS CARDS */}
       <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
-        <StatCard 
-          icon={Folder} 
-          iconColor="text-blue-600" 
+        <StatCard
+          icon={Folder}
+          iconColor="text-blue-600"
           iconBg="bg-blue-50"
           label="Tổng số tài liệu"
           value={stats.totalDocs.toLocaleString()}
           subValue={<span className="text-emerald-500 font-bold text-xs">Dữ liệu thực tế</span>}
         />
-        
-        <StatCard 
-          icon={Cloud} 
-          iconColor="text-orange-600" 
+       
+        <StatCard
+          icon={Cloud}
+          iconColor="text-orange-600"
           iconBg="bg-orange-50"
           label="Dung lượng sử dụng"
           value={stats.totalStorageDisplay}
           progress={stats.storagePercentage}
         />
-        
-        <StatCard 
-          icon={CheckCircle} 
-          iconColor="text-emerald-600" 
+       
+        <StatCard
+          icon={CheckCircle}
+          iconColor="text-emerald-600"
           iconBg="bg-emerald-50"
           label="Tài liệu mới (tháng này)"
           value={stats.newDocsCount.toString()}
@@ -175,10 +191,11 @@ export default function DocumentsManagementPage() {
         />
       </div>
 
+
       {/* 3. MAIN CONTENT (Filter & Table) */}
       <div className="space-y-6">
         <DocumentFilters />
-        
+       
         {isLoading ? (
           // Skeleton Loading UI
           <div className="bg-white rounded-xl border border-slate-100 p-12 flex flex-col items-center justify-center min-h-[400px]">
@@ -190,12 +207,14 @@ export default function DocumentsManagementPage() {
         )}
       </div>
 
+
       {/* 4. MODAL UPLOAD */}
-      <UploadDocumentModal 
-        isOpen={isUploadModalOpen} 
+      <UploadDocumentModal
+        isOpen={isUploadModalOpen}
         onClose={() => setIsUploadModalOpen(false)}
         onSuccess={fetchDocuments} // Gọi lại hàm fetch để refresh list sau khi upload
       />
+
 
     </div>
   )

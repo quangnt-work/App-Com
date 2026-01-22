@@ -1,36 +1,32 @@
-import { createClient } from '@/lib/supabase/server'
-import { notFound } from 'next/navigation'
-import ExamEditor from '@/components/admin/exams/ExamEditor'
+import { getExamById } from "@/actions/exam-actions";
+import { ExamEditorWrapper } from "./_components/exam-editor-wrapper";
+import { AdminPageHeader } from "@/components/admin/common/AdminPageHeader";
+import { Edit } from "lucide-react";
 
-// 1. Cập nhật Type cho params là Promise
-export default async function EditExamPage({ params }: { params: Promise<{ id: string }> }) {
-  // 2. Await params trước khi sử dụng
-  const { id } = await params
-  
-  const supabase = await createClient()
-  
-  // 3. Sử dụng biến 'id' đã lấy được
-  const { data: exam, error: examError } = await supabase
-    .from('exams')
-    .select('*')
-    .eq('id', id)
-    .single()
-  
-  if (examError || !exam) {
-    return notFound()
+export default async function ExamEditPage({ params }: { params: { examId: string } }) {
+  // Nếu là tạo mới
+  if (params.examId === 'create') {
+     return (
+        <div className="p-6 max-w-5xl mx-auto">
+           <AdminPageHeader title="Tạo đề thi mới" icon={Edit} />
+           <ExamEditorWrapper />
+        </div>
+     )
   }
+
+  // Nếu là chỉnh sửa
+  const { data: exam, error } = await getExamById(params.examId);
   
-  const { data: questions } = await supabase
-    .from('exam_questions')
-    .select('*')
-    .eq('exam_id', id)
-    .order('order_index', { ascending: true })
+  if (error || !exam) return <div>Không tìm thấy đề thi</div>;
 
   return (
-    <ExamEditor 
-      isNew={false} 
-      initialExam={exam} 
-      initialQuestions={questions || []} 
-    />
-  )
+    <div className="p-6 max-w-5xl mx-auto">
+      <AdminPageHeader 
+        title={`Chỉnh sửa: ${exam.title}`} 
+        icon={Edit}
+        description={`ID: ${exam.id}`}
+      />
+      <ExamEditorWrapper initialData={exam} />
+    </div>
+  );
 }

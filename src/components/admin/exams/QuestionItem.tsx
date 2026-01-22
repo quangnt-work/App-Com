@@ -1,5 +1,5 @@
 import React, { useState } from 'react'
-import { Question } from '@/types/exam-editor'
+import { Question } from '@/types/exam-custom'
 import { Button } from '@/components/ui/button'
 import { Badge } from '@/components/ui/badge'
 import { ChevronDown, ChevronUp, Edit3, Trash2, Volume2, FileText, CheckCircle2, AlignLeft } from 'lucide-react'

@@ -1,5 +1,5 @@
 import React from 'react'
-import { Question } from '@/types/exam-editor'
+import { Question } from '@/types/exam-custom'
 import { Card, CardContent } from '@/components/ui/card'
 import { Layers, CheckCircle2, AlertCircle } from 'lucide-react'
 

@@ -5,12 +5,14 @@ import { BackButton } from '@/components/common/BackButton'
 import { ExamFilters } from '../../../../components/admin/exams/ExamFilters'
 import { ExamTable } from '../../../../components/admin/exams/ExamTable'
 import { StatCard } from '../../../../components/admin/exams/StatCard' // Đảm bảo đường dẫn đúng
-import { ExamItem } from '@/types/exam-editor'
+import { ExamItem } from '@/types/exam-custom'
 import Link from 'next/link'
-import { Database } from '@/types/supabase';
+import { Database } from '@/types/database.type';
+
 
 export default async function ExamManagementPage() {
   const supabase = await createClient()
+
 
   // 1. Fetch dữ liệu từ DB
   const { data: rawExams, error } = await supabase
@@ -19,9 +21,11 @@ export default async function ExamManagementPage() {
     .order('created_at', { ascending: false })
     .returns<Database['public']['Tables']['exams']['Row'][]>();
 
+
   if (error) {
     console.error('Lỗi tải đề thi:', error)
   }
+
 
   // 2. Map dữ liệu & Xử lý Type
   const exams: ExamItem[] = (rawExams || []).map((item) => ({
@@ -36,16 +40,19 @@ export default async function ExamManagementPage() {
     created_at: item.created_at
   }))
 
+
   // --- 3. TÍNH TOÁN THỐNG KÊ (LOGIC MỚI) ---
-  
+ 
   // A. Tổng số đề thi
   const totalExams = exams.length
+
 
   // B. Thống kê theo cấp độ (Dễ - TB - Khó)
   const levelCounts = exams.reduce((acc, curr) => {
     acc[curr.level] = (acc[curr.level] || 0) + 1;
     return acc;
   }, { easy: 0, medium: 0, hard: 0 } as Record<string, number>);
+
 
   // Tìm cấp độ phổ biến nhất để hiển thị text chính
   const maxLevelVal = Math.max(levelCounts.easy, levelCounts.medium, levelCounts.hard);
@@ -56,20 +63,23 @@ export default async function ExamManagementPage() {
       if (maxLevelVal === levelCounts.hard) dominantLevel = 'Nâng cao (Khó)';
   }
 
+
   // C. Đề thi mới trong tháng này
   const now = new Date();
   const currentMonth = now.getMonth();
   const currentYear = now.getFullYear();
-  
+ 
   const newExamsCount = exams.filter(exam => {
     const d = new Date(exam.created_at);
     return d.getMonth() === currentMonth && d.getFullYear() === currentYear;
   }).length;
 
 
+
+
   return (
     <div className="min-h-screen bg-slate-50 p-6 space-y-8 font-sans text-slate-900">
-      
+     
       {/* 1. HEADER */}
       <div className="flex flex-col md:flex-row justify-between items-start md:items-center gap-4">
         <div>
@@ -90,23 +100,25 @@ export default async function ExamManagementPage() {
         </Link>
       </div>
 
+
       {/* 2. STATS CARDS (MỚI BỔ SUNG) */}
       <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
-        
+       
         {/* Card 1: Tổng số */}
-        <StatCard 
-          icon={FileQuestion} 
-          iconColor="text-blue-600" 
+        <StatCard
+          icon={FileQuestion}
+          iconColor="text-blue-600"
           iconBg="bg-blue-50"
           label="Tổng số đề thi"
           value={totalExams.toLocaleString()}
           subValue={<span className="text-emerald-500 font-bold text-xs">↗ Đang hoạt động</span>}
         />
 
+
         {/* Card 2: Cấp độ (Hiển thị chi tiết Dễ/TB/Khó) */}
-        <StatCard 
-          icon={BarChart3} 
-          iconColor="text-purple-600" 
+        <StatCard
+          icon={BarChart3}
+          iconColor="text-purple-600"
           iconBg="bg-purple-50"
           label="Phân bổ cấp độ"
           value={dominantLevel} // Hiển thị cấp độ chiếm đa số
@@ -125,10 +137,11 @@ export default async function ExamManagementPage() {
           }
         />
 
+
         {/* Card 3: Mới tháng này */}
-        <StatCard 
-          icon={CalendarRange} 
-          iconColor="text-orange-600" 
+        <StatCard
+          icon={CalendarRange}
+          iconColor="text-orange-600"
           iconBg="bg-orange-50"
           label="Đề thi mới (tháng này)"
           value={newExamsCount.toString()}
@@ -136,11 +149,14 @@ export default async function ExamManagementPage() {
         />
       </div>
 
+
       {/* 3. FILTERS */}
       <ExamFilters />
 
+
       {/* 4. TABLE */}
       <ExamTable exams={exams} />
+
 
     </div>
   )

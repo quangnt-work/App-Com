@@ -1,5 +1,5 @@
 import React, { useState } from 'react'
-import { Question, QuestionType } from '@/types/exam-editor'
+import { Question, QuestionType } from '@/types/exam-custom'
 import { Button } from '@/components/ui/button'
 import { Input } from '@/components/ui/input'
 import { Label } from '@/components/ui/label'

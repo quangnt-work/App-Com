@@ -1,13 +1,13 @@
 // src/lib/grading-utils.ts
 
-import { Question } from '@/types/exam-editor'
+import { QuestionItem } from '@/types/exam-custom'
 
 interface UserAnswer {
   question_id: string;
   is_correct: boolean; // True nếu trả lời đúng
 }
 
-export function calculateUserCEFRLevel(questions: Question[], answers: UserAnswer[]): string {
+export function calculateUserCEFRLevel(questions: QuestionItem[], answers: UserAnswer[]): string {
   // 1. Gom nhóm câu hỏi theo Level
   const stats = {
     A1: { total: 0, correct: 0 },

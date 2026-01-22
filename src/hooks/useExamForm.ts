@@ -1,6 +1,6 @@
 // src/hooks/useExamForm.ts
 import { useState, useEffect, useCallback } from 'react';
-import { ExamData, Question } from '@/types/exam-editor';
+import { ExamData, Question } from '@/types/exam-custom';
 import { toast } from 'sonner';
 
 // Helper: Build Tree từ Flat Data

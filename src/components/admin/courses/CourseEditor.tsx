@@ -1,191 +1,195 @@
+// src/components/admin/courses/CourseEditor.tsx
 "use client";
 
-
-import { useState } from "react";
+import { useForm } from "react-hook-form";
+import { zodResolver } from "@hookform/resolvers/zod";
 import { useRouter } from "next/navigation";
-import { createClient } from "@/lib/supabase/client";
-import { toast } from "sonner";
-import { DbCourse, DbLesson } from "@/types"; // Import type chuẩn
+import { useTransition } from "react";
+import { toast } from "sonner"; // Hoặc thư viện toast bạn đang dùng
 
+import { CourseSchema, CourseInput } from "@/lib/schemas/course";
+import { upsertCourse } from "@/actions/course-actions"; // Server Action bạn đã viết
+
+// UI Components (Giả định import từ Shadcn UI)
+import { Button } from "@/components/ui/button";
+import { Input } from "@/components/ui/input";
+import { Textarea } from "@/components/ui/textarea";
+import { Checkbox } from "@/components/ui/checkbox";
+import {
+  Form,
+  FormControl,
+  FormDescription,
+  FormField,
+  FormItem,
+  FormLabel,
+  FormMessage,
+} from "@/components/ui/form";
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from "@/components/ui/select";
 
 interface CourseEditorProps {
-  initialCourse?: DbCourse | null;
-  initialLesson?: DbLesson | null;
+  initialData?: CourseInput | null;
 }
 
-
-export default function CourseEditor({ initialCourse, initialLesson }: CourseEditorProps) {
+export default function CourseEditor({ initialData }: CourseEditorProps) {
   const router = useRouter();
-  const supabase = createClient();
-  const [loading, setLoading] = useState(false);
+  const [isPending, startTransition] = useTransition();
 
-
-  // State quản lý form
-  const [formData, setFormData] = useState({
-    // Course Fields
-    title: initialCourse?.title || "",
-    description: initialCourse?.description || "",
-    category: initialCourse?.category || "TIENG_ANH",
-    thumbnail: initialCourse?.thumbnail || "", // Mapping đúng cột 'thumbnail' trong DB
-   
-    // Lesson Fields (Logic 1-1)
-    videoUrl: initialLesson?.video_url || "",
-    content: initialLesson?.content || "",
+  // 1. Setup Form với React Hook Form & Zod
+  const form = useForm<CourseInput>({
+    resolver: zodResolver(CourseSchema),
+    defaultValues: initialData || {
+      title: "",
+      description: "",
+      category: "TIENG_ANH",
+      price: 0,
+      is_published: false,
+      thumbnail: "",
+    },
   });
 
+  // 2. Handle Submit
+  const onSubmit = (values: CourseInput) => {
+    startTransition(async () => {
+      // Gọi Server Action
+      const result = await upsertCourse(values);
 
-  const handleSave = async () => {
-    if (!formData.title) return toast.error("Vui lòng nhập tên khóa học");
-
-
-    try {
-      setLoading(true);
-     
-      // 1. Prepare Course Data (Type Safe Insert/Update)
-      const courseData = {
-        title: formData.title,
-        description: formData.description,
-        category: formData.category,
-        thumbnail: formData.thumbnail,
-        // Nếu edit thì giữ ID, nếu tạo mới thì để undefined (DB tự sinh)
-        ...(initialCourse?.id ? { id: initialCourse.id, updated_at: new Date().toISOString() } : {}),
-      };
-
-
-      // Upsert Course
-      const { data: savedCourse, error: courseError } = await supabase
-        .from('courses')
-        .upsert(courseData as any) // Cast any tạm để bypass strict check của upsert id optional
-        .select()
-        .single();
-
-
-      if (courseError) throw courseError;
-     
-      const courseId = savedCourse.id;
-
-
-      // 2. Prepare Lesson Data
-      // Logic: Tìm lesson theo course_id.
-      const lessonData = {
-        course_id: courseId,
-        title: formData.title, // Tên bài học giống tên khóa học
-        video_url: formData.videoUrl,
-        content: formData.content,
-        // Nếu đã có lesson cũ thì dùng ID cũ để update, nếu không thì tạo mới
-        ...(initialLesson?.id ? { id: initialLesson.id } : {})
-      };
-
-
-      // Upsert Lesson (Yêu cầu DB: unique constraint on course_id hoặc dùng ID)
-      const { error: lessonError } = await supabase
-        .from('lessons')
-        .upsert(lessonData as any)
-        .select();
-
-
-      if (lessonError) throw lessonError;
-
-
-      toast.success("Lưu thành công!");
-      router.push("/admin/courses");
-      router.refresh();
-
-
-    } catch (error: any) {
-      console.error(error);
-      toast.error("Lỗi: " + error.message);
-    } finally {
-      setLoading(false);
-    }
+      if (result.error) {
+        toast.error("Có lỗi xảy ra", { description: JSON.stringify(result.error) });
+      } else {
+        toast.success(initialData ? "Cập nhật thành công!" : "Tạo mới thành công!");
+        router.push("/admin/courses"); // Quay về danh sách
+        router.refresh();
+      }
+    });
   };
 
-
   return (
-    <div className="space-y-6 max-w-4xl mx-auto p-6 bg-white rounded-lg shadow-sm border">
-      {/* Header */}
-      <h2 className="text-xl font-bold border-b pb-2">
-        {initialCourse ? "Chỉnh sửa khóa học" : "Tạo khóa học mới"}
-      </h2>
-
-
-      {/* Form Fields */}
-      <div className="grid gap-4">
-        <div>
-          <label className="block text-sm font-medium mb-1">Tên khóa học</label>
-          <input
-            className="w-full border p-2 rounded focus:ring-2 focus:ring-blue-500 outline-none"
-            value={formData.title}
-            onChange={(e) => setFormData({...formData, title: e.target.value})}
-          />
-        </div>
-
-
-        <div>
-          <label className="block text-sm font-medium mb-1">Mô tả</label>
-          <textarea
-            rows={3}
-            className="w-full border p-2 rounded focus:ring-2 focus:ring-blue-500 outline-none"
-            value={formData.description}
-            onChange={(e) => setFormData({...formData, description: e.target.value})}
-          />
-        </div>
-
-
-        <div>
-           <label className="block text-sm font-medium mb-1">Link Thumbnail</label>
-           <input
-            className="w-full border p-2 rounded"
-            value={formData.thumbnail}
-            onChange={(e) => setFormData({...formData, thumbnail: e.target.value})}
-            placeholder="https://..."
-          />
-        </div>
-
-
-        {/* Lesson Section */}
-        <div className="pt-4 border-t mt-4 bg-gray-50 p-4 rounded">
-          <h3 className="text-md font-bold mb-3 text-blue-700">Nội dung bài giảng (Video/Content)</h3>
-         
-          <div className="mb-4">
-            <label className="block text-sm font-medium mb-1">Video URL (Youtube/Drive)</label>
-            <input
-              className="w-full border p-2 rounded"
-              value={formData.videoUrl}
-              onChange={(e) => setFormData({...formData, videoUrl: e.target.value})}
-              placeholder="https://youtube.com/..."
-            />
-          </div>
-
-
-          <div>
-            <label className="block text-sm font-medium mb-1">Nội dung chi tiết (HTML/Text)</label>
-            <textarea
-              rows={6}
-              className="w-full border p-2 rounded"
-              value={formData.content}
-              onChange={(e) => setFormData({...formData, content: e.target.value})}
-            />
-          </div>
-        </div>
+    <div className="max-w-2xl mx-auto p-6 bg-white rounded-lg shadow-sm border">
+      <div className="mb-6">
+        <h2 className="text-2xl font-bold tracking-tight">
+          {initialData ? "Chỉnh sửa khóa học" : "Tạo khóa học mới"}
+        </h2>
+        <p className="text-muted-foreground">Điền thông tin chi tiết cho khóa học.</p>
       </div>
 
+      <Form {...form}>
+        <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-6">
+          
+          {/* Title Field */}
+          <FormField
+            control={form.control}
+            name="title"
+            render={({ field }) => (
+              <FormItem>
+                <FormLabel>Tên khóa học</FormLabel>
+                <FormControl>
+                  <Input placeholder="Ví dụ: Luyện thi IELTS Speaking..." {...field} />
+                </FormControl>
+                <FormMessage />
+              </FormItem>
+            )}
+          />
 
-      <div className="flex justify-end gap-3 pt-4">
-        <button
-          onClick={() => router.back()}
-          className="px-4 py-2 text-gray-600 hover:bg-gray-100 rounded"
-        >
-          Hủy
-        </button>
-        <button
-          onClick={handleSave}
-          disabled={loading}
-          className="px-6 py-2 bg-blue-600 text-white rounded hover:bg-blue-700 disabled:opacity-50 font-medium"
-        >
-          {loading ? "Đang lưu..." : "Lưu tất cả"}
-        </button>
-      </div>
+          {/* Category Field */}
+          <FormField
+            control={form.control}
+            name="category"
+            render={({ field }) => (
+              <FormItem>
+                <FormLabel>Danh mục</FormLabel>
+                <Select onValueChange={field.onChange} defaultValue={field.value}>
+                  <FormControl>
+                    <SelectTrigger>
+                      <SelectValue placeholder="Chọn danh mục" />
+                    </SelectTrigger>
+                  </FormControl>
+                  <SelectContent>
+                    <SelectItem value="TIENG_ANH">Tiếng Anh</SelectItem>
+                    <SelectItem value="TIENG_NGA">Tiếng Nga</SelectItem>
+                    <SelectItem value="CNTT">Công nghệ thông tin</SelectItem>
+                    <SelectItem value="KHAC">Khác</SelectItem>
+                  </SelectContent>
+                </Select>
+                <FormMessage />
+              </FormItem>
+            )}
+          />
+
+          {/* Price Field */}
+          <FormField
+            control={form.control}
+            name="price"
+            render={({ field }) => (
+              <FormItem>
+                <FormLabel>Giá khóa học (VNĐ)</FormLabel>
+                <FormControl>
+                  <Input type="number" placeholder="0" {...field} />
+                </FormControl>
+                <FormDescription>Nhập 0 nếu là khóa học miễn phí.</FormDescription>
+                <FormMessage />
+              </FormItem>
+            )}
+          />
+
+          {/* Description Field */}
+          <FormField
+            control={form.control}
+            name="description"
+            render={({ field }) => (
+              <FormItem>
+                <FormLabel>Mô tả ngắn</FormLabel>
+                <FormControl>
+                  <Textarea placeholder="Mô tả nội dung khóa học..." {...field} />
+                </FormControl>
+                <FormMessage />
+              </FormItem>
+            )}
+          />
+
+          {/* Is Published Checkbox */}
+          <FormField
+            control={form.control}
+            name="is_published"
+            render={({ field }) => (
+              <FormItem className="flex flex-row items-start space-x-3 space-y-0 rounded-md border p-4">
+                <FormControl>
+                  <Checkbox
+                    checked={field.value}
+                    onCheckedChange={field.onChange}
+                  />
+                </FormControl>
+                <div className="space-y-1 leading-none">
+                  <FormLabel>Công khai khóa học</FormLabel>
+                  <FormDescription>
+                    Khóa học sẽ hiển thị trên trang chủ nếu được tích chọn.
+                  </FormDescription>
+                </div>
+              </FormItem>
+            )}
+          />
+
+          {/* Action Buttons */}
+          <div className="flex gap-4 pt-4">
+            <Button disabled={isPending} type="submit">
+              {isPending ? "Đang lưu..." : (initialData ? "Cập nhật" : "Tạo mới")}
+            </Button>
+            <Button
+              type="button"
+              variant="outline"
+              onClick={() => router.back()}
+              disabled={isPending}
+            >
+              Hủy bỏ
+            </Button>
+          </div>
+        </form>
+      </Form>
     </div>
   );
 }

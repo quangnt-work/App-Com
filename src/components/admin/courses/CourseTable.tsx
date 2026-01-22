@@ -1,100 +1,135 @@
-// src/app/(admin)/admin/courses/components/CourseTable.tsx
-import { Edit, Trash2, Eye } from 'lucide-react';
-import Link from 'next/link';
-import type { Course, CourseStatus } from '@/types/course'; // Import type chuẩn
+// src/components/admin/courses/CourseTable.tsx
+"use client";
+
+import { useRouter, useSearchParams } from "next/navigation";
+import { formatCurrency } from "@/lib/utils"; // Hàm format tiền tệ helper
+import { Button } from "@/components/ui/button";
+import {
+  Table,
+  TableBody,
+  TableCell,
+  TableHead,
+  TableHeader,
+  TableRow,
+} from "@/components/ui/table";
+import { Badge } from "@/components/ui/badge";
+import { Edit, Trash2, ChevronLeft, ChevronRight } from "lucide-react"; // Icons
 
 interface CourseTableProps {
-  courses: Course[];
-  onDelete: (id: string) => void;
-  onView: (course: Course) => void;
-  isDeletingId: string | null;
+  data: any[]; // Nên define Type Course đầy đủ thay vì any
+  totalCount: number;
+  currentPage: number;
+  pageSize: number;
 }
 
-// Helper function để lấy style và text dựa trên status
-// Giúp code trong JSX gọn hơn và dễ quản lý type
-const getStatusConfig = (status: CourseStatus) => {
-  switch (status) {
-    case 'published':
-      return { label: 'Công khai', className: 'bg-green-100 text-green-800' };
-    case 'hidden':
-      return { label: 'Đang ẩn', className: 'bg-gray-100 text-gray-800' };
-    case 'draft':
-      return { label: 'Bản nháp', className: 'bg-yellow-100 text-yellow-800' };
-    default:
-      return { label: 'Không rõ', className: 'bg-gray-100 text-gray-500' };
-  }
-};
+export default function CourseTable({
+  data,
+  totalCount,
+  currentPage,
+  pageSize,
+}: CourseTableProps) {
+  const router = useRouter();
+  const searchParams = useSearchParams();
 
-export function CourseTable({ courses, onDelete, onView, isDeletingId }: CourseTableProps) {
-  if (courses.length === 0) {
-    return <div className="text-center py-12 text-gray-500">Không tìm thấy khóa học nào.</div>;
-  }
+  // Tính toán số trang
+  const totalPages = Math.ceil(totalCount / pageSize);
+  const hasNext = currentPage < totalPages;
+  const hasPrev = currentPage > 1;
+
+  // Hàm chuyển trang: Update URL Search Params
+  const onPageChange = (newPage: number) => {
+    const params = new URLSearchParams(searchParams.toString());
+    params.set("page", newPage.toString());
+    router.push(`?${params.toString()}`);
+  };
+
+  const handleEdit = (id: string) => {
+    router.push(`/admin/courses/${id}`);
+  };
 
   return (
-    <div className="overflow-x-auto">
-      <table className="w-full text-left border-collapse">
-        <thead>
-          <tr className="bg-gray-50 border-b border-gray-100 text-xs font-semibold text-gray-500 uppercase tracking-wider">
-            <th className="px-6 py-4">Tên khóa học</th>
-            <th className="px-6 py-4">Trạng thái</th>
-            <th className="px-6 py-4">Học viên</th>
-            <th className="px-6 py-4 text-right">Hành động</th>
-          </tr>
-        </thead>
-        <tbody className="divide-y divide-gray-100">
-          {courses.map((course) => {
-            const statusConfig = getStatusConfig(course.status);
-            
-            return (
-              <tr key={course.id} className="hover:bg-gray-50 transition-colors">
-                <td className="px-6 py-4">
-                  <div className="font-medium text-gray-900">{course.title}</div>
-                  <div className="text-xs text-gray-500 mt-0.5">{course.slug}</div>
-                </td>
-                <td className="px-6 py-4">
-                  <span className={`inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium ${statusConfig.className}`}>
-                    {statusConfig.label}
-                  </span>
-                </td>
-                <td className="px-6 py-4 text-sm text-gray-600">
-                  {course.student_count ?? 0} học viên
-                </td>
-                <td className="px-6 py-4">
-                  <div className="flex items-center justify-end gap-2">
-                    <button
-                      onClick={() => onView(course)}
-                      className="p-2 text-gray-400 hover:text-sky-600 hover:bg-sky-50 rounded-lg transition-colors"
-                      title="Xem chi tiết"
+    <div className="space-y-4">
+      {/* Table Content */}
+      <div className="rounded-md border bg-white">
+        <Table>
+          <TableHeader>
+            <TableRow>
+              <TableHead>Tên khóa học</TableHead>
+              <TableHead>Danh mục</TableHead>
+              <TableHead>Giá</TableHead>
+              <TableHead>Trạng thái</TableHead>
+              <TableHead className="text-right">Hành động</TableHead>
+            </TableRow>
+          </TableHeader>
+          <TableBody>
+            {data.length === 0 ? (
+              <TableRow>
+                <TableCell colSpan={5} className="h-24 text-center">
+                  Không tìm thấy khóa học nào.
+                </TableCell>
+              </TableRow>
+            ) : (
+              data.map((course) => (
+                <TableRow key={course.id}>
+                  <TableCell className="font-medium">{course.title}</TableCell>
+                  <TableCell>
+                    <Badge variant="outline">{course.category}</Badge>
+                  </TableCell>
+                  <TableCell>{formatCurrency(course.price)}</TableCell>
+                  <TableCell>
+                    <Badge variant={course.is_published ? "default" : "secondary"}>
+                      {course.is_published ? "Công khai" : "Nháp"}
+                    </Badge>
+                  </TableCell>
+                  <TableCell className="text-right">
+                    <Button
+                      variant="ghost"
+                      size="icon"
+                      onClick={() => handleEdit(course.id)}
                     >
-                      <Eye className="w-4 h-4" />
-                    </button>
+                      <Edit className="h-4 w-4" />
+                    </Button>
+                    {/* Thêm nút xóa có xác nhận tại đây */}
+                  </TableCell>
+                </TableRow>
+              ))
+            )}
+          </TableBody>
+        </Table>
+      </div>
 
-                    <Link 
-                      href={`/admin/courses/${course.id}`} 
-                      className="p-2 text-gray-400 hover:text-blue-600 hover:bg-blue-50 rounded-lg transition-colors"
-                    >
-                      <Edit className="w-4 h-4" />
-                    </Link>
-
-                    <button 
-                      onClick={() => onDelete(course.id)}
-                      disabled={isDeletingId === course.id}
-                      className="p-2 text-gray-400 hover:text-red-600 hover:bg-red-50 rounded-lg transition-colors disabled:opacity-50"
-                      aria-label="Xóa khóa học"
-                    >
-                      {isDeletingId === course.id ? (
-                        <div className="w-4 h-4 border-2 border-red-600 border-t-transparent rounded-full animate-spin" />
-                      ) : (
-                        <Trash2 className="w-4 h-4" />
-                      )}
-                    </button>
-                  </div>
-                </td>
-              </tr>
-            );
-          })}
-        </tbody>
-      </table>
+      {/* Pagination Controls */}
+      <div className="flex items-center justify-between px-2">
+        <div className="text-sm text-muted-foreground">
+          Hiển thị <strong>{(currentPage - 1) * pageSize + 1}</strong> đến{" "}
+          <strong>{Math.min(currentPage * pageSize, totalCount)}</strong> trong tổng số{" "}
+          <strong>{totalCount}</strong> khóa học
+        </div>
+        
+        <div className="flex items-center space-x-2">
+          <Button
+            variant="outline"
+            size="sm"
+            onClick={() => onPageChange(currentPage - 1)}
+            disabled={!hasPrev}
+          >
+            <ChevronLeft className="h-4 w-4 mr-2" />
+            Trước
+          </Button>
+          <div className="text-sm font-medium">
+            Trang {currentPage} / {totalPages || 1}
+          </div>
+          <Button
+            variant="outline"
+            size="sm"
+            onClick={() => onPageChange(currentPage + 1)}
+            disabled={!hasNext}
+          >
+            Sau
+            <ChevronRight className="h-4 w-4 ml-2" />
+          </Button>
+        </div>
+      </div>
     </div>
   );
 }

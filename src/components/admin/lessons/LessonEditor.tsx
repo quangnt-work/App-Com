@@ -13,8 +13,8 @@ import { Textarea } from "@/components/ui/textarea";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { Switch } from "@/components/ui/switch";
 import { Label } from "@/components/ui/label";
-import { RichTextEditor } from "./RichTextEditor"; // Component có sẵn của bạn
-import { handleImageUpload } from "@/components/editor/ImageUploadHandler"; // Component upload ảnh của bạn
+import { RichTextEditor } from "./RichTextEditor"; 
+import { handleImageUpload } from "@/components/editor/ImageUploadHandler";
 
 export default function LessonEditor({ initialData, isNew }: { initialData?: any, isNew: boolean }) {
   const router = useRouter();
@@ -65,7 +65,8 @@ export default function LessonEditor({ initialData, isNew }: { initialData?: any
                   <SelectContent>
                     <SelectItem value="GENERAL">Tổng hợp</SelectItem>
                     <SelectItem value="IELTS">IELTS</SelectItem>
-                    <SelectItem value="TIENG_NGA">Tiếng Nga</SelectItem>
+                  <SelectItem value="TIENG_NGA">Tiếng Nga</SelectItem>
+                  <SelectItem value="TIENG_NGA">Tiếng Anh</SelectItem>
                   </SelectContent>
                 </Select>
              </div>
@@ -73,8 +74,7 @@ export default function LessonEditor({ initialData, isNew }: { initialData?: any
           
           <div className="space-y-4">
              <Label>Ảnh đại diện (Thumbnail)</Label>
-             {/* Component Upload Ảnh của bạn */}
-             <ImageUpload 
+             <handleImageUpload 
                 value={form.getValues("thumbnail")} 
                 onChange={(url) => form.setValue("thumbnail", url)} 
              />
@@ -124,7 +124,7 @@ export default function LessonEditor({ initialData, isNew }: { initialData?: any
              checked={form.watch("status")} 
              onCheckedChange={(val) => form.setValue("status", val)} 
            />
-           <span className="text-sm text-gray-500">{form.watch("status") ? "Đang bán/hiển thị" : "Nháp (Ẩn)"}</span>
+           <span className="text-sm text-gray-500">{form.watch("status") ? "Công khai" : "Ẩn"}</span>
         </div>
 
         <div className="flex justify-end gap-3 pt-4">

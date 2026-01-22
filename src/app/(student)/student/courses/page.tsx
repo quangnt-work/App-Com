@@ -3,28 +3,11 @@ import { CourseHero } from '@/components/student/courses/CourseHero'
 import { CourseSection } from '@/components/student/courses/CourseSection'
 import { Button } from '@/components/ui/button'
 import { Inbox } from 'lucide-react'
-
-// Hàm lấy dữ liệu từ DB
-async function getCourses() {
-  const supabase = await createClient()
-  
-  // Lấy tất cả khóa học, sắp xếp mới nhất lên đầu
-  const { data, error } = await supabase
-    .from('courses')
-    .select('*')
-    .order('created_at', { ascending: false })
-
-  if (error) {
-    console.error('Error fetching courses:', error)
-    return []
-  }
-
-  return data || []
-}
+import { getCourses } from '@/actions/course-actions'
 
 export default async function CoursesPage() {
   // 1. Fetch dữ liệu thật
-  const allCourses = await getCourses()
+  const allCourses = await getCourses();
 
   // 2. Phân loại khóa học (Filtering in Memory)
   // Lưu ý: Nếu dữ liệu lớn, nên filter từ câu query Supabase. Với demo nhỏ thì filter JS ok.

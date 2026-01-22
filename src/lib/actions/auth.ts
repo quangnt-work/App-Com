@@ -3,6 +3,8 @@
 import { createClient } from '@/lib/supabase/server'
 import { redirect } from 'next/navigation'
 import { revalidatePath } from 'next/cache'
+import { LoginSchema, LoginInput } from '../schemas/auth'
+import { success } from 'zod'
 
 // ==========================================
 // 1. ĐỊNH NGHĨA KIỂU DỮ LIỆU (TYPES)
@@ -26,7 +28,7 @@ export type AuthState = {
 // ==========================================
 // 2. SERVER ACTION: SIGNUP
 // ==========================================
-export async function signup(data: SignupData): Promise<AuthState> {
+export async function signup(data: SignupData){
   const supabase = await createClient()
   const { fullName, username, password } = data
   
@@ -56,16 +58,18 @@ export async function signup(data: SignupData): Promise<AuthState> {
 // ==========================================
 // 3. SERVER ACTION: LOGIN
 // ==========================================
-export async function login(prevState: AuthState, formData: FormData): Promise<AuthState> {
+export async function login(data: LoginInput) {
+  const validatedFields = LoginSchema.safeParse(data);
+  if (!validatedFields.success) {
+    return {success: false, message: "Dữ liệu không hợp lệ"}
+  }
   const supabase = await createClient()
-  
-  const identifier = formData.get('identifier') as string
-  const password = formData.get('password') as string
+  const { identifier, password } = validatedFields.data;
 
   // Logic: Nếu không có @ thì tự thêm đuôi email
   let email = identifier
   if (!identifier.includes('@')) {
-    email = `${identifier}@student.local`
+    email = `${identifier}@test.qa`
   }
 
   // A. Xác thực với Supabase Auth

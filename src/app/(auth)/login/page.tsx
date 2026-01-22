@@ -1,51 +1,48 @@
-'use client'
+// src/app/(auth)/login/page.tsx
+"use client"
 
-import { useState, useEffect } from "react"
-import { useFormState, useFormStatus } from "react-dom"
+import { useState, useTransition } from "react"
+import { useForm } from "react-hook-form"
+import { zodResolver } from "@hookform/resolvers/zod"
 import { useRouter } from "next/navigation"
-import { login } from "@/lib/actions/auth"
-import { Button } from "../../../components/ui/button"
-import { Input } from "../../../components/ui/input"
-import { Label } from "../../../components/ui/label"
-import { Eye, EyeOff, Loader2 } from "lucide-react"
-import { toast } from "sonner" // Đảm bảo đã npm install sonner
+import { login } from "@/lib/actions/auth" // Server Action
+import { LoginSchema, LoginInput } from "@/lib/schemas/auth" // Schema vừa tạo
 
-// Component nút Submit
-function SubmitButton() {
-  const { pending } = useFormStatus()
-  return (
-    <Button type="submit" className="w-full bg-sky-500 hover:bg-sky-600 py-6 text-lg" disabled={pending}>
-      {pending ? <><Loader2 className="mr-2 h-4 w-4 animate-spin" /> Đang xử lý...</> : "Đăng nhập"}
-    </Button>
-  )
-}
+import { Button } from "@/components/ui/button"
+import { Input } from "@/components/ui/input"
+import { Form, FormControl, FormField, FormItem, FormLabel, FormMessage } from "@/components/ui/form"
+import { Eye, EyeOff, Loader2 } from "lucide-react"
+import { toast } from "sonner"
+import Link from "next/link"
 
 export default function LoginPage() {
-  const [state, action] = useFormState(login, undefined)
-  const [showPassword, setShowPassword] = useState(false)
   const router = useRouter()
+  const [isPending, startTransition] = useTransition()
+  const [showPassword, setShowPassword] = useState(false)
 
-  // Lắng nghe kết quả login
-  useEffect(() => {
-    if (state?.success) {
-      toast.success(state.message)
-      
-      // Delay nhỏ để user kịp đọc thông báo rồi mới chuyển trang
-      const timer = setTimeout(() => {
-        if (state.role === 'admin') {
-          router.push('/admin/dashboard')
+  const form = useForm<LoginInput>({
+    resolver: zodResolver(LoginSchema),
+    defaultValues: { identifier: "", password: "" },
+  })
+
+  const onSubmit = (values: LoginInput) => {
+    startTransition(async () => {
+      try {
+        const result = await login(values) // Cần update action login nhận object thay vì FormData
+
+        if (result.success) {
+          toast.success(result.message)
+          // Redirect logic nên để Server Action trả về url hoặc xử lý tại đây
+          const redirectUrl = result.role === 'admin' ? '/admin/dashboard' : '/student/profile'
+          router.push(redirectUrl)
         } else {
-          router.push('/student/profile')
+          toast.error(result.message)
         }
-      }, 300)
-      
-      return () => clearTimeout(timer)
-    } 
-    
-    if (state?.success === false) {
-      toast.error(state.message)
-    }
-  }, [state, router])
+      } catch (error) {
+        toast.error("Đã có lỗi xảy ra. Vui lòng thử lại.")
+      }
+    })
+  }
 
   return (
     <div className="space-y-6">
@@ -54,37 +51,58 @@ export default function LoginPage() {
         <p className="text-slate-500">Nhập thông tin để tiếp tục.</p>
       </div>
 
-      <form action={action} className="space-y-4">
-        <div className="space-y-2">
-          <Label>Username hoặc Email</Label>
-          <Input name="identifier" placeholder="username123" required className="bg-slate-50 border-slate-200" />
-        </div>
+      <Form {...form}>
+        <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-4">
+          <FormField
+            control={form.control}
+            name="identifier"
+            render={({ field }) => (
+              <FormItem>
+                <FormLabel>Username hoặc Email</FormLabel>
+                <FormControl>
+                  <Input placeholder="username123" {...field} className="bg-slate-50 border-slate-200" />
+                </FormControl>
+                <FormMessage />
+              </FormItem>
+            )}
+          />
 
-        <div className="space-y-2">
-          <Label>Mật khẩu</Label>
-          <div className="relative">
-            <Input 
-              name="password" 
-              type={showPassword ? "text" : "password"} 
-              placeholder="••••••••" 
-              required 
-              className="bg-slate-50 border-slate-200 pr-10" 
-            />
-            <button
-              type="button"
-              onClick={() => setShowPassword(!showPassword)}
-              className="absolute right-3 top-1/2 -translate-y-1/2 text-slate-400"
-            >
-              {showPassword ? <EyeOff size={20} /> : <Eye size={20} />}
-            </button>
-          </div>
-        </div>
+          <FormField
+            control={form.control}
+            name="password"
+            render={({ field }) => (
+              <FormItem>
+                <FormLabel>Mật khẩu</FormLabel>
+                <div className="relative">
+                  <FormControl>
+                    <Input
+                      type={showPassword ? "text" : "password"}
+                      placeholder="••••••••"
+                      {...field}
+                      className="bg-slate-50 border-slate-200 pr-10"
+                    />
+                  </FormControl>
+                  <button
+                    type="button"
+                    onClick={() => setShowPassword(!showPassword)}
+                    className="absolute right-3 top-1/2 -translate-y-1/2 text-slate-400 hover:text-slate-600"
+                  >
+                    {showPassword ? <EyeOff size={20} /> : <Eye size={20} />}
+                  </button>
+                </div>
+                <FormMessage />
+              </FormItem>
+            )}
+          />
 
-        <SubmitButton />
-      </form>
-      
+          <Button type="submit" className="w-full bg-sky-500 hover:bg-sky-600 py-6 text-lg" disabled={isPending}>
+            {isPending ? <><Loader2 className="mr-2 h-4 w-4 animate-spin" /> Đang đăng nhập...</> : "Đăng nhập"}
+          </Button>
+        </form>
+      </Form>
+
       <div className="text-center text-sm">
-         Chưa có tài khoản? <a href="/register" className="text-sky-500 font-bold hover:underline">Đăng ký ngay</a>
+        Chưa có tài khoản? <Link href="/register" className="text-sky-500 font-bold hover:underline">Đăng ký ngay</Link>
       </div>
     </div>
   )

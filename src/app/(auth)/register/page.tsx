@@ -12,6 +12,7 @@ import { Form, FormControl, FormField, FormItem, FormLabel, FormMessage } from "
 import { Loader2 } from "lucide-react"
 import { toast } from "sonner"
 import Link from "next/link"
+import { RegisterInput } from "@/lib/schemas/auth"
 
 const registerSchema = z.object({
   fullName: z.string().min(2, "Họ tên quá ngắn"),
@@ -32,7 +33,7 @@ export default function RegisterPage() {
     defaultValues: { fullName: "", username: "", password: "", confirmPassword: "" },
   })
 
-  async function onSubmit(values: z.infer<typeof registerSchema>) {
+  async function onSubmit(values: RegisterInput) {
     setIsLoading(true)
     try {
       const result = await signup(values)

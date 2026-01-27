@@ -18,7 +18,7 @@ export default async function LessonsPage({
   if (error) return <div>Lỗi tải dữ liệu</div>;
 
   return (
-    <div className="p-6 space-y-6">
+    <div className="min-h-screen bg-slate-50 p-6 space-y-8 font-sans text-slate-900 max-w-[1600px] mx-auto">
       <div className="flex justify-between items-center">
         <div>
            <h1 className="text-2xl font-bold">Quản lý bài học</h1>

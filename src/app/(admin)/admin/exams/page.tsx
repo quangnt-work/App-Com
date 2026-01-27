@@ -78,7 +78,7 @@ export default async function ExamManagementPage() {
 
 
   return (
-    <div className="min-h-screen bg-slate-50 p-6 space-y-8 font-sans text-slate-900">
+    <div className="min-h-screen bg-slate-50 p-6 space-y-8 font-sans text-slate-900 max-w-[1600px] mx-auto">
      
       {/* 1. HEADER */}
       <div className="flex flex-col md:flex-row justify-between items-start md:items-center gap-4">
@@ -88,7 +88,7 @@ export default async function ExamManagementPage() {
              <span className="text-slate-300">/</span>
              <span className="text-xs font-bold text-slate-500 uppercase tracking-wide">Quản lý đề thi</span>
           </div>
-          <h1 className="text-3xl font-extrabold text-slate-900">Ngân hàng đề thi</h1>
+          <h1 className="text-3xl font-extrabold text-slate-900"> Ngân hàng đề thi</h1>
           <p className="text-slate-500 mt-1 max-w-2xl text-sm">
             Tạo và quản lý các bài kiểm tra, đề thi thử và bài tập về nhà.
           </p>

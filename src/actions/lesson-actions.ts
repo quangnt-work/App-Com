@@ -70,8 +70,6 @@ export async function upsertLesson(formData: LessonInput) {
   const data = validated.data;
 
   try {
-    // 2. Tự động tạo Slug nếu chưa có hoặc khi đổi tên
-    // Logic: Nếu là tạo mới hoặc user xóa slug rỗng -> tự tạo lại từ title
     let finalSlug = data.slug;
     if (!finalSlug || finalSlug.trim() === '') {
       finalSlug = await generateUniqueSlug(data.title, data.id);

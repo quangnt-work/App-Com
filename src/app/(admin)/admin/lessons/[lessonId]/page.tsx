@@ -1,38 +1,43 @@
+// src/app/(admin)/admin/lessons/[lessonId]/page.tsx
 import { createClient } from '@/lib/supabase/server';
-import LessonEditor from '@/components/admin/lessons/LessonEditor'; // Import từ folder components vừa tạo
+import LessonEditor from '@/components/admin/lessons/LessonEditor';
 import { redirect } from 'next/navigation';
 
 interface PageProps {
   params: Promise<{
-    courseId: string;
     lessonId: string;
   }>;
 }
 
 export default async function LessonPage({ params }: PageProps) {
-  const resolvedParams = await params;
-  const isNew = resolvedParams.lessonId === 'new';
+  // 1. Resolve params (Next.js 15+)
+  const { lessonId } = await params;
+
+  // 2. Xác định chế độ: Nếu lessonId là 'new' -> Tạo mới
+  const isNew = lessonId === 'new';
   let initialData = null;
 
+  // 3. Nếu là chế độ Sửa, fetch dữ liệu từ DB
   if (!isNew) {
     const supabase = await createClient();
     const { data, error } = await supabase
       .from('lessons')
       .select('*')
-      .eq('id', resolvedParams.lessonId)
+      .eq('id', lessonId)
       .single();
 
     if (error || !data) {
-       // redirect về danh sách nếu lỗi
-       return redirect(`/admin/lessons/${resolvedParams.courseId}`);
+      // Nếu ID không tồn tại, redirect về trang danh sách
+      return redirect('/admin/lessons');
     }
     initialData = data;
   }
 
+  // 4. Render Editor (UI giữ nguyên)
   return (
     <div className="min-h-screen bg-slate-50 pb-20">
       <LessonEditor
-        lessonId={resolvedParams.lessonId}
+        lessonId={lessonId}
         initialData={initialData}
         isNew={isNew}
       />

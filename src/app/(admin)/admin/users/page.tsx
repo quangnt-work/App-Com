@@ -20,9 +20,9 @@ export default async function UserManagementPage({
   const params = await searchParams;
   
   // Parse các param từ URL (có giá trị mặc định)
-  const page = Number(params.page) || 1;
-  const query = (params.query as string) || "";
-  const role = (params.role as string) || "ALL";
+  const page = Number(params?.page) || 1;
+  const query = typeof params?.query === 'string' ? params.query : "";
+  const role = typeof params?.role === 'string' ? params.role : "ALL";
   const pageSize = 10;
 
   // Gọi Server Action (Fetch dữ liệu ngay tại server)

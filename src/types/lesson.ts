@@ -28,7 +28,7 @@ export interface Lesson extends Tables<'lessons'>{
 }
 
 // Input dùng cho form tạo/sửa
-export interface LessonInput {
+export interface LessonFormData {
   id?: string;
   title: string;
   slug?: string;
@@ -37,8 +37,15 @@ export interface LessonInput {
   type: LessonType;
   content?: string;
   file_url?: string;
+  audio_url: string | null;
   file_mime_type?: string;
   file_size?: number;
   category: string;
   status: boolean; // Mapper từ UI (switch) sang DB ('published'/'draft')
+  questions: Array<{
+    id: string;
+    question: string;
+    options: string[];
+    correct_answer: number; // Index của đáp án đúng
+  }>;
 }

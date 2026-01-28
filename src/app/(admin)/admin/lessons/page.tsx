@@ -15,7 +15,7 @@ export default async function LessonsPage({
 
   const { data, count, error } = await getLessons(page, pageSize, params.query, params.category);
 
-  if (error) return <div>Lỗi tải dữ liệu</div>;
+  if (error) return <div className="p-6 text-red-500">Lỗi tải dữ liệu</div>;
 
   return (
     <div className="min-h-screen bg-slate-50 p-6 space-y-8 font-sans text-slate-900 max-w-[1600px] mx-auto">
@@ -32,8 +32,8 @@ export default async function LessonsPage({
       </div>
       
       <LessonTable
-        data={data || []}
-        totalCount={count || 0}
+        lessons={data || []}
+        total={count || 0}
         currentPage={page}
         pageSize={pageSize}
       />

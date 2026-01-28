@@ -1,14 +1,17 @@
 // src/components/admin/lessons/LessonFilters.tsx
 "use client";
 
+
 import { Search, User } from "lucide-react";
 import { usePathname, useRouter, useSearchParams } from "next/navigation";
-import { useDebouncedCallback } from "use-debounce"; 
+import { useDebouncedCallback } from "use-debounce";
+
 
 export default function LessonFilters() {
   const searchParams = useSearchParams();
   const pathname = usePathname();
   const { replace } = useRouter();
+
 
   const handleSearch = useDebouncedCallback((term: string) => {
     const params = new URLSearchParams(searchParams);
@@ -21,6 +24,7 @@ export default function LessonFilters() {
     replace(`${pathname}?${params.toString()}`);
   }, 300);
 
+
   const handleStatusFilter = (status: string) => {
     const params = new URLSearchParams(searchParams);
     params.set("page", "1");
@@ -32,7 +36,9 @@ export default function LessonFilters() {
     replace(`${pathname}?${params.toString()}`);
   };
 
+
   const currentStatus = searchParams.get("status") || "all";
+
 
   return (
     <div className="bg-white p-4 rounded-lg shadow-sm border border-gray-100 mb-6">
@@ -51,6 +57,7 @@ export default function LessonFilters() {
           </div>
         </div>
 
+
         <div className="md:col-span-4">
           <label className="block text-sm font-medium text-gray-700 mb-1">Danh mục</label>
           <div className="relative">
@@ -62,6 +69,7 @@ export default function LessonFilters() {
             </select>
           </div>
         </div>
+
 
         <div className="md:col-span-3">
           <label className="block text-sm font-medium text-gray-700 mb-1">Trạng thái</label>

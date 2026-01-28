@@ -10,7 +10,6 @@ interface LessonSectionProps {
 }
 
 export function LessonSection({ title, icon, lessons }: LessonSectionProps) {
-  // === LOGIC QUAN TRỌNG: Nếu không có bài nào -> Không hiển thị gì ===
   if (!lessons || lessons.length === 0) {
     return null; 
   }

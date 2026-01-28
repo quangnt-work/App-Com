@@ -7,6 +7,7 @@ import DeleteLessonButton from "./DeleteLessonButton";
 import { format } from "date-fns";
 import { vi } from "date-fns/locale";
 
+
 // Định nghĩa Type dựa trên DB schema của bạn
 type Lesson = {
   id: string;
@@ -18,6 +19,7 @@ type Lesson = {
   type: string | null; // video, text...
 };
 
+
 export default function LessonTable({ data }: { data: Lesson[] }) {
   // Helper render icon loại bài học
   const getTypeIcon = (type: string | null) => {
@@ -27,6 +29,7 @@ export default function LessonTable({ data }: { data: Lesson[] }) {
       default: return <ListFilter className="w-3 h-3 text-slate-500" />;
     }
   };
+
 
   return (
     <div className="bg-white rounded-xl border border-slate-200 shadow-sm overflow-hidden">
@@ -66,13 +69,14 @@ export default function LessonTable({ data }: { data: Lesson[] }) {
                   </div>
                 </td>
 
+
                 {/* Cột Danh Mục */}
                 <td className="py-4 px-6">
                   <Badge variant="outline" className="font-normal text-slate-600 bg-slate-100 border-slate-200">
                     {lesson.category || "Chưa phân loại"}
                   </Badge>
                 </td>
-                
+               
                  {/* Cột Loại */}
                 <td className="py-4 px-6">
                    <div className="flex items-center gap-2 capitalize text-slate-600">
@@ -81,12 +85,14 @@ export default function LessonTable({ data }: { data: Lesson[] }) {
                    </div>
                 </td>
 
+
                 {/* Cột Ngày Tạo */}
                 <td className="py-4 px-6 text-slate-600">
-                  {lesson.created_at 
-                    ? format(new Date(lesson.created_at), "dd/MM/yyyy", { locale: vi }) 
+                  {lesson.created_at
+                    ? format(new Date(lesson.created_at), "dd/MM/yyyy", { locale: vi })
                     : "-"}
                 </td>
+
 
                 {/* Cột Trạng Thái */}
                 <td className="py-4 px-6 text-center">
@@ -101,6 +107,7 @@ export default function LessonTable({ data }: { data: Lesson[] }) {
                     {lesson.status === "published" ? "Công khai" : "Nháp"}
                   </span>
                 </td>
+
 
                 {/* Cột Hành Động */}
                 <td className="py-4 px-6 text-right">
@@ -124,7 +131,7 @@ export default function LessonTable({ data }: { data: Lesson[] }) {
         </table>
         {data.length === 0 && (
           <div className="p-12 text-center text-slate-500">
-            Không tìm thấy bài học nào phù hợp.
+            Không có bài học.
           </div>
         )}
       </div>

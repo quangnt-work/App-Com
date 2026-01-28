@@ -1,13 +1,16 @@
 "use client";
 
+
 import { Trash2 } from "lucide-react";
 import { Button } from "@/components/ui/button";
-import { deleteLesson } from "@/actions/lesson-actions"; 
+import { deleteLesson } from "@/actions/lesson-actions";
 import { toast } from "sonner";
 import { useTransition } from "react";
 
+
 export default function DeleteLessonButton({ id, title }: { id: string, title: string }) {
   const [isPending, startTransition] = useTransition();
+
 
   const handleDelete = () => {
     if (confirm(`Bạn có chắc muốn xóa bài "${title}"? hành động này không thể hoàn tác.`)) {
@@ -18,6 +21,7 @@ export default function DeleteLessonButton({ id, title }: { id: string, title: s
       });
     }
   };
+
 
   return (
     <Button

@@ -1,7 +1,9 @@
+import { Tables } from './database-custom';
+
 export type LessonType = 'text' | 'file' | 'video';
 export type LessonStatus = 'draft' | 'published' | 'archived';
 
-export interface Lesson {
+export interface Lesson extends Tables<'lessons'>{
   id: string;
   title: string;
   slug: string | null;

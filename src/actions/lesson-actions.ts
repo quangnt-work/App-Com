@@ -13,6 +13,12 @@ export async function getLessons(page = 1, pageSize = 10, search = "", category 
   return { data, count, error };
 }
 
+export async function getLesson(id: string) {
+  const { data, error } = await LessonService.getDetail(id);
+  if (error) return { error: error.message };
+  return { data };
+}
+
 export async function upsertLesson(formData: LessonInput) {
   // 1. Validate Input
   const validated = LessonSchema.safeParse(formData);

@@ -37,5 +37,10 @@ export const LessonRepository = {
   async delete(id: string) {
     const supabase = await createClient();
     return supabase.from('lessons').delete().eq('id', id);
-  }
+  },
+
+  async getById(id: string) {
+  const supabase = await createClient();
+  return supabase.from('lessons').select('*').eq('id', id).single();
+  },
 };

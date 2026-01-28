@@ -70,5 +70,9 @@ export const LessonService = {
   async delete(id: string) {
     await requireAdmin();
     return await LessonRepository.delete(id);
-  }
+  },
+
+  async getDetail(id: string) {
+  return await LessonRepository.getById(id);
+  },
 };

@@ -1,101 +1,126 @@
-// components/lessons/sections/quiz-builder.tsx
-import { HelpCircle, Plus } from 'lucide-react';
-
-interface Question {
-  id: string;
-  question: string;
-  options: string[];
-  correct_answer: number;
-}
+import { useFieldArray, Control } from "react-hook-form";
+import { LessonInput } from "@/lib/schemas/lesson";
+import { FormControl, FormField, FormItem, FormLabel, FormMessage } from "@/components/ui/form";
+import { Input } from "@/components/ui/input";
+import { Button } from "@/components/ui/button";
+import { RadioGroup, RadioGroupItem } from "@/components/ui/radio-group";
+import { Plus, Trash2, HelpCircle } from "lucide-react";
 
 interface QuizBuilderProps {
-  questions: Question[];
-  onChange: (questions: Question[]) => void;
+  control: Control<LessonInput>;
 }
 
-export default function QuizBuilder({ questions, onChange }: QuizBuilderProps) {
-  
-  const addQuestion = () => {
-    const newQ: Question = {
-      id: Math.random().toString(36).substr(2, 9),
-      question: '',
-      options: ['', '', '', ''],
-      correct_answer: 0
-    };
-    onChange([...questions, newQ]);
-  };
-
-  const updateQuestion = (index: number, field: keyof Question, value: any) => {
-    const newQs = [...questions];
-    newQs[index] = { ...newQs[index], [field]: value };
-    onChange(newQs);
-  };
-
-  const updateOption = (qIndex: number, optIndex: number, value: string) => {
-    const newQs = [...questions];
-    newQs[qIndex].options[optIndex] = value;
-    onChange(newQs);
-  };
+export default function QuizBuilder({ control }: QuizBuilderProps) {
+  // Hook quản lý mảng động
+  const { fields, append, remove } = useFieldArray({
+    control,
+    name: "questions",
+  });
 
   return (
-    <div className="bg-white rounded-lg shadow-sm border border-gray-100 p-6">
+    <div className="bg-white rounded-xl shadow-sm border border-gray-100 p-6">
       <div className="flex items-center justify-between mb-6">
         <div className="flex items-center gap-2">
-          <HelpCircle className="w-5 h-5 text-blue-500" />
-          <h3 className="font-semibold text-lg text-gray-800">Bài tập & Trắc nghiệm</h3>
+          <div className="p-2 bg-orange-50 rounded-lg">
+            <HelpCircle className="w-5 h-5 text-orange-600" />
+          </div>
+          <h3 className="font-semibold text-lg text-gray-800">Bài tập trắc nghiệm</h3>
         </div>
-        <div className="bg-gray-100 p-1 rounded-lg flex text-xs font-medium">
-             <button className="px-3 py-1 bg-white shadow-sm rounded">Nhập thủ công</button>
-             <button className="px-3 py-1 text-gray-500">Tải file câu hỏi</button>
-        </div>
+        <span className="text-sm text-gray-500 font-medium bg-gray-100 px-3 py-1 rounded-full">
+          {fields.length} câu hỏi
+        </span>
       </div>
 
-      <div className="space-y-6">
-        {questions.map((q, qIdx) => (
-          <div key={q.id} className="border border-gray-200 rounded-lg p-4 bg-gray-50">
-            <div className="flex items-center gap-2 mb-3">
-              <span className="bg-cyan-500 text-white text-xs font-bold px-2 py-1 rounded">Câu {qIdx + 1}</span>
-              <span className="text-sm text-gray-500 font-medium">Trắc nghiệm (Multiple Choice)</span>
-            </div>
+      <div className="space-y-8">
+        {fields.map((field, index) => (
+          <div key={field.id} className="relative p-6 border rounded-xl bg-gray-50/30 group hover:border-blue-200 transition-colors">
+            
+            {/* Nút xóa câu hỏi */}
+            <Button
+              type="button"
+              variant="ghost"
+              size="icon"
+              className="absolute top-4 right-4 text-gray-400 hover:text-red-500 hover:bg-red-50 transition-colors"
+              onClick={() => remove(index)}
+            >
+              <Trash2 className="w-4 h-4" />
+            </Button>
 
-            {/* Input câu hỏi */}
-            <input
-              className="w-full mb-4 px-3 py-2 border rounded bg-white"
-              placeholder="Nhập nội dung câu hỏi..."
-              value={q.question}
-              onChange={(e) => updateQuestion(qIdx, 'question', e.target.value)}
-            />
+            <div className="space-y-4 pr-8">
+              {/* Nội dung câu hỏi */}
+              <FormField
+                control={control}
+                name={`questions.${index}.question`}
+                render={({ field }) => (
+                  <FormItem>
+                    <FormLabel className="text-base font-semibold text-gray-700">Câu hỏi {index + 1}</FormLabel>
+                    <FormControl>
+                      <Input {...field} placeholder="Nhập câu hỏi..." className="bg-white" />
+                    </FormControl>
+                    <FormMessage />
+                  </FormItem>
+                )}
+              />
 
-            {/* Grid đáp án */}
-            <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-              {q.options.map((opt, optIdx) => (
-                <div key={optIdx} className="flex items-center gap-2 bg-white border rounded px-3 py-2">
-                  <input 
-                    type="radio" 
-                    name={`correct-${q.id}`} 
-                    checked={q.correct_answer === optIdx}
-                    onChange={() => updateQuestion(qIdx, 'correct_answer', optIdx)}
-                    className="w-4 h-4 text-blue-600"
-                  />
-                  <input
-                    className="flex-1 outline-none text-sm"
-                    placeholder={`Đáp án ${optIdx + 1}`}
-                    value={opt}
-                    onChange={(e) => updateOption(qIdx, optIdx, e.target.value)}
-                  />
-                </div>
-              ))}
+              {/* Các lựa chọn đáp án & Đáp án đúng */}
+              <div className="mt-4">
+                <FormLabel className="text-sm text-gray-600 mb-2 block">Đáp án (Chọn chấm tròn cho đáp án đúng)</FormLabel>
+                
+                {/* Controller cho Radio Group (Correct Answer) */}
+                <FormField
+                  control={control}
+                  name={`questions.${index}.correct_answer`}
+                  render={({ field: correctField }) => (
+                    <RadioGroup
+                      onValueChange={(val) => correctField.onChange(parseInt(val))}
+                      value={correctField.value.toString()}
+                      className="grid grid-cols-1 md:grid-cols-2 gap-4"
+                    >
+                      {[0, 1, 2, 3].map((optIndex) => (
+                        <div key={optIndex} className="flex items-center gap-3 bg-white p-3 rounded-lg border focus-within:ring-2 ring-blue-500/20">
+                          <RadioGroupItem value={optIndex.toString()} id={`q${index}-opt${optIndex}`} />
+                          
+                          {/* Input cho text đáp án */}
+                          <FormField
+                            control={control}
+                            name={`questions.${index}.options.${optIndex}`}
+                            render={({ field: optionField }) => (
+                              <div className="flex-1">
+                                <Input 
+                                  {...optionField} 
+                                  placeholder={`Đáp án ${String.fromCharCode(65 + optIndex)}`}
+                                  className="border-0 shadow-none focus-visible:ring-0 px-0 h-auto py-1"
+                                />
+                              </div>
+                            )}
+                          />
+                        </div>
+                      ))}
+                    </RadioGroup>
+                  )}
+                />
+                 {/* Hiển thị lỗi nếu chưa chọn đáp án đúng (tùy chọn) */}
+                 <p className="text-red-500 text-xs mt-2 min-h-[1rem]">
+                    {control.getFieldState(`questions.${index}.correct_answer`).error?.message}
+                 </p>
+              </div>
             </div>
           </div>
         ))}
 
-        {/* Nút thêm mới */}
-        <button 
-          onClick={addQuestion}
-          className="w-full py-4 border-2 border-dashed border-gray-300 rounded-lg text-gray-500 hover:border-blue-500 hover:text-blue-500 transition flex items-center justify-center gap-2"
+        {/* Nút thêm câu hỏi */}
+        <Button
+          type="button"
+          variant="outline"
+          onClick={() => append({ 
+            question: "", 
+            options: ["", "", "", ""], 
+            correct_answer: 0 
+          })}
+          className="w-full py-6 border-dashed border-2 hover:border-blue-500 hover:text-blue-600 hover:bg-blue-50 transition-all"
         >
-          <Plus className="w-5 h-5" /> Thêm câu hỏi mới
-        </button>
+          <Plus className="w-5 h-5 mr-2" /> Thêm câu hỏi mới
+        </Button>
       </div>
     </div>
   );

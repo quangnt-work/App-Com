@@ -5,21 +5,25 @@ import LessonTable from "@/components/admin/lessons/LessonTable";
 import { getLessons } from "@/actions/lesson-actions";
 import { Skeleton } from "@/components/ui/skeleton";
 
+interface LessonsPageProps {
+  searchParams: Promise<{
+    q?: string;
+    page?: string;
+    category?: string;
+  }>;
+}
 
 export const metadata = {
   title: "Quản lý bài học | Admin Dashboard",
 };
 
 
-export default async function LessonsPage({
-  searchParams,
-}: {
-  searchParams?: { q?: string; page?: string; category?: string };
-}) {
+export default async function LessonsPage({ searchParams }: LessonsPageProps) {
+  const params = await searchParams;
   // 1. Lấy params từ URL
-  const query = searchParams?.q || "";
-  const page = Number(searchParams?.page) || 1;
-  const category = searchParams?.category || "";
+  const query = params?.q || "";
+  const page = Number(params?.page) || 1;
+  const category = params?.category || "";
  
   // 2. Gọi Server Action lấy dữ liệu
   // Lưu ý: getLessons trong file actions trả về { data, count, error }

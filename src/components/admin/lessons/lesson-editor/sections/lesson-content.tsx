@@ -1,96 +1,180 @@
-// components/lessons/sections/lesson-content.tsx
-import { FileText, Upload, File as FileIcon, Trash2, Eye } from 'lucide-react';
-import { cn } from '@/lib/utils'; // Utility class helper
+import { useState } from "react";
+import { UseFormReturn } from "react-hook-form";
+import { LessonInput } from "@/lib/schemas/lesson";
+import { FormControl, FormField, FormItem, FormLabel, FormMessage } from "@/components/ui/form";
+import { Textarea } from "@/components/ui/textarea";
+import { RadioGroup, RadioGroupItem } from "@/components/ui/radio-group";
+import { FileText, PenTool, X, File as FileIcon, Loader2 } from "lucide-react";
+import { Label } from "@/components/ui/label";
+import { Button } from "@/components/ui/button";
+import { toast } from "sonner";
+
+// Import FileDropzone từ đường dẫn shared
+import FileDropzone from "../shared/file-dropzone";
 
 interface LessonContentProps {
-  contentType: 'file' | 'text';
-  fileUrl: string | null;
-  onChange: (field: string, value: any) => void;
+  form: UseFormReturn<LessonInput>;
 }
 
-export default function LessonContent({ contentType, fileUrl, onChange }: LessonContentProps) {
-  
-  const handleFileUpload = (e: React.ChangeEvent<HTMLInputElement>) => {
-    // Xử lý upload lên Supabase Storage tại đây
-    const file = e.target.files?.[0];
-    if (file) {
-      // Mock upload success
-      onChange('content_url', URL.createObjectURL(file)); 
+export default function LessonContent({ form }: LessonContentProps) {
+  const type = form.watch("type");
+  const [isUploading, setIsUploading] = useState(false);
+
+  // Hàm xử lý khi FileDropzone trả về file
+  const handleFileUpload = async (file: File, onChange: (url: string) => void) => {
+    try {
+      setIsUploading(true);
+      
+      // --- LOGIC UPLOAD CẦN CHÈN VÀO ĐÂY ---
+      const formData = new FormData();
+      formData.append("file", file);
+      const response = await fetch('/api/upload', { method: 'POST', body: formData });
+      const data = await response.json();
+      const url = data.url;
+
+      // Giả lập delay upload 1.5s
+      await new Promise(resolve => setTimeout(resolve, 1500));
+      
+      // Giả lập URL trả về
+      onChange(url); 
+      toast.success(`Đã tải lên: ${file.name}`);
+    } catch (error) {
+      toast.error("Upload thất bại. Vui lòng thử lại.");
+    } finally {
+      setIsUploading(false);
     }
   };
 
   return (
-    <div className="bg-white rounded-lg shadow-sm border border-gray-100 overflow-hidden">
-      <div className="p-6 border-b border-gray-100">
-        <div className="flex items-center gap-2 mb-4">
-          <FileText className="w-5 h-5 text-blue-500" />
-          <h3 className="font-semibold text-lg text-gray-800">Nội dung bài học</h3>
-        </div>
-        <p className="text-sm text-gray-500 mb-4">Chọn tải lên tài liệu có sẵn hoặc soạn thảo nội dung trực tiếp.</p>
+    <div className="space-y-6">
+      <div className="flex flex-col gap-1">
+        <h3 className="text-lg font-semibold">Nội dung bài học</h3>
+        <p className="text-sm text-muted-foreground">Chọn hình thức bài học: Văn bản hoặc Tài liệu đính kèm.</p>
+      </div>
 
-        {/* Tabs */}
-        <div className="flex gap-4 border-b border-gray-200 mb-6">
-          <button
-            onClick={() => onChange('content_type', 'file')}
-            className={cn(
-              "pb-2 text-sm font-medium flex items-center gap-2 border-b-2 transition-colors",
-              contentType === 'file' ? "border-blue-500 text-blue-600" : "border-transparent text-gray-500 hover:text-gray-700"
-            )}
-          >
-            <Upload className="w-4 h-4" /> Tài liệu tải lên (PDF, DOCX)
-          </button>
-          <button
-            onClick={() => onChange('content_type', 'text')}
-            className={cn(
-              "pb-2 text-sm font-medium flex items-center gap-2 border-b-2 transition-colors",
-              contentType === 'text' ? "border-blue-500 text-blue-600" : "border-transparent text-gray-500 hover:text-gray-700"
-            )}
-          >
-            <FileText className="w-4 h-4" /> Soạn thảo văn bản
-          </button>
-        </div>
+      {/* Lựa chọn loại nội dung */}
+      <FormField
+        control={form.control}
+        name="type"
+        render={({ field }) => (
+          <FormItem className="space-y-3">
+            <FormControl>
+              <RadioGroup
+                onValueChange={(val) => field.onChange(val)}
+                defaultValue={field.value}
+                className="grid grid-cols-2 gap-4"
+              >
+                <div>
+                  <RadioGroupItem value="text" id="type-text" className="peer sr-only" />
+                  <Label
+                    htmlFor="type-text"
+                    className="flex flex-col items-center justify-between rounded-md border-2 border-muted bg-transparent p-4 hover:bg-accent hover:text-accent-foreground peer-data-[state=checked]:border-primary [&:has([data-state=checked])]:border-primary cursor-pointer transition-all"
+                  >
+                    <PenTool className="mb-3 h-6 w-6" />
+                    Soạn thảo văn bản
+                  </Label>
+                </div>
+                <div>
+                  <RadioGroupItem value="file" id="type-file" className="peer sr-only" />
+                  <Label
+                    htmlFor="type-file"
+                    className="flex flex-col items-center justify-between rounded-md border-2 border-muted bg-transparent p-4 hover:bg-accent hover:text-accent-foreground peer-data-[state=checked]:border-primary [&:has([data-state=checked])]:border-primary cursor-pointer transition-all"
+                  >
+                    <FileText className="mb-3 h-6 w-6" />
+                    Upload tài liệu (PDF/DOCX)
+                  </Label>
+                </div>
+              </RadioGroup>
+            </FormControl>
+            <FormMessage />
+          </FormItem>
+        )}
+      />
 
-        {/* Content Area */}
-        {contentType === 'file' ? (
-          <div className="space-y-4">
-            {/* Upload Zone */}
-            {!fileUrl ? (
-              <div className="border-2 border-dashed border-gray-300 rounded-lg p-8 flex flex-col items-center justify-center bg-gray-50 hover:bg-gray-100 transition cursor-pointer relative">
-                <input type="file" className="absolute inset-0 opacity-0 cursor-pointer" onChange={handleFileUpload} accept=".pdf,.docx,.pptx" />
-                <div className="bg-blue-100 p-3 rounded-full mb-3">
-                   <Upload className="w-6 h-6 text-blue-600" />
-                </div>
-                <h4 className="font-semibold text-gray-700">Tải lên bài giảng chính</h4>
-                <p className="text-xs text-gray-500 mt-1">Hỗ trợ PDF, DOCX, PowerPoint. Tối đa 50MB.</p>
-                <button className="mt-4 px-4 py-2 bg-white border border-gray-300 rounded text-sm font-medium shadow-sm">Chọn tập tin</button>
-              </div>
-            ) : (
-              // File đã chọn (như trong ảnh)
-              <div className="flex items-center justify-between p-4 bg-blue-50 border border-blue-100 rounded-lg">
-                <div className="flex items-center gap-3">
-                  <div className="p-2 bg-white rounded shadow-sm">
-                    <FileIcon className="w-6 h-6 text-red-500" />
-                  </div>
-                  <div>
-                    <p className="font-medium text-gray-800">Giao_trinh_Unit5_Travel.pdf</p>
-                    <p className="text-xs text-gray-500">2.4 MB • Đã tải lên hoàn tất</p>
-                  </div>
-                </div>
-                <div className="flex gap-2">
-                   <button className="p-2 text-gray-500 hover:text-blue-600"><Eye className="w-4 h-4"/></button>
-                   <button onClick={() => onChange('content_url', null)} className="p-2 text-gray-500 hover:text-red-600"><Trash2 className="w-4 h-4"/></button>
-                </div>
-              </div>
+      <div className="pt-2">
+        {type === "text" ? (
+          <FormField
+            control={form.control}
+            name="content"
+            render={({ field }) => (
+              <FormItem>
+                <FormLabel>Nội dung chi tiết</FormLabel>
+                <FormControl>
+                  <Textarea
+                    {...field}
+                    value={field.value || ""}
+                    placeholder="Nhập nội dung bài học..."
+                    className="min-h-[300px]"
+                  />
+                </FormControl>
+                <FormMessage />
+              </FormItem>
             )}
-            
-            {/* Preview Placeholder */}
-            <div className="bg-gray-100 rounded-lg h-64 flex flex-col items-center justify-center text-gray-400">
-               <Eye className="w-8 h-8 mb-2" />
-               <span className="text-sm">Xem trước nội dung tài liệu sẽ hiển thị tại đây</span>
-            </div>
-          </div>
+          />
         ) : (
-          <div className="h-64 border rounded-lg p-4">Rich Text Editor Component Here...</div>
+          <FormField
+            control={form.control}
+            name="file_url"
+            render={({ field }) => (
+              <FormItem>
+                <FormLabel>Tải lên tài liệu</FormLabel>
+                <FormControl>
+                  <div className="space-y-4">
+                    
+                    {/* TRƯỜNG HỢP 1: ĐÃ CÓ FILE */}
+                    {field.value ? (
+                      <div className="relative flex items-center p-4 border rounded-xl bg-blue-50/50 border-blue-100 transition-all">
+                        <div className="p-2 bg-blue-100 rounded-lg mr-4">
+                            <FileIcon className="h-6 w-6 text-blue-600" />
+                        </div>
+                        <div className="flex-1 overflow-hidden">
+                          <p className="text-sm font-medium text-blue-900 truncate">
+                            {field.value.split('/').pop() || "Tài liệu bài học"}
+                          </p>
+                          <a 
+                            href={field.value} 
+                            target="_blank" 
+                            rel="noopener noreferrer"
+                            className="text-xs text-blue-600 hover:underline hover:text-blue-800"
+                          >
+                            Xem tài liệu
+                          </a>
+                        </div>
+                        <Button
+                          type="button"
+                          variant="ghost"
+                          size="icon"
+                          className="h-8 w-8 text-red-400 hover:bg-red-50 hover:text-red-600 rounded-full"
+                          onClick={() => field.onChange(null)}
+                        >
+                          <X className="h-4 w-4" />
+                        </Button>
+                      </div>
+                    ) : (
+                      /* TRƯỜNG HỢP 2: CHƯA CÓ FILE (HIỆN DROPZONE) */
+                      <div className="relative">
+                        {isUploading ? (
+                           <div className="h-40 border-2 border-dashed border-blue-200 rounded-xl flex flex-col items-center justify-center bg-blue-50/30">
+                              <Loader2 className="w-8 h-8 text-blue-500 animate-spin mb-2" />
+                              <p className="text-sm font-medium text-blue-600">Đang tải lên...</p>
+                           </div>
+                        ) : (
+                           <FileDropzone
+                             accept=".pdf,.doc,.docx" // String theo interface
+                             maxSizeMB={10}
+                             label="Tải tài liệu bài học"
+                             helperText="Hỗ trợ PDF, Word"
+                             onFileSelect={(file) => handleFileUpload(file, field.onChange)}
+                           />
+                        )}
+                      </div>
+                    )}
+                  </div>
+                </FormControl>
+                <FormMessage />
+              </FormItem>
+            )}
+          />
         )}
       </div>
     </div>

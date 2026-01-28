@@ -1,41 +1,61 @@
-// components/lessons/sections/general-info.tsx
-import { Info } from 'lucide-react';
+import { Control } from "react-hook-form";
+import { LessonInput } from "@/lib/schemas/lesson";
+import { FormControl, FormField, FormItem, FormLabel, FormMessage } from "@/components/ui/form";
+import { Input } from "@/components/ui/input";
+import { Textarea } from "@/components/ui/textarea";
+import { Switch } from "@/components/ui/switch";
+import { Info } from "lucide-react";
 
 interface GeneralInfoProps {
-  title: string;
-  description: string;
-  onChange: (field: string, value: string) => void;
+  control: Control<LessonInput>;
 }
 
-export default function GeneralInfo({ title, description, onChange }: GeneralInfoProps) {
+export default function GeneralInfo({ control }: GeneralInfoProps) {
   return (
-    <div className="bg-white rounded-lg shadow-sm border border-gray-100 p-6">
-      <div className="flex items-center gap-2 mb-4">
-        <Info className="w-5 h-5 text-blue-500" />
-        <h3 className="font-semibold text-lg text-gray-800">Thông tin chung</h3>
+    <div className="bg-white rounded-xl shadow-sm border border-gray-100 p-6">
+      <div className="flex items-center gap-2 mb-6 border-b pb-4">
+        <div className="p-2 bg-blue-50 rounded-lg">
+          <Info className="w-5 h-5 text-blue-600" />
+        </div>
+        <h3 className="font-semibold text-lg text-gray-800">Thông tin cơ bản</h3>
       </div>
-      
-      <div className="space-y-4">
-        <div>
-          <label className="block text-sm font-medium text-gray-700 mb-1">Tiêu đề bài học</label>
-          <input
-            type="text"
-            className="w-full rounded-md border border-gray-300 px-3 py-2 focus:outline-none focus:ring-2 focus:ring-blue-500"
-            placeholder="Nhập tiêu đề..."
-            value={title}
-            onChange={(e) => onChange('title', e.target.value)}
-          />
+
+      <div className="space-y-5">
+        <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
+          <div className="md:col-span-2">
+            <FormField
+              control={control}
+              name="title"
+              render={({ field }) => (
+                <FormItem>
+                  <FormLabel>Tiêu đề bài học <span className="text-red-500">*</span></FormLabel>
+                  <FormControl>
+                    <Input placeholder="Ví dụ: Bài 1 - Nhập môn..." {...field} />
+                  </FormControl>
+                  <FormMessage />
+                </FormItem>
+              )}
+            />
+          </div>
         </div>
-        <div>
-          <label className="block text-sm font-medium text-gray-700 mb-1">Mô tả ngắn</label>
-          <textarea
-            rows={3}
-            className="w-full rounded-md border border-gray-300 px-3 py-2 focus:outline-none focus:ring-2 focus:ring-blue-500"
-            placeholder="Nhập mô tả..."
-            value={description}
-            onChange={(e) => onChange('description', e.target.value)}
-          />
-        </div>
+
+        <FormField
+          control={control}
+          name="description"
+          render={({ field }) => (
+            <FormItem>
+              <FormLabel>Mô tả ngắn</FormLabel>
+              <FormControl>
+                <Textarea 
+                  placeholder="Mô tả nội dung chính của bài học..." 
+                  className="min-h-[100px] resize-none"
+                  {...field} 
+                />
+              </FormControl>
+              <FormMessage />
+            </FormItem>
+          )}
+        />
       </div>
     </div>
   );

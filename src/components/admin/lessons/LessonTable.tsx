@@ -111,7 +111,7 @@ export default function LessonTable({ data }: { data: Lesson[] }) {
 
                 {/* Cột Hành Động */}
                 <td className="py-4 px-6 text-right">
-                  <div className="flex items-center justify-end gap-1 opacity-100 sm:opacity-0 sm:group-hover:opacity-100 transition-opacity">
+                  <div className="flex items-center justify-end gap-1">
                     <Link href={`/lessons/${lesson.id}`} target="_blank">
                       <Button variant="ghost" size="icon" className="h-8 w-8 text-slate-400 hover:text-sky-600 hover:bg-sky-50">
                         <Eye className="w-4 h-4" />

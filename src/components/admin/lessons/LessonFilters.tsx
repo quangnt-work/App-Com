@@ -76,8 +76,10 @@ export default function LessonFilters() {
               onChange={(e) => handleCategoryFilter(e.target.value)} // Thêm sự kiện onChange
             >
               <option value="">Tất cả danh mục</option>
-              <option value="cntt">Công nghệ thông tin</option>
-              <option value="language">Ngoại ngữ</option>
+              <option value="CNTT">Công nghệ thông tin</option>
+              <option value="TIẾNG ANH">Tiếng Anh</option>
+              <option value="TIẾNG NGA">Tiếng Nga</option>
+              <option value="KHÁC">Khác</option>
             </select>
           </div>
         </div>

@@ -55,8 +55,8 @@ export default function LessonContent({ form }: LessonContentProps) {
           <FormItem className="space-y-3">
             <FormControl>
               <RadioGroup
-                onValueChange={(val) => field.onChange(val)}
-                defaultValue={field.value}
+                onValueChange={field.onChange}
+                value={field.value}
                 className="grid grid-cols-2 gap-4"
               >
                 <div>
@@ -154,7 +154,7 @@ export default function LessonContent({ form }: LessonContentProps) {
                            </div>
                         ) : (
                            <FileDropzone
-                             accept=".pdf,.doc,.docx" // String theo interface
+                             accept=".pdf,.doc,.docx, .pptx" // String theo interface
                              maxSizeMB={10}
                              label="Tải tài liệu bài học"
                              helperText="Hỗ trợ PDF, Word"

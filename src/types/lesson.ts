@@ -1,14 +1,14 @@
 import { Tables } from './database-custom';
 
-export type LessonType = 'text' | 'file' | 'video';
+export type LessonType = 'text' | 'file' | 'video' | 'audio' | 'quiz';
 export type LessonStatus = 'draft' | 'published' | 'archived';
 
-export interface Lesson extends Tables<'lessons'>{
+export interface Lesson{
   id: string;
   title: string;
   slug: string | null;
   description: string | null;
-  thumbnail: string | null;
+  thumbnail?: string | null;
   type: LessonType;
   
   // Nội dung
@@ -22,6 +22,7 @@ export interface Lesson extends Tables<'lessons'>{
   category: string;
   tags: string[] | null;
   status: LessonStatus;
+  duration?: number | null;
   
   created_at: string;
   updated_at: string;

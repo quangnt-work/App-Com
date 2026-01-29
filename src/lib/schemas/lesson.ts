@@ -21,7 +21,11 @@ export const LessonSchema = z.object({
   file_url: z.string().nullable().optional(),
   audio_url: z.string().nullable().optional(),
   questions: z.array(QuestionSchema).optional(),
-  status: z.boolean().default(false),
+  status: z.union([z.boolean(), z.string()])
+  .transform((val) => {
+    if (typeof val === 'boolean') return val;
+    return val === 'true'; 
+  }),
 })
   .superRefine((data, ctx) => {
   if (data.type === "text") {

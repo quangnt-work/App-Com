@@ -42,11 +42,11 @@ export interface LessonFormData {
   file_mime_type?: string;
   file_size?: number;
   category: string;
-  status: boolean; // Mapper từ UI (switch) sang DB ('published'/'draft')
+  status: boolean; 
   questions: Array<{
     id: string;
     question: string;
     options: string[];
-    correct_answer: number; // Index của đáp án đúng
+    correct_answer: number;
   }>;
 }

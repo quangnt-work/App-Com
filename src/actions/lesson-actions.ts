@@ -1,6 +1,7 @@
 'use server'
 
 import { LessonSchema, LessonInput } from "@/lib/schemas/lesson";
+import { createClient } from "@/lib/supabase/server";
 import { LessonService } from "@/services/lesson-service";
 import { revalidatePath } from "next/cache";
 
@@ -19,7 +20,8 @@ export async function getLesson(id: string) {
   return { data };
 }
 
-export async function upsertLesson(formData: LessonInput) {
+export async function upsertLesson(formData: LessonInput, lessonId?: string) {
+  
   // 1. Validate Input
   const validated = LessonSchema.safeParse(formData);
   if (!validated.success) {
@@ -31,12 +33,17 @@ export async function upsertLesson(formData: LessonInput) {
   }
 
   try {
+    const payload = {
+      ...validated.data,
+      ...(lessonId ? { id: lessonId } : {})
+    }
     // 2. Gọi Service xử lý logic
-    const { error } = await LessonService.upsert(validated.data);
+    const { error } = await LessonService.upsert(payload);
     if (error) throw error;
 
     // 3. Revalidate cache
     revalidatePath('/admin/lessons');
+    if (lessonId) revalidatePath(`/admin/lessons/${lessonId}`);
     revalidatePath('/student/lessons');
     
     return { success: true, message: "Lưu bài học thành công!" };

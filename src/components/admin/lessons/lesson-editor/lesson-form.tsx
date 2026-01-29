@@ -17,6 +17,7 @@ import GeneralInfo from "./sections/general-info";
 import LessonContent from "./sections/lesson-content";
 import AudioUpload from "./sections/audio-upload";
 import QuizBuilder from "./sections/quiz-builder";
+import { string } from "zod";
 
 interface LessonFormProps {
   initialData?: LessonInput;
@@ -35,6 +36,7 @@ const defaultValues: LessonInput = {
 };
 
 export default function LessonForm({ initialData, isEditing }: LessonFormProps) {
+  console.log("Dữ liệu đầu vào:", initialData?.status, typeof initialData?.status);
   const router = useRouter();
 
   const form = useForm<LessonInput>({
@@ -47,7 +49,7 @@ export default function LessonForm({ initialData, isEditing }: LessonFormProps) 
 
   async function onSubmit(values: LessonInput) {
     try {
-      const result = await upsertLesson(values);
+      const result = await upsertLesson(values, initialData?.id);
       if (result.success) {
         toast.success(isEditing ? "Đã cập nhật bài học" : "Đã tạo bài học mới");
         router.push("/admin/lessons");
@@ -61,12 +63,11 @@ export default function LessonForm({ initialData, isEditing }: LessonFormProps) 
   }
 
   function onInvalid(errors: any) {
-    console.error("Lỗi Validation:", errors); // Xem chi tiết lỗi ở F12 Console
-    
-    // Hiển thị thông báo để user biết cần sửa
-    const firstError = Object.values(errors)[0] as any;
-    toast.error(firstError?.message || "Vui lòng kiểm tra lại thông tin nhập liệu");
-  }
+  console.error("Lỗi Validation:", errors);
+  // Đếm số lượng lỗi
+  const errorCount = Object.keys(errors).length;
+  toast.error(`Vui lòng kiểm tra lại ${errorCount} mục chưa hợp lệ.`);
+}
 
   return (
     <Form {...form}>

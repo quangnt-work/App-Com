@@ -148,7 +148,7 @@ export default function LessonTable({ data }: LessonTableProps) {
                       <Eye className="w-4 h-4" />
                     </Button>
 
-                    <Link href={`/admin/lessons/edit/${lesson.id}`}>
+                    <Link href={`/admin/lessons/${lesson.id}`}>
                       <Button
                         variant="ghost"
                         size="icon"

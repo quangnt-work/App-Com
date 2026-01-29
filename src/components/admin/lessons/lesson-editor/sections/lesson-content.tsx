@@ -11,6 +11,7 @@ import { toast } from "sonner";
 
 // Import FileDropzone từ đường dẫn shared
 import FileDropzone from "../shared/file-dropzone";
+import RichTextEditor from "@/components/ui/rich-text-editor";
 
 interface LessonContentProps {
   form: UseFormReturn<LessonInput>;
@@ -100,11 +101,10 @@ export default function LessonContent({ form }: LessonContentProps) {
               <FormItem>
                 <FormLabel>Nội dung chi tiết</FormLabel>
                 <FormControl>
-                  <Textarea
-                    {...field}
+                  <RichTextEditor
                     value={field.value || ""}
-                    placeholder="Nhập nội dung bài học..."
-                    className="min-h-[300px]"
+                    onChange={field.onChange}
+                    placeholder="Nhập nội dung bài học chi tiết..."
                   />
                 </FormControl>
                 <FormMessage />

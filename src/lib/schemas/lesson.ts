@@ -15,10 +15,11 @@ export const LessonSchema = z.object({
 });
 
 export const QuestionSchema = z.object({
-  id: z.string(),
+  id: z.string().optional(),
   question: z.string().min(1, "Nội dung câu hỏi không được để trống"),
-  options: z.array(z.string()).length(4, "Phải có đủ 4 đáp án"),
+  options: z.array(z.string()).min(2, "Cần ít nhất 2 đáp án"),
   correct_answer: z.number().min(0).max(3),
+  explanation: z.string().optional(),
 });
 
 export type LessonInput = z.infer<typeof LessonSchema>;

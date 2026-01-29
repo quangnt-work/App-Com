@@ -1,8 +1,8 @@
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import { UseFormReturn } from "react-hook-form";
-import { LessonInput } from "@/lib/schemas/lesson";
+// Đảm bảo đường dẫn import đúng với project của bạn
+import { LessonInput } from "@/lib/schemas/lesson"; 
 import { FormControl, FormField, FormItem, FormLabel, FormMessage } from "@/components/ui/form";
-import { Textarea } from "@/components/ui/textarea";
 import { RadioGroup, RadioGroupItem } from "@/components/ui/radio-group";
 import { FileText, PenTool, X, File as FileIcon, Loader2 } from "lucide-react";
 import { Label } from "@/components/ui/label";
@@ -10,7 +10,6 @@ import { Button } from "@/components/ui/button";
 import { toast } from "sonner";
 import { createClient } from '@/lib/supabase/client';
 
-// Import FileDropzone từ đường dẫn shared
 import FileDropzone from "../shared/file-dropzone";
 import RichTextEditor from "@/components/ui/rich-text-editor";
 
@@ -19,25 +18,55 @@ interface LessonContentProps {
 }
 
 export default function LessonContent({ form }: LessonContentProps) {
-  const type = form.watch("type");
+  // Watch type để render giao diện
+  const type = form.watch("type"); 
   const [isUploading, setIsUploading] = useState(false);
 
-  // Hàm xử lý khi FileDropzone trả về file
+  // LOGIC MỚI: Reset dữ liệu khi chuyển đổi Type
+  // Khi chuyển sang 'text' -> Xóa file_url
+  // Khi chuyển sang 'file' -> Xóa content
+  const handleTypeChange = (value: "text" | "file") => {
+    form.setValue("type", value);
+    if (value === "text") {
+      form.setValue("file_url", undefined); // hoặc null tùy schema
+      form.clearErrors("file_url");
+    } else {
+      form.setValue("content", ""); 
+      form.clearErrors("content");
+    }
+  };
+
   const handleFileUpload = async (file: File, onChange: (url: string) => void) => {
-    const supabase = createClient();
-    // eslint-disable-next-line react-hooks/purity
-    const fileName = `${Date.now()}-${file.name}`;
-    const { data, error } = await supabase.storage
-      .from('lesson-materials') // Đảm bảo bucket này đã tạo trên Supabase
-      .upload(fileName, file);
+    try {
+      setIsUploading(true); // 1. Bắt đầu loading
+      const supabase = createClient();
+      
+      // Tạo tên file an toàn (bỏ ký tự đặc biệt)
+      const sanitizedName = file.name.replace(/[^a-zA-Z0-9.-]/g, '_');
+      const fileName = `${Date.now()}-${sanitizedName}`;
 
-    if (error) throw error;
+      const { error } = await supabase.storage
+        .from('lesson-materials')
+        .upload(fileName, file, {
+          cacheControl: '3600',
+          upsert: false
+        });
 
-    const { data: { publicUrl } } = supabase.storage
-      .from('lesson-materials')
-      .getPublicUrl(fileName);
+      if (error) throw error;
 
-    onChange(publicUrl);
+      const { data: { publicUrl } } = supabase.storage
+        .from('lesson-materials')
+        .getPublicUrl(fileName);
+
+      onChange(publicUrl);
+      toast.success("Tải tài liệu lên thành công!");
+
+    } catch (error: any) {
+      console.error(error);
+      toast.error("Lỗi tải file: " + (error.message || "Vui lòng thử lại"));
+    } finally {
+      setIsUploading(false); // 2. Kết thúc loading bất kể thành công hay thất bại
+    }
   };
 
   return (
@@ -55,7 +84,7 @@ export default function LessonContent({ form }: LessonContentProps) {
           <FormItem className="space-y-3">
             <FormControl>
               <RadioGroup
-                onValueChange={field.onChange}
+                onValueChange={(val) => handleTypeChange(val as "text" | "file")} // Sử dụng hàm handle riêng
                 value={field.value}
                 className="grid grid-cols-2 gap-4"
               >
@@ -139,7 +168,7 @@ export default function LessonContent({ form }: LessonContentProps) {
                           variant="ghost"
                           size="icon"
                           className="h-8 w-8 text-red-400 hover:bg-red-50 hover:text-red-600 rounded-full"
-                          onClick={() => field.onChange(null)}
+                          onClick={() => field.onChange(null)} // Xóa file
                         >
                           <X className="h-4 w-4" />
                         </Button>
@@ -154,10 +183,10 @@ export default function LessonContent({ form }: LessonContentProps) {
                            </div>
                         ) : (
                            <FileDropzone
-                             accept=".pdf,.doc,.docx, .pptx" // String theo interface
+                             accept=".pdf,.doc,.docx,.pptx"
                              maxSizeMB={10}
                              label="Tải tài liệu bài học"
-                             helperText="Hỗ trợ PDF, Word"
+                             helperText="Hỗ trợ PDF, Word (Tối đa 10MB)"
                              onFileSelect={(file) => handleFileUpload(file, field.onChange)}
                            />
                         )}

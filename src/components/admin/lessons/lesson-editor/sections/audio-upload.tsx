@@ -5,6 +5,7 @@ import { FormControl, FormField, FormItem, FormLabel, FormMessage } from "@/comp
 import { Button } from "@/components/ui/button";
 import { Headphones, X, Loader2 } from "lucide-react";
 import { toast } from "sonner";
+import { createClient } from '@/lib/supabase/client';
 
 // Import FileDropzone
 import FileDropzone from "../shared/file-dropzone";
@@ -17,22 +18,20 @@ export default function AudioUpload({ control }: AudioUploadProps) {
   const [isUploading, setIsUploading] = useState(false);
 
   const handleAudioUpload = async (file: File, onChange: (url: string) => void) => {
-    try {
-      setIsUploading(true);
-      
-      // --- LOGIC UPLOAD CẦN CHÈN VÀO ĐÂY ---
-      
-      // Giả lập delay
-      await new Promise(resolve => setTimeout(resolve, 2000));
-      
-      const mockUrl = `https://example.com/audio/${file.name}`;
-      onChange(mockUrl);
-      toast.success("Tải file nghe thành công!");
-    } catch (error) {
-      toast.error("Lỗi khi tải file. Vui lòng thử lại.");
-    } finally {
-      setIsUploading(false);
-    }
+    const supabase = createClient();
+    // eslint-disable-next-line react-hooks/purity
+    const fileName = `${Date.now()}-${file.name}`;
+    const { data, error } = await supabase.storage
+      .from('lesson-materials') // Đảm bảo bucket này đã tạo trên Supabase
+      .upload(fileName, file);
+
+    if (error) throw error;
+
+    const { data: { publicUrl } } = supabase.storage
+      .from('lesson-materials')
+      .getPublicUrl(fileName);
+
+    onChange(publicUrl);
   };
 
   return (

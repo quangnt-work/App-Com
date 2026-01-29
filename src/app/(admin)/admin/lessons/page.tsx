@@ -4,6 +4,8 @@ import LessonFilters from "@/components/admin/lessons/LessonFilters";
 import LessonTable from "@/components/admin/lessons/LessonTable";
 import { getLessons } from "@/actions/lesson-actions";
 import { Skeleton } from "@/components/ui/skeleton";
+import { Button } from "@/components/ui/button";
+import { LessonPagination } from "@/components/admin/lessons/lesson-pagination";
 
 interface LessonsPageProps {
   searchParams: Promise<{
@@ -21,18 +23,32 @@ export const metadata = {
 export default async function LessonsPage({ searchParams }: LessonsPageProps) {
   const params = await searchParams;
   // 1. Lấy params từ URL
-  const query = params?.q || "";
-  const page = Number(params?.page) || 1;
-  const category = params?.category || "";
+  const currentPage = Number(params.page) || 1;
+  const pageSize = 10; // Bạn có thể cấu hình số lượng item mỗi trang tại đây
+  const searchQuery = params.q || "";
+  const categoryFilter = params.category || undefined;
  
   // 2. Gọi Server Action lấy dữ liệu
   // Lưu ý: getLessons trong file actions trả về { data, count, error }
-  const { data, count, error } = await getLessons(page, 10, query, category);
+  const { data: lessons, count, error } = await getLessons(
+    currentPage,
+    pageSize,
+    searchQuery,
+    categoryFilter
+  );
 
 
   if (error) {
-    return <div className="text-red-500 p-4">Lỗi tải dữ liệu: {error}</div>;
+    return (
+      <div className="p-6 text-center text-red-500 bg-red-50 rounded-md m-6 border border-red-200">
+        <h3 className="font-bold">Đã xảy ra lỗi</h3>
+        <p>Không thể tải dữ liệu: {error}</p>
+      </div>
+    );
   }
+
+  const currentData = lessons || [];
+  const totalItems = count || 0;
 
 
   return (
@@ -41,16 +57,19 @@ export default async function LessonsPage({ searchParams }: LessonsPageProps) {
      
       <LessonFilters />
 
-
-      <Suspense fallback={<TableSkeleton />}>
-        <LessonTable data={data || []} />
-       
-        {/* Phân trang đơn giản (Bạn có thể tách thành component Pagination riêng) */}
-        <div className="mt-4 flex items-center justify-between text-sm text-slate-500">
-          <p>Hiển thị {(data || []).length} trên tổng số {count} bài học</p>
-          {/* Logic phân trang chi tiết có thể thêm sau */}
+      <div className="rounded-md border bg-white shadow-sm">
+        <LessonTable data={currentData} />
+      </div>
+      
+      {/* Footer & Pagination */}
+      <div className="mt-4 flex items-center justify-between text-sm text-slate-500">
+        <p>Hiển thị {(lessons || []).length} trên tổng số {count} bài học</p>
+        <LessonPagination 
+            currentPage={currentPage}
+            totalItems={totalItems} // Tổng số bản ghi trong database
+            pageSize={pageSize}
+        />
         </div>
-      </Suspense>
     </div>
   );
 }

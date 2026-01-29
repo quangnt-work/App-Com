@@ -8,6 +8,7 @@ import { FileText, PenTool, X, File as FileIcon, Loader2 } from "lucide-react";
 import { Label } from "@/components/ui/label";
 import { Button } from "@/components/ui/button";
 import { toast } from "sonner";
+import { createClient } from '@/lib/supabase/client';
 
 // Import FileDropzone từ đường dẫn shared
 import FileDropzone from "../shared/file-dropzone";
@@ -23,27 +24,20 @@ export default function LessonContent({ form }: LessonContentProps) {
 
   // Hàm xử lý khi FileDropzone trả về file
   const handleFileUpload = async (file: File, onChange: (url: string) => void) => {
-    try {
-      setIsUploading(true);
-      
-      // --- LOGIC UPLOAD CẦN CHÈN VÀO ĐÂY ---
-      const formData = new FormData();
-      formData.append("file", file);
-      const response = await fetch('/api/upload', { method: 'POST', body: formData });
-      const data = await response.json();
-      const url = data.url;
+    const supabase = createClient();
+    // eslint-disable-next-line react-hooks/purity
+    const fileName = `${Date.now()}-${file.name}`;
+    const { data, error } = await supabase.storage
+      .from('lesson-materials') // Đảm bảo bucket này đã tạo trên Supabase
+      .upload(fileName, file);
 
-      // Giả lập delay upload 1.5s
-      await new Promise(resolve => setTimeout(resolve, 1500));
-      
-      // Giả lập URL trả về
-      onChange(url); 
-      toast.success(`Đã tải lên: ${file.name}`);
-    } catch (error) {
-      toast.error("Upload thất bại. Vui lòng thử lại.");
-    } finally {
-      setIsUploading(false);
-    }
+    if (error) throw error;
+
+    const { data: { publicUrl } } = supabase.storage
+      .from('lesson-materials')
+      .getPublicUrl(fileName);
+
+    onChange(publicUrl);
   };
 
   return (

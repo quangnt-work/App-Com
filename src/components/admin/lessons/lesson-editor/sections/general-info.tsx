@@ -5,6 +5,7 @@ import { Input } from "@/components/ui/input";
 import { Textarea } from "@/components/ui/textarea";
 import { Switch } from "@/components/ui/switch";
 import { Info } from "lucide-react";
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 
 interface GeneralInfoProps {
   control: Control<LessonInput>;
@@ -21,8 +22,8 @@ export default function GeneralInfo({ control }: GeneralInfoProps) {
       </div>
 
       <div className="space-y-5">
-        <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
-          <div className="md:col-span-2">
+        <div className="grid grid-cols-3 gap-5">
+          <div className="col-span-2">
             <FormField
               control={control}
               name="title"
@@ -32,6 +33,31 @@ export default function GeneralInfo({ control }: GeneralInfoProps) {
                   <FormControl>
                     <Input placeholder="Ví dụ: Bài 1 - Nhập môn..." {...field} />
                   </FormControl>
+                  <FormMessage />
+                </FormItem>
+              )}
+            />
+          </div>
+          <div className="col-span-1">
+            <FormField
+              control={control}
+              name="category"
+              render={({ field }) => (
+                <FormItem>
+                  <FormLabel>Danh mục</FormLabel>
+                  <Select onValueChange={field.onChange} defaultValue={field.value}>
+                    <FormControl>
+                      <SelectTrigger>
+                        <SelectValue placeholder="Chọn danh mục" />
+                      </SelectTrigger>
+                    </FormControl>
+                    <SelectContent>
+                      <SelectItem value="TIẾNG ANH">Tiếng Anh</SelectItem>
+                      <SelectItem value="TIẾNG NGA">Tiếng Nga</SelectItem>
+                      <SelectItem value="CNTT">Công nghệ thông tin</SelectItem>
+                      <SelectItem value="KHÁC">Khác</SelectItem>
+                    </SelectContent>
+                  </Select>
                   <FormMessage />
                 </FormItem>
               )}

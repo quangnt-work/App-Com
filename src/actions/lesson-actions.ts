@@ -3,7 +3,7 @@
 
 import { LessonSchema, LessonInput } from "@/lib/schemas/lesson";
 import { createClient } from "@/lib/supabase/server";
-import { LessonService } from "@/services/lesson-service";
+import { LessonService } from "@/services/lessonService";
 import { revalidatePath } from "next/cache";
 
 

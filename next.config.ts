@@ -1,10 +1,13 @@
 import type { NextConfig } from "next";
 
 const nextConfig: NextConfig = {
-  /* config options here */
-  reactCompiler: true,
   images: {
-    domains: ['images.unsplash.com', 'i.pravatar.cc', 'ui-avatars.com'],
+    remotePatterns: [
+      {
+        protocol: 'https',
+        hostname: 'your-supabase-url.supabase.co', // Thay bằng domain chứa ảnh/audio của bạn
+      },
+    ],
   },
 };
 

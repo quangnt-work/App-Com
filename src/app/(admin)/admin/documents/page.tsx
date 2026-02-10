@@ -125,7 +125,7 @@ export default function DocumentsManagementPage() {
    
     // Lưu ý: Cần dùng object date gốc (original_date) để so sánh chính xác
     const newDocsCount = documents.filter((doc) => {
-      const docDate = doc.original_date;
+      const docDate = new Date(doc.created_at);
       return docDate && docDate.getMonth() === currentMonth && docDate.getFullYear() === currentYear;
     }).length;
 

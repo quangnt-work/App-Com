@@ -94,37 +94,42 @@ export async function upsertExam(examData: ExamInput) {
     };
   }
 
-  const payload = {
+  const baseData = {
     title: validated.data.title,
     description: validated.data.description,
-    duration_minutes: validated.data.duration_minutes,
+    duration: validated.data.duration_minutes, // Map sang cột 'duration' của DB
     is_published: validated.data.is_published,
-    questions: validated.data.questions, // Supabase sẽ tự stringify nếu cột là JSONB
+    questions: validated.data.questions,
     updated_at: new Date().toISOString(),
+    // Các giá trị mặc định để thỏa mãn DB constraints
+    subject: 'General', 
+    level: 'Beginner',
   };
 
   try {
     let error;
-    
-    // Logic xác định Update hay Insert
-    // Nếu có ID và ID không phải là chuỗi 'new' hay rỗng -> Update
+
+    // UPDATE
     if (examData.id && examData.id !== 'new') {
       const result = await supabase
         .from('exams')
-        .update(payload)
+        .update(baseData) // Update không cần gửi lại code
         .eq('id', examData.id);
       error = result.error;
-    } else {
-      // Insert
+    } 
+    // INSERT
+    else {
       const result = await supabase
         .from('exams')
-        .insert(payload);
+        .insert({
+          ...baseData,
+          code: `EX-${Date.now()}`, // Chỉ sinh code khi tạo mới
+        });
       error = result.error;
     }
 
     if (error) throw error;
 
-    // 3. Revalidate cache
     revalidatePath('/admin/exams');
     if (examData.id) revalidatePath(`/admin/exams/${examData.id}`);
 
@@ -132,7 +137,7 @@ export async function upsertExam(examData: ExamInput) {
 
   } catch (e: any) {
     console.error("Upsert Exam Error:", e);
-    return { success: false, message: e.message || "Lỗi hệ thống khi lưu đề thi." };
+    return { success: false, message: e.message || "Lỗi hệ thống." };
   }
 }
 

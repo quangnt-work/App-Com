@@ -65,7 +65,12 @@ export default async function AdminDashboard() {
 
       <div className="grid grid-cols-1 lg:grid-cols-7 gap-8">
         {/* 3. Hoạt động gần đây (Chiếm 4 cột) */}
-        <RecentActivity users={recentUsers} />
+        <RecentActivity 
+          users={recentUsers?.map(u => ({
+            ...u, 
+            created_at: u.created_at ?? new Date().toISOString() 
+          })) || []} 
+        />
         
         {/* 4. Menu chức năng quản lý (Chiếm 3 cột - Layout Grid) */}
         <div className="lg:col-span-3">

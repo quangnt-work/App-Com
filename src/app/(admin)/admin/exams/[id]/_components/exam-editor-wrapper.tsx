@@ -34,7 +34,7 @@ export function ExamEditorWrapper({ initialData }: ExamEditorWrapperProps) {
   const onSave = async () => {
     try {
       setLoading(true);
-      await upsertExam({
+      const res = await upsertExam({
         id: initialData?.id || 'new',
         title: basicInfo.title,
         description: basicInfo.description,
@@ -42,8 +42,15 @@ export function ExamEditorWrapper({ initialData }: ExamEditorWrapperProps) {
         is_published: basicInfo.is_published,
         questions: questions,
       });
-      toast.success("Lưu đề thi thành công");
-      router.push("/admin/exams");
+
+      if (res.success) {
+        toast.success(res.message);
+        router.push("/admin/exams");
+      } else {
+        // Hiển thị lỗi từ server hoặc validation
+        toast.error(res.message || "Có lỗi xảy ra");
+        console.log(res.errors); // Log lỗi chi tiết nếu có
+      }
     } catch (error) {
       toast.error("Lỗi khi lưu đề thi");
     } finally {

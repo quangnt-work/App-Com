@@ -1,72 +1,158 @@
 'use server'
 
-import { Level } from '@tiptap/extension-heading';
 import { createClient } from "@/lib/supabase/server";
-import { QuestionItem } from "@/types/exam-custom";
 import { revalidatePath } from "next/cache";
+import { z } from "zod";
+
+// 1. Định nghĩa Schema Validation (Nên tách ra file riêng nếu tái sử dụng)
+const QuestionSchema = z.object({
+  id: z.string().optional(),
+  content: z.string().min(1, "Nội dung câu hỏi không được để trống"),
+  type: z.enum(['multiple_choice', 'essay', 'fill_in_blank', 'reorder', 'group', 'reading', 'error_id']), // Bổ sung các type từ ExamPreviewModal
+  points: z.number().default(1),
+  options: z.array(z.string()).optional(),
+  correctOptionIndex: z.number().optional(),
+  // Thêm các trường khác tùy nhu cầu thực tế
+}).passthrough(); // Cho phép các trường khác đi qua (như media_url)
+
+const ExamSchema = z.object({
+  id: z.string().optional(),
+  title: z.string().min(5, "Tên đề thi phải có ít nhất 5 ký tự"),
+  description: z.string().optional(),
+  duration_minutes: z.coerce.number().min(0),
+  is_published: z.boolean().default(false),
+  questions: z.array(QuestionSchema).default([]),
+});
+
+type ExamInput = z.infer<typeof ExamSchema>;
+
+// Helper check quyền Admin
+async function checkAdminRole(supabase: any) {
+  const { data: { user } } = await supabase.auth.getUser();
+  if (!user) return false;
+  
+  const { data: profile } = await supabase
+    .from('profiles')
+    .select('role')
+    .eq('id', user.id)
+    .single();
+    
+  return profile?.role === 'admin';
+}
 
 // Lấy danh sách đề thi
 export async function getExams() {
   const supabase = await createClient();
-  const { data, error } = await supabase
-    .from('exams')
-    .select('*')
-    .order('created_at', { ascending: false });
-  return { data, error };
+  try {
+    const { data, error } = await supabase
+      .from('exams')
+      .select('*')
+      .order('created_at', { ascending: false });
+
+    if (error) throw error;
+    return { success: true, data };
+  } catch (error: any) {
+    console.error("Lỗi getExams:", error);
+    return { success: false, error: error.message };
+  }
 }
 
 // Lấy chi tiết 1 đề thi
 export async function getExamById(id: string) {
   const supabase = await createClient();
-  const { data, error } = await supabase
-    .from('exams')
-    .select('*')
-    .eq('id', id)
-    .single();
-    
-  return { data, error };
+  try {
+    const { data, error } = await supabase
+      .from('exams')
+      .select('*')
+      .eq('id', id)
+      .single();
+
+    if (error) throw error;
+    return { success: true, data };
+  } catch (error: any) {
+    return { success: false, error: error.message };
+  }
 }
 
 // Tạo hoặc cập nhật đề thi
-export async function upsertExam(examData: {
-  id?: string;
-  title: string;
-  description?: string;
-  duration_minutes: number;
-  is_published: boolean;
-  questions: QuestionItem[]; // Truyền mảng object chuẩn
-}) {
+export async function upsertExam(examData: ExamInput) {
   const supabase = await createClient();
-  
-  const payload = {
-    title: examData.title,
-    description: examData.description,
-    duration_minutes: examData.duration_minutes,
-    is_published: examData.is_published,
-    questions: examData.questions as any, // Cast sang jsonb
-    updated_at: new Date().toISOString(),
-    code: examData.code, // Ví dụ mã đề thi
-    level: examData.level,      // Ví dụ trình độ
-    subject: examData.subject,
-  };
 
-  let result;
-  if (examData.id && examData.id !== 'new') {
-    // Update
-    result = supabase.from('exams').update(payload).eq('id', examData.id);
-  } else {
-    // Insert
-    result = supabase.from('exams').insert(payload);
+  // 1. Bảo mật: Check quyền Admin
+  const isAdmin = await checkAdminRole(supabase);
+  if (!isAdmin) {
+    return { success: false, message: "Bạn không có quyền thực hiện thao tác này." };
   }
 
-  revalidatePath('/admin/exams');
-  return { error: result.error };
+  // 2. Validate dữ liệu đầu vào
+  const validated = ExamSchema.safeParse(examData);
+  if (!validated.success) {
+    return {
+      success: false,
+      message: "Dữ liệu không hợp lệ",
+      errors: validated.error.flatten()
+    };
+  }
+
+  const payload = {
+    title: validated.data.title,
+    description: validated.data.description,
+    duration_minutes: validated.data.duration_minutes,
+    is_published: validated.data.is_published,
+    questions: validated.data.questions, // Supabase sẽ tự stringify nếu cột là JSONB
+    updated_at: new Date().toISOString(),
+  };
+
+  try {
+    let error;
+    
+    // Logic xác định Update hay Insert
+    // Nếu có ID và ID không phải là chuỗi 'new' hay rỗng -> Update
+    if (examData.id && examData.id !== 'new') {
+      const result = await supabase
+        .from('exams')
+        .update(payload)
+        .eq('id', examData.id);
+      error = result.error;
+    } else {
+      // Insert
+      const result = await supabase
+        .from('exams')
+        .insert(payload);
+      error = result.error;
+    }
+
+    if (error) throw error;
+
+    // 3. Revalidate cache
+    revalidatePath('/admin/exams');
+    if (examData.id) revalidatePath(`/admin/exams/${examData.id}`);
+
+    return { success: true, message: "Lưu đề thi thành công!" };
+
+  } catch (e: any) {
+    console.error("Upsert Exam Error:", e);
+    return { success: false, message: e.message || "Lỗi hệ thống khi lưu đề thi." };
+  }
 }
 
 // Xóa đề thi
 export async function deleteExam(id: string) {
   const supabase = await createClient();
-  const { error } = await supabase.from('exams').delete().eq('id', id);
-  revalidatePath('/admin/exams');
-  return { error };
+
+  // 1. Check quyền
+  const isAdmin = await checkAdminRole(supabase);
+  if (!isAdmin) {
+    return { success: false, message: "Forbidden" };
+  }
+
+  try {
+    const { error } = await supabase.from('exams').delete().eq('id', id);
+    if (error) throw error;
+
+    revalidatePath('/admin/exams');
+    return { success: true, message: "Đã xóa đề thi" };
+  } catch (e: any) {
+    return { success: false, message: e.message || "Không thể xóa đề thi này" };
+  }
 }

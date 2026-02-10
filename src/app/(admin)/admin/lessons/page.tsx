@@ -1,42 +1,99 @@
-import { getLessons } from "@/actions/lesson-actions";
+import { Suspense } from "react";
+import LessonHeader from "@/components/admin/lessons/LessonHeader";
+import LessonFilters from "@/components/admin/lessons/LessonFilter";
 import LessonTable from "@/components/admin/lessons/LessonTable";
+import { getLessons } from "@/actions/lesson-actions";
+import { Skeleton } from "@/components/ui/skeleton";
 import { Button } from "@/components/ui/button";
-import Link from "next/link";
-import { Plus } from "lucide-react";
+import { LessonPagination } from "@/components/admin/lessons/lesson-pagination";
 
-export default async function LessonsPage({
-  searchParams
-}: {
-  searchParams: Promise<{ page?: string; query?: string; category?: string }>;
-}) {
+
+interface LessonsPageProps {
+  searchParams: Promise<{
+    q?: string;
+    page?: string;
+    category?: string;
+  }>;
+}
+
+
+export const metadata = {
+  title: "Quản lý bài học | Admin Dashboard",
+};
+
+
+
+
+export default async function LessonsPage({ searchParams }: LessonsPageProps) {
   const params = await searchParams;
-  const page = Number(params.page) || 1;
-  const pageSize = 10;
+  // 1. Lấy params từ URL
+  const currentPage = Number(params.page) || 1;
+  const pageSize = 10; // Bạn có thể cấu hình số lượng item mỗi trang tại đây
+  const searchQuery = params.q || "";
+  const categoryFilter = params.category || undefined;
+ 
+  // 2. Gọi Server Action lấy dữ liệu
+  // Lưu ý: getLessons trong file actions trả về { data, count, error }
+  const { data: lessons, count, error } = await getLessons(
+    currentPage,
+    pageSize,
+    searchQuery,
+    categoryFilter
+  );
 
-  const { data, count, error } = await getLessons(page, pageSize, params.query, params.category);
 
-  if (error) return <div>Lỗi tải dữ liệu</div>;
+
+
+  if (error) {
+    return (
+      <div className="p-6 text-center text-red-500 bg-red-50 rounded-md m-6 border border-red-200">
+        <h3 className="font-bold">Đã xảy ra lỗi</h3>
+        <p>Không thể tải dữ liệu: {error}</p>
+      </div>
+    );
+  }
+
+
+  const currentData = lessons || [];
+  const totalItems = count || 0;
+
+
+
 
   return (
-    <div className="min-h-screen bg-slate-50 p-6 space-y-8 font-sans text-slate-900 max-w-[1600px] mx-auto">
-      <div className="flex justify-between items-center">
-        <div>
-           <h1 className="text-2xl font-bold">Quản lý bài học</h1>
-           <p className="text-gray-500">Quản lý tất cả bài học và tài liệu lẻ tại đây.</p>
-        </div>
-        <Link href="/admin/lessons/new">
-          <Button className="bg-sky-600 text-white gap-2">
-            <Plus size={18} /> Tạo bài học mới
-          </Button>
-        </Link>
+    <div className="p-6 md:p-8 max-w-[1600px] mx-auto min-h-screen bg-slate-50/50">
+      <LessonHeader />
+     
+      <LessonFilters />
+
+
+      <div className="rounded-md border bg-white shadow-sm">
+        <LessonTable data={currentData} />
       </div>
-      
-      <LessonTable
-        data={data || []}
-        totalCount={count || 0}
-        currentPage={page}
-        pageSize={pageSize}
-      />
+     
+      {/* Footer & Pagination */}
+      <div className="mt-4 flex items-center justify-between text-sm text-slate-500">
+        <p>Hiển thị {(lessons || []).length} trên tổng số {count} bài học</p>
+        <LessonPagination
+            currentPage={currentPage}
+            totalItems={totalItems} // Tổng số bản ghi trong database
+            pageSize={pageSize}
+        />
+        </div>
+    </div>
+  );
+}
+
+
+
+
+// Skeleton loading cho bảng
+function TableSkeleton() {
+  return (
+    <div className="space-y-4">
+      <Skeleton className="h-[60px] w-full rounded-xl" />
+      <Skeleton className="h-[60px] w-full rounded-xl" />
+      <Skeleton className="h-[60px] w-full rounded-xl" />
     </div>
   );
 }

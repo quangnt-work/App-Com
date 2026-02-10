@@ -35,7 +35,7 @@ export async function upsertExam(examData: {
   is_published: boolean;
   questions: QuestionItem[]; // Truyền mảng object chuẩn
 }) {
-  const supabase = createClient();
+  const supabase = await createClient();
   
   const payload = {
     title: examData.title,
@@ -49,10 +49,10 @@ export async function upsertExam(examData: {
   let result;
   if (examData.id && examData.id !== 'new') {
     // Update
-    result = await supabase.from('exams').update(payload).eq('id', examData.id);
+    result = supabase.from('exams').update(payload).eq('id', examData.id);
   } else {
     // Insert
-    result = await supabase.from('exams').insert(payload);
+    result = supabase.from('exams').insert(payload);
   }
 
   revalidatePath('/admin/exams');

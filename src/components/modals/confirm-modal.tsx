@@ -1,5 +1,6 @@
 "use client";
 
+
 import {
   AlertDialog,
   AlertDialogAction,
@@ -11,6 +12,7 @@ import {
   AlertDialogTitle,
 } from "@/components/ui/alert-dialog";
 
+
 interface ConfirmModalProps {
   isOpen: boolean;
   onClose: () => void;
@@ -19,6 +21,7 @@ interface ConfirmModalProps {
   title?: string;
   description?: string;
 }
+
 
 export const ConfirmModal = ({
   isOpen,
@@ -41,8 +44,8 @@ export const ConfirmModal = ({
           <AlertDialogCancel disabled={loading} onClick={onClose}>
             Hủy bỏ
           </AlertDialogCancel>
-          <AlertDialogAction 
-            disabled={loading} 
+          <AlertDialogAction
+            disabled={loading}
             onClick={onConfirm}
             className="bg-red-600 hover:bg-red-700 focus:ring-red-600 text-white"
           >

@@ -1,5 +1,6 @@
 // src/lib/constants.ts
 
+
 export const APP_CONFIG = {
   NAME: 'E-Learning Hub',
   PAGINATION: {

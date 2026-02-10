@@ -1,6 +1,6 @@
-import { Level } from './../../node_modules/@tiptap/extension-heading/src/heading';
 'use server'
 
+import { Level } from '@tiptap/extension-heading';
 import { createClient } from "@/lib/supabase/server";
 import { QuestionItem } from "@/types/exam-custom";
 import { revalidatePath } from "next/cache";

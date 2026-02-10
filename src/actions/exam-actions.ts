@@ -8,7 +8,7 @@ import { z } from "zod";
 const QuestionSchema = z.object({
   id: z.string().optional(),
   content: z.string().min(1, "Nội dung câu hỏi không được để trống"),
-  type: z.enum(['multiple_choice', 'essay', 'fill_in_blank', 'reorder', 'group', 'reading', 'error_id']), // Bổ sung các type từ ExamPreviewModal
+  type: z.enum(['multiple_choice', 'essay', 'fill_in_blank', 'reorder', 'group', 'reading', 'error_id', 'true_false']), // Bổ sung các type từ ExamPreviewModal
   points: z.number().default(1),
   options: z.array(z.string()).optional(),
   correctOptionIndex: z.number().optional(),

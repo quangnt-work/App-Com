@@ -1,3 +1,4 @@
+import { Level } from './../../node_modules/@tiptap/extension-heading/src/heading';
 'use server'
 
 import { createClient } from "@/lib/supabase/server";
@@ -44,6 +45,9 @@ export async function upsertExam(examData: {
     is_published: examData.is_published,
     questions: examData.questions as any, // Cast sang jsonb
     updated_at: new Date().toISOString(),
+    code: examData.code, // Ví dụ mã đề thi
+    level: examData.level,      // Ví dụ trình độ
+    subject: examData.subject,
   };
 
   let result;

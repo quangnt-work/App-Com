@@ -87,7 +87,7 @@ export default function DocumentsManagementPage() {
       }));
 
 
-      setDocuments(mappedDocs);
+      setDocuments(mappedDocs as DocumentItem[]);
     } catch (error: unknown) { // Dùng unknown thay vì any để an toàn hơn
       console.error("Fetch error:", error);
       toast.error("Không thể tải danh sách tài liệu");

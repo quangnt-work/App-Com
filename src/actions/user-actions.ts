@@ -6,7 +6,7 @@ import { success } from "zod";
 
 export type UserProfile = {
   id: string;
-  email: string | null;
+  email?: string | null;
   full_name: string | null;
   avatar_url: string | null;
   role: 'admin' | 'student';

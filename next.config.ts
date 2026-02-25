@@ -5,7 +5,7 @@ const nextConfig: NextConfig = {
     remotePatterns: [
       {
         protocol: 'https',
-        hostname: 'your-supabase-url.supabase.co', // Thay bằng domain chứa ảnh/audio của bạn
+        hostname: 'aqgrrysauxpogiffljer.supabase.co',
       },
     ],
   },

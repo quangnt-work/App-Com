@@ -24,7 +24,8 @@ export default function AudioUpload({ control }: AudioUploadProps) {
   const handleAudioUpload = async (file: File, onChange: (url: string) => void) => {
     const supabase = createClient();
     // eslint-disable-next-line react-hooks/purity
-    const fileName = `${Date.now()}-${file.name}`;
+    const sanitizedName = file.name.replace(/[^a-zA-Z0-9.-]/g, '_');
+    const fileName = `${Date.now()}-${sanitizedName}`;
     const { data, error } = await supabase.storage
       .from('lesson-materials') // Đảm bảo bucket này đã tạo trên Supabase
       .upload(fileName, file);

@@ -31,8 +31,8 @@ type Lesson = {
   created_at: string | null;
   type: string | null;
   content?: string;   // Thêm các trường cần thiết cho Modal
-  videoUrl?: string;
-  audioUrl?: string;
+  file_url?: string;
+  audio_url?: string;
 };
 
 
@@ -161,16 +161,11 @@ export default function LessonTable({ data }: LessonTableProps) {
                     </Button>
 
 
-                    <Link href={`/admin/lessons/${lesson.id}`}>
-                      <Button
-                        variant="ghost"
-                        size="icon"
-                        className="h-8 w-8 text-slate-400 hover:text-amber-600 hover:bg-amber-50"
-                        title="Chỉnh sửa"
-                      >
+                    <Button asChild variant="ghost" size="icon" className="h-8 w-8 text-slate-400 hover:text-amber-600 hover:bg-amber-50" title="Chỉnh sửa">
+                      <Link href={`/admin/lessons/${lesson.id}`}>
                         <Edit className="w-4 h-4" />
-                      </Button>
-                    </Link>
+                      </Link>
+                    </Button>
 
 
                     <DeleteLessonButton id={lesson.id} title={lesson.title} />

@@ -21,8 +21,8 @@ interface Lesson {
   description?: string;
   type: "VIDEO" | "TEXT" | "AUDIO"; // Ví dụ các loại bài học
   content?: string; // Nội dung HTML hoặc Text
-  videoUrl?: string;
-  audioUrl?: string;
+  file_url?: string;
+  audio_url?: string;
   category?: string;
   duration?: number;
 }
@@ -49,17 +49,17 @@ export function LessonPreviewModal({
       case "VIDEO":
         return (
           <div className="aspect-video w-full rounded-lg overflow-hidden bg-black flex items-center justify-center">
-            {lesson.videoUrl ? (
+            {lesson.file_url ? (
               // Xử lý Video (Link Youtube hoặc File upload)
-              lesson.videoUrl.includes("youtube") ? (
+              lesson.file_url.includes("youtube") ? (
                 <iframe
-                  src={lesson.videoUrl.replace("watch?v=", "embed/")}
+                  src={lesson.file_url.replace("watch?v=", "embed/")}
                   className="w-full h-full"
                   allowFullScreen
                 />
               ) : (
                 <video controls className="w-full h-full">
-                  <source src={lesson.videoUrl} type="video/mp4" />
+                  <source src={lesson.file_url} type="video/mp4" />
                   Trình duyệt không hỗ trợ thẻ video.
                 </video>
               )
@@ -77,9 +77,9 @@ export function LessonPreviewModal({
               <Music size={32} />
             </div>
             <h4 className="font-medium text-slate-700">File âm thanh bài học</h4>
-            {lesson.audioUrl ? (
+            {lesson.audio_url ? (
               <audio controls className="w-full max-w-md">
-                <source src={lesson.audioUrl} />
+                <source src={lesson.audio_url} />
                 Trình duyệt không hỗ trợ thẻ audio.
               </audio>
             ) : (

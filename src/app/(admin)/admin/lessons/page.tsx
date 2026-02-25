@@ -1,10 +1,8 @@
-import { Suspense } from "react";
 import LessonHeader from "@/components/admin/lessons/LessonHeader";
-import LessonFilters from "@/components/admin/lessons/LessonFilters";
+import LessonFilters from "@/components/admin/lessons/LessonFilter";
 import LessonTable from "@/components/admin/lessons/LessonTable";
 import { getLessons } from "@/actions/lesson-actions";
 import { Skeleton } from "@/components/ui/skeleton";
-import { Button } from "@/components/ui/button";
 import { LessonPagination } from "@/components/admin/lessons/lesson-pagination";
 
 interface LessonsPageProps {

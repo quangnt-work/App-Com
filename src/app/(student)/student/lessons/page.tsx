@@ -4,27 +4,26 @@ import { LessonSection } from '@/components/student/lessons/LessonSection'
 import { Button } from '@/components/ui/button'
 import { Inbox } from 'lucide-react'
 import { getLessons } from '@/actions/lesson-actions'
+import { LessonRepository } from "@/repositories/lesson-repository";
 
 export default async function LessonsPage() {
   // 1. Fetch dữ liệu thật
-  const alllessons = await getLessons();
+  const [englishLessons, russianLessons, itLessons, otherLessons] = await Promise.all([
+    LessonRepository.getByCategory('TIẾNG ANH'),
+    LessonRepository.getByCategory('TIẾNG NGA'),
+    LessonRepository.getByCategory('CNTT'),
+    LessonRepository.getByCategory('KHÁC')
+  ]);
 
-  // 2. Phân loại bài học (Filtering in Memory)
-  // Lưu ý: Nếu dữ liệu lớn, nên filter từ câu query Supabase. Với demo nhỏ thì filter JS ok.
-  const englishLessons = alllessons.filter(c => c.category === 'TIẾNG ANH')
-  const russianLessons = alllessons.filter(c => c.category === 'TIẾNG NGA')
-  const itLessons = alllessons.filter(c => c.category === 'CNTT')
-  const otherLessons = alllessons.filter(c => c.category === 'KHÁC')
-
-  // 3. Kiểm tra Empty State (Nếu cả DB trống trơn)
-  const isEmpty = alllessons.length === 0;
+  const isEmpty = 
+    (englishLessons.data?.length || 0) === 0 && 
+    (russianLessons.data?.length || 0) === 0 &&
+    (itLessons.data?.length || 0) === 0;
 
   return (
     <div className="min-h-screen bg-white pb-20">
-      {/* Hero luôn hiển thị để trang không bị trống hơ trống hoác */}
       <LessonHero />
 
-      {/* CASE 1: Chưa có bài giảng nào trong DB */}
       {isEmpty && (
         <div className="container mx-auto px-4 py-20 text-center">
            <div className="flex justify-center mb-4">
@@ -36,9 +35,6 @@ export default async function LessonsPage() {
            <p className="text-slate-500 mt-2">Hệ thống đang được cập nhật. Vui lòng quay lại sau.</p>
         </div>
       )}
-
-      {/* CASE 2: Hiển thị các Section (Chỉ hiện nếu có bài) */}
-      {/* Component LessonSection đã có logic: if empty -> return null */}
       
       <LessonSection 
         title="Khóa tiếng Anh" 
@@ -64,7 +60,6 @@ export default async function LessonsPage() {
         lessons={otherLessons} 
       />
 
-      {/* Chỉ hiện nút Xem thêm nếu có ít nhất 1 bài học */}
       {!isEmpty && (
         <div className="flex justify-center mt-12">
             <Button variant="outline" className="border-sky-500 text-sky-600 hover:bg-sky-50 px-8 rounded-full">

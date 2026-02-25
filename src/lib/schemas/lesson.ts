@@ -1,6 +1,5 @@
 import { z } from "zod";
 
-
 export const QuestionSchema = z.object({
   id: z.string().optional(),
   question: z.string().min(1, "Nội dung câu hỏi không được để trống"),
@@ -10,7 +9,6 @@ export const QuestionSchema = z.object({
   correct_answer: z.number().min(0).max(3),
   explanation: z.string().optional(),
 });
-
 
 export const LessonSchema = z.object({
   title: z.string().min(5, "Tên bài học phải ít nhất 5 ký tự"),
@@ -26,7 +24,7 @@ export const LessonSchema = z.object({
   status: z.union([z.boolean(), z.string()])
   .transform((val) => {
     if (typeof val === 'boolean') return val;
-    return val === 'true';
+    return val === 'true'; 
   }),
 })
   .superRefine((data, ctx) => {
@@ -39,7 +37,7 @@ export const LessonSchema = z.object({
       });
     }
   }
-   
+    
   if (data.type === "file") {
     if (!data.file_url) {
       ctx.addIssue({
@@ -50,6 +48,5 @@ export const LessonSchema = z.object({
     }
   }
 });
-
 
 export type LessonInput = z.infer<typeof LessonSchema>;

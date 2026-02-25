@@ -1,12 +1,11 @@
 import { Suspense } from "react";
 import LessonHeader from "@/components/admin/lessons/LessonHeader";
-import LessonFilters from "@/components/admin/lessons/LessonFilter";
+import LessonFilters from "@/components/admin/lessons/LessonFilters";
 import LessonTable from "@/components/admin/lessons/LessonTable";
 import { getLessons } from "@/actions/lesson-actions";
 import { Skeleton } from "@/components/ui/skeleton";
 import { Button } from "@/components/ui/button";
 import { LessonPagination } from "@/components/admin/lessons/lesson-pagination";
-
 
 interface LessonsPageProps {
   searchParams: Promise<{
@@ -16,12 +15,9 @@ interface LessonsPageProps {
   }>;
 }
 
-
 export const metadata = {
   title: "Quản lý bài học | Admin Dashboard",
 };
-
-
 
 
 export default async function LessonsPage({ searchParams }: LessonsPageProps) {
@@ -42,8 +38,6 @@ export default async function LessonsPage({ searchParams }: LessonsPageProps) {
   );
 
 
-
-
   if (error) {
     return (
       <div className="p-6 text-center text-red-500 bg-red-50 rounded-md m-6 border border-red-200">
@@ -53,11 +47,8 @@ export default async function LessonsPage({ searchParams }: LessonsPageProps) {
     );
   }
 
-
   const currentData = lessons || [];
   const totalItems = count || 0;
-
-
 
 
   return (
@@ -66,15 +57,14 @@ export default async function LessonsPage({ searchParams }: LessonsPageProps) {
      
       <LessonFilters />
 
-
       <div className="rounded-md border bg-white shadow-sm">
         <LessonTable data={currentData} />
       </div>
-     
+      
       {/* Footer & Pagination */}
       <div className="mt-4 flex items-center justify-between text-sm text-slate-500">
         <p>Hiển thị {(lessons || []).length} trên tổng số {count} bài học</p>
-        <LessonPagination
+        <LessonPagination 
             currentPage={currentPage}
             totalItems={totalItems} // Tổng số bản ghi trong database
             pageSize={pageSize}
@@ -83,8 +73,6 @@ export default async function LessonsPage({ searchParams }: LessonsPageProps) {
     </div>
   );
 }
-
-
 
 
 // Skeleton loading cho bảng

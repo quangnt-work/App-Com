@@ -1,9 +1,7 @@
 import { Tables } from './database-custom';
 
-
 export type LessonType = 'text' | 'file' | 'video' | 'audio' | 'quiz';
 export type LessonStatus = 'draft' | 'published' | 'archived';
-
 
 export interface Lesson{
   id: string;
@@ -12,13 +10,12 @@ export interface Lesson{
   description: string | null;
   thumbnail?: string | null;
   type: LessonType;
- 
+  
   // Nội dung
   content: string | null; // Cho type 'text'
   file_url: string | null; // Cho type 'file'
   file_mime_type: string | null;
   file_size: number | null;
-
 
   // Quản lý
   instructor_id: string | null;
@@ -26,11 +23,10 @@ export interface Lesson{
   tags: string[] | null;
   status: LessonStatus;
   duration?: number | null;
- 
+  
   created_at: string;
   updated_at: string;
 }
-
 
 // Input dùng cho form tạo/sửa
 export interface LessonFormData {
@@ -46,7 +42,7 @@ export interface LessonFormData {
   file_mime_type?: string;
   file_size?: number;
   category: string;
-  status: boolean;
+  status: boolean; 
   questions: Array<{
     id: string;
     question: string;

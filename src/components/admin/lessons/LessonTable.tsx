@@ -1,13 +1,11 @@
 "use client";
 
-
-import Image from "next/image";
 import Link from "next/link";
 import { Button } from "@/components/ui/button";
-import { Edit, Eye, FileText, Video, ListFilter, Music } from "lucide-react"; // Thêm icon Music nếu cần
+import { Edit, Eye, FileText, Video, ListFilter, Music } from "lucide-react";
 import { Badge } from "@/components/ui/badge";
 import DeleteLessonButton from "./DeleteLessonButton";
-import { format } from "date-fns";
+import { format, isValid, parseISO } from "date-fns";
 import { vi } from "date-fns/locale";
 import { useState } from "react";
 import {
@@ -19,42 +17,22 @@ import {
   TableRow,
 } from "@/components/ui/table";
 import { LessonPreviewModal } from "./lesson-preview-modal";
-
-
-// 1. Cập nhật Type cho đầy đủ (để Modal dùng được)
-type Lesson = {
-  id: string;
-  title: string;
-  category: string | null;
-  status: string | null;
-  thumbnail: string | null;
-  created_at: string | null;
-  type: string | null;
-  content?: string;   // Thêm các trường cần thiết cho Modal
-  file_url?: string;
-  audio_url?: string;
-};
-
+import { Lesson } from "@/types/lesson";
 
 interface LessonTableProps {
   data: Lesson[];
 }
 
-
 export default function LessonTable({ data }: LessonTableProps) {
-  // 2. Sử dụng Type Lesson thay vì any
   const [previewLesson, setPreviewLesson] = useState<Lesson | null>(null);
   const [isPreviewOpen, setIsPreviewOpen] = useState(false);
-
 
   const handlePreview = (lesson: Lesson) => {
     setPreviewLesson(lesson);
     setIsPreviewOpen(true);
   };
 
-
-  const getTypeIcon = (type: string | null) => {
-    // Chuẩn hóa input về chữ thường để so sánh chính xác
+  const getTypeIcon = (type?: string | null) => {
     const typeKey = type?.toLowerCase();
     switch (typeKey) {
       case "video": return <Video className="w-4 h-4 text-blue-500" />;
@@ -64,9 +42,16 @@ export default function LessonTable({ data }: LessonTableProps) {
     }
   };
 
+  // Hàm helper an toàn để format ngày tháng
+  const safeFormatDate = (dateString?: string | null) => {
+    if (!dateString) return "-";
+    const date = typeof dateString === 'string' ? parseISO(dateString) : new Date(dateString);
+    return isValid(date) ? format(date, "dd/MM/yyyy", { locale: vi }) : "-";
+  };
 
   return (
     <div className="bg-white rounded-xl border border-slate-200 shadow-sm overflow-hidden">
+      {/* Container của Bảng (Có overflow-x-auto) */}
       <div className="overflow-x-auto">
         <Table className="w-full text-sm text-left">
           <TableHeader className="bg-slate-50 border-b border-slate-200 text-slate-500 font-medium">
@@ -90,7 +75,6 @@ export default function LessonTable({ data }: LessonTableProps) {
                   {lesson.title}
                 </TableCell>
 
-
                 {/* Cột Danh Mục */}
                 <TableCell className="py-4 px-6">
                   <Badge
@@ -101,7 +85,6 @@ export default function LessonTable({ data }: LessonTableProps) {
                   </Badge>
                 </TableCell>
 
-
                 {/* Cột Loại */}
                 <TableCell className="py-4 px-6">
                   <div className="flex items-center gap-2 capitalize text-slate-600">
@@ -110,49 +93,40 @@ export default function LessonTable({ data }: LessonTableProps) {
                   </div>
                 </TableCell>
 
-
-                {/* Cột Ngày Tạo */}
+                {/* Cột Ngày Tạo (Đã dùng hàm an toàn) */}
                 <TableCell className="py-4 px-6 text-slate-600 whitespace-nowrap">
-                  {lesson.created_at
-                    ? format(new Date(lesson.created_at), "dd/MM/yyyy", {
-                        locale: vi,
-                      })
-                    : "-"}
+                  {safeFormatDate(lesson.created_at)}
                 </TableCell>
 
-
-                {/* Cột Trạng Thái */}
+                {/* Cột Trạng Thái (Fix cứng ép kiểu boolean nếu status từ form/db lưu nhầm) */}
                 <TableCell className="py-4 px-6 text-center">
                   <span
                     className={`inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium border ${
-                      lesson.status === "published"
+                      lesson.status === "published" || lesson.status === true
                         ? "bg-emerald-50 text-emerald-700 border-emerald-100"
                         : "bg-slate-100 text-slate-600 border-slate-200"
                     }`}
                   >
                     <span
                       className={`w-1.5 h-1.5 rounded-full mr-1.5 ${
-                        lesson.status === "published"
+                        lesson.status === "published" || lesson.status === true
                           ? "bg-emerald-500"
                           : "bg-slate-400"
                       }`}
                     />
-                    {lesson.status === "published" ? "Công khai" : "Nháp"}
+                    {lesson.status === "published" || lesson.status === true ? "Công khai" : "Nháp"}
                   </span>
                 </TableCell>
-
 
                 {/* Cột Hành Động */}
                 <TableCell className="py-4 px-6 text-right">
                   <div className="flex items-center justify-end gap-1">
-                   
-                    {/* SỬA CHÍNH: Bỏ thẻ Link, chỉ dùng Button mở Modal */}
                     <Button
                       variant="ghost"
                       size="icon"
                       className="h-8 w-8 text-slate-400 hover:text-sky-600 hover:bg-sky-50"
                       onClick={(e) => {
-                         e.stopPropagation(); // Ngăn sự kiện nổi bọt nếu có
+                         e.stopPropagation();
                          handlePreview(lesson);
                       }}
                       title="Xem trước"
@@ -160,13 +134,11 @@ export default function LessonTable({ data }: LessonTableProps) {
                       <Eye className="w-4 h-4" />
                     </Button>
 
-
                     <Button asChild variant="ghost" size="icon" className="h-8 w-8 text-slate-400 hover:text-amber-600 hover:bg-amber-50" title="Chỉnh sửa">
                       <Link href={`/admin/lessons/${lesson.id}`}>
                         <Edit className="w-4 h-4" />
                       </Link>
                     </Button>
-
 
                     <DeleteLessonButton id={lesson.id} title={lesson.title} />
                   </div>
@@ -176,7 +148,7 @@ export default function LessonTable({ data }: LessonTableProps) {
           </TableBody>
         </Table>
 
-
+        {/* Trạng thái Empty */}
         {data.length === 0 && (
           <div className="p-12 text-center text-slate-500">
             <div className="flex justify-center mb-4">
@@ -187,11 +159,11 @@ export default function LessonTable({ data }: LessonTableProps) {
         )}
       </div>
 
-
+      {/* MODAL ĐẶT Ở NGOÀI CÙNG, BÊN DƯỚI OVERFLOW DIV */}
       <LessonPreviewModal
         isOpen={isPreviewOpen}
         onClose={() => setIsPreviewOpen(false)}
-        lesson={previewLesson}
+        lesson={previewLesson} 
       />
     </div>
   );

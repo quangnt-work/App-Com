@@ -7,7 +7,7 @@ interface RecentUser {
   full_name: string | null;
   username: string | null;
   avatar_url: string | null;
-  created_at: string;
+  created_at: string | null;
   role: string;
 }
 
@@ -38,7 +38,7 @@ export function RecentActivity({ users }: { users: RecentUser[] }) {
               </div>
               <div className="flex flex-col items-end gap-1">
                 <span className="text-xs text-slate-400">
-                  {new Date(user.created_at).toLocaleDateString('vi-VN')}
+                  {user.created_at ? new Date(user.created_at).toLocaleDateString('vi-VN'): '-'}
                 </span>
                 <span className="text-[10px] px-2 py-0.5 rounded-full bg-emerald-100 text-emerald-600 font-bold capitalize">
                   {user.role}

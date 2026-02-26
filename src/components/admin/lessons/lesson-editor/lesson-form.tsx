@@ -1,7 +1,7 @@
 "use client";
 
 
-import { useForm } from "react-hook-form";
+import { useForm, FieldErrors } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { LessonSchema, LessonInput } from "@/lib/schemas/lesson";
 import { Form, FormControl, FormField, FormItem, FormLabel } from "@/components/ui/form";
@@ -19,7 +19,6 @@ import GeneralInfo from "./sections/general-info";
 import LessonContent from "./sections/lesson-content";
 import AudioUpload from "./sections/audio-upload";
 import QuizBuilder from "./sections/quiz-builder";
-import { string } from "zod";
 
 
 interface LessonFormProps {
@@ -71,7 +70,7 @@ export default function LessonForm({ initialData, isEditing }: LessonFormProps) 
   }
 
 
-  function onInvalid(errors: any) {
+  function onInvalid(errors: FieldErrors<LessonInput>) {
   console.error("Lỗi Validation:", errors);
   // Đếm số lượng lỗi
   const errorCount = Object.keys(errors).length;

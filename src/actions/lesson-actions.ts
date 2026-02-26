@@ -2,7 +2,6 @@
 
 
 import { LessonSchema, LessonInput } from "@/lib/schemas/lesson";
-import { createClient } from "@/lib/supabase/server";
 import { LessonService } from "@/services/lesson-service";
 import { revalidatePath } from "next/cache";
 
@@ -53,10 +52,11 @@ export async function upsertLesson(formData: LessonInput, lessonId?: string) {
     revalidatePath('/student/lessons');
    
     return { success: true, message: "Lưu bài học thành công!" };
-  } catch (e: any) {
-    console.error("Upsert Lesson Error:", e);
+  } catch (e: unknown) {
+    const error = e as Error;
+    console.error("Upsert Lesson Error:", error);
     // Trả về lỗi thân thiện hơn tùy loại lỗi
-    const msg = e.message.includes("Forbidden") ? "Bạn không có quyền thực hiện" : (e.message || "Lỗi hệ thống");
+    const msg = error.message.includes("Forbidden") ? "Bạn không có quyền thực hiện" : (error.message || "Lỗi hệ thống");
     return { success: false, message: msg };
   }
 }
@@ -69,7 +69,8 @@ export async function deleteLesson(id: string) {
    
     revalidatePath('/admin/lessons');
     return { success: true, message: "Đã xóa bài học" };
-  } catch (e: any) {
-    return { success: false, message: e.message || "Không thể xóa bài học này" };
+  } catch (e: unknown) {
+    const error = e as Error;
+    return { success: false, message: error.message || "Không thể xóa bài học này" };
   }
 }

@@ -1,5 +1,8 @@
 import { createClient } from "@/lib/supabase/server";
-import { LessonInput } from "@/lib/schemas/lesson";
+import { Database } from "@/types/database.type";
+
+type LessonInsert = Database['public']['Tables']['lessons']['Insert'];
+type LessonUpdate = Database['public']['Tables']['lessons']['Update'];
 
 interface GetLessonsParams {
   page?: number;
@@ -33,12 +36,12 @@ export const LessonRepository = {
       .order('created_at', { ascending: false });
   },
 
-  async create(payload: any) {
+  async create(payload: LessonInsert) {
     const supabase = await createClient();
     return supabase.from('lessons').insert(payload);
   },
 
-  async update(id: string, payload: any) {
+  async update(id: string, payload: LessonUpdate) {
     const supabase = await createClient();
     return supabase.from('lessons').update(payload).eq('id', id);
   },

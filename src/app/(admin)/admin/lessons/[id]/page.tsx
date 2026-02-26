@@ -1,9 +1,10 @@
 // app/(admin)/lessons/[id]/page.tsx
 import { Metadata } from 'next';
-import { notFound, redirect } from 'next/navigation';
+import { notFound } from 'next/navigation';
 import { createClient } from '@/lib/supabase/server'; // Hàm khởi tạo Supabase Server Client
 import LessonForm from '@/components/admin/lessons/lesson-editor/lesson-form';
-import { LessonFormData } from '@/types/lesson';
+import { LessonType, Lesson} from '@/types/lesson';
+import { LessonInput } from '@/lib/schemas/lesson';
 
 interface EditLessonPageProps {
   params: Promise<{
@@ -43,17 +44,19 @@ export default async function EditLessonPage(props : EditLessonPageProps) {
     notFound(); 
   }
 
-  const formattedData: LessonFormData = {
+  const formattedData: LessonInput = {
       id: lesson.id,
       title: lesson.title,
       description: lesson.description || '',
-      type: lesson.type as 'file' | 'text', 
-      file_url: lesson.file_url,
+      type: (lesson.type?.toLowerCase() || 'text') as "text" | "file" | "video" | "quiz" | "audio", 
+      file_url: lesson.file_url || '',
       content: lesson.content || '',
-      audio_url: lesson.audio_url,
-      questions: Array.isArray(lesson.questions) ? lesson.questions : [],
+      audio_url: lesson.audio_url || null,
+      questions: Array.isArray(lesson.questions) 
+    ? (lesson.questions as { id: string; question: string; options: string[]; correct_answer: number; }[]) 
+    : [],
       category: lesson.category || '',
-      status: lesson.status ?? false
+      status: lesson.status === 'published'
   };
 
   return (

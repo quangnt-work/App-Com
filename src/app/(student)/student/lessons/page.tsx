@@ -1,10 +1,9 @@
-import { createClient } from '@/lib/supabase/server'
 import { LessonHero } from '@/components/student/lessons/LessonHero'
 import { LessonSection } from '@/components/student/lessons/LessonSection'
 import { Button } from '@/components/ui/button'
 import { Inbox } from 'lucide-react'
-import { getLessons } from '@/actions/lesson-actions'
 import { LessonRepository } from "@/repositories/lesson-repository";
+import { LessonType, type Lesson } from '@/types/lesson'
 
 export default async function LessonsPage() {
   // 1. Fetch dữ liệu thật
@@ -39,25 +38,25 @@ export default async function LessonsPage() {
       <LessonSection 
         title="Khóa tiếng Anh" 
         icon="english"
-        lessons={englishLessons} 
+        lessons={(englishLessons.data as unknown as Lesson[]) || []} 
       />
 
       <LessonSection 
         title="Khóa tiếng Nga" 
         icon="russian"
-        lessons={russianLessons} 
+        lessons={(russianLessons.data as unknown as Lesson[]) || []} 
       />
 
        <LessonSection 
         title="Công nghệ thông tin" 
         icon="it"
-        lessons={itLessons} 
+        lessons={(itLessons.data as unknown as Lesson[]) || []} 
       />
 
       <LessonSection 
         title="Bài học khác" 
         icon="other"
-        lessons={otherLessons} 
+        lessons={(otherLessons.data as unknown as Lesson[]) || []} 
       />
 
       {!isEmpty && (

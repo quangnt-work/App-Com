@@ -1,32 +1,17 @@
 "use client";
 
-
 import {
   Dialog,
   DialogContent,
-  DialogDescription,
   DialogHeader,
   DialogTitle,
 } from "@/components/ui/dialog";
 import { Badge } from "@/components/ui/badge";
 import { ScrollArea } from "@/components/ui/scroll-area";
 import { Separator } from "@/components/ui/separator";
-import { PlayCircle, FileText, Music } from "lucide-react";
-
-
-// Định nghĩa kiểu dữ liệu cho bài học (Cập nhật theo schema thực tế của bạn)
-interface Lesson {
-  id: string;
-  title: string;
-  description?: string;
-  type: "VIDEO" | "TEXT" | "AUDIO"; // Ví dụ các loại bài học
-  content?: string; // Nội dung HTML hoặc Text
-  file_url?: string;
-  audio_url?: string;
-  category?: string;
-  duration?: number;
-}
-
+import { Music } from "lucide-react";
+import DOMPurify from 'isomorphic-dompurify';
+import { Lesson } from "@/types/lesson";
 
 interface LessonPreviewModalProps {
   isOpen: boolean;
@@ -93,8 +78,7 @@ export function LessonPreviewModal({
       default:
         return (
           <div className="prose max-w-none dark:prose-invert">
-            {/* Cảnh báo: Chỉ dùng dangerouslySetInnerHTML nếu nội dung tin cậy */}
-            <div dangerouslySetInnerHTML={{ __html: lesson.content || "" }} />
+            <div dangerouslySetInnerHTML={{ __html: DOMPurify.sanitize(lesson.content || "") }} />
             {!lesson.content && (
               <p className="text-slate-400 italic">Bài học chưa có nội dung văn bản.</p>
             )}

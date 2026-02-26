@@ -11,21 +11,24 @@ export const QuestionSchema = z.object({
 });
 
 export const LessonSchema = z.object({
+  id: z.string().optional(),
   title: z.string().min(5, "Tên bài học phải ít nhất 5 ký tự"),
   slug: z.string().optional(),
   description: z.string().optional(),
   category: z.string().optional(),
   thumbnail: z.string().url("Ảnh đại diện không hợp lệ").optional().or(z.literal('')),
-  type: z.enum(['text', 'file']).default('text'),
+  
+  // 1. SỬA TẠI ĐÂY: Bỏ .default('text') đi
+  type: z.enum(['text', 'file', 'video', 'quiz', 'audio']),
+  
   content: z.string().nullable().optional(),
   file_url: z.string().nullable().optional(),
   audio_url: z.string().nullable().optional(),
   questions: z.array(QuestionSchema).optional(),
-  status: z.union([z.boolean(), z.string()])
-  .transform((val) => {
-    if (typeof val === 'boolean') return val;
-    return val === 'true'; 
-  }),
+  
+  // 2. SỬA TẠI ĐÂY: Component Switch trong form và Database luôn dùng boolean
+  // Chỉ cần dùng z.boolean() là chuẩn xác và đơn giản nhất
+  status: z.boolean(),
 })
   .superRefine((data, ctx) => {
   if (data.type === "text") {
@@ -49,4 +52,5 @@ export const LessonSchema = z.object({
   }
 });
 
+// Giờ đây Output và Input đã khớp nhau 100%, không còn lỗi khi build
 export type LessonInput = z.infer<typeof LessonSchema>;

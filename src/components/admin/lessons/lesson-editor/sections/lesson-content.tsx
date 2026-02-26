@@ -1,4 +1,4 @@
-import { useEffect, useState } from "react";
+import { useState } from "react";
 import { UseFormReturn } from "react-hook-form";
 // Đảm bảo đường dẫn import đúng với project của bạn
 import { LessonInput } from "@/lib/schemas/lesson";
@@ -71,7 +71,8 @@ export default function LessonContent({ form }: LessonContentProps) {
       toast.success("Tải tài liệu lên thành công!");
 
 
-    } catch (error: any) {
+    } catch (e: unknown) {
+      const error = e as Error;
       console.error(error);
       toast.error("Lỗi tải file: " + (error.message || "Vui lòng thử lại"));
     } finally {

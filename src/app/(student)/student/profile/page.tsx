@@ -6,6 +6,7 @@ import { CurrentLevelCard } from '@/components/student/profile/CurrentLevelCard'
 import { CompetencyChart } from '@/components/student/profile/CompetencyChart'
 import { HistorySection } from '@/components/student/profile/HistorySection'
 import { SettingsSection } from '@/components/student/profile/SettingsSection'
+import { redirect } from 'next/navigation';
 
 export default async function UserProfile() {
   const supabase = await createClient()
@@ -13,24 +14,32 @@ export default async function UserProfile() {
   // 1. Lấy dữ liệu user
   const { data: { user } } = await supabase.auth.getUser()
   
+  // === THÊM BẢO VỆ ROUTE VÀ FIX TYPE Ở ĐÂY ===
+  // Nếu không có user hoặc user.id, lập tức chuyển hướng về trang đăng nhập
+  if (!user || !user.id) {
+    redirect('/login'); // Chỉnh sửa '/login' thành route đăng nhập thực tế của bạn nếu cần
+  }
+  
   // 2. Lấy dữ liệu profile từ DB
+  // Lúc này TypeScript đã hiểu chắc chắn user.id là string, không cần dấu ?
   const { data: profile } = await supabase
     .from('profiles')
     .select('*')
-    .eq('id', user?.id)
+    .eq('id', user.id) 
     .single()
 
   // 3. Chuẩn bị dữ liệu hiển thị (Đã sửa lỗi Date)
   const userData = {
     fullName: profile?.full_name || 'Người dùng',
     username: profile?.username || 'user',
-    email: user?.email || 'email@example.com',
-    userId: user?.id || '',
+    // Vì đã check user ở trên, bạn có thể tự tin dùng thẳng user.email và user.id
+    email: user.email || 'email@example.com',
+    userId: user.id,
     
     // === SỬA LỖI TẠI ĐÂY ===
     // Date.now() trả về số -> Sai kiểu string của interface
     // new Date().toISOString() trả về chuỗi "2023-10-25T..." -> Đúng
-    joinDate: user?.created_at || new Date().toISOString()
+    joinDate: user.created_at || new Date().toISOString()
   }
 
   return (

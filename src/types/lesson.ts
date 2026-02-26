@@ -1,52 +1,40 @@
-import { Tables } from './database-custom';
+// src/types/lesson.ts
 
-export type LessonType = 'text' | 'file' | 'video' | 'audio' | 'quiz';
+// 1. Định nghĩa các hằng số phân loại (Enums)
+export type LessonType = 'text' | 'video' | 'audio' | 'file' | 'quiz' | 'TEXT' | 'VIDEO' | 'AUDIO';
 export type LessonStatus = 'draft' | 'published' | 'archived';
 
-export interface Lesson{
+// 2. Interface chính sử dụng cho toàn bộ dự án
+export interface Lesson {
   id: string;
   title: string;
-  slug: string | null;
-  description: string | null;
+  
+  // Các trường nội dung (Có thể null từ Database hoặc undefined từ Form)
+  slug?: string | null;
+  description?: string | null;
+  content?: string | null;
+  category?: string | null;
   thumbnail?: string | null;
-  type: LessonType;
   
-  // Nội dung
-  content: string | null; // Cho type 'text'
-  file_url: string | null; // Cho type 'file'
-  file_mime_type: string | null;
-  file_size: number | null;
-
-  // Quản lý
-  instructor_id: string | null;
-  category: string;
-  tags: string[] | null;
-  status: LessonStatus;
-  duration?: number | null;
+  // Các URL đính kèm
+  file_url?: string | null;
+  audio_url?: string | null;
+  file_mime_type?: string | null;
+  file_size?: number | null;
   
-  created_at: string;
-  updated_at: string;
-}
+  // Kiểu dữ liệu linh hoạt để chống lỗi xung đột
+  type?: LessonType | string | null; 
+  // Status trên DB là string, nhưng Form/Zod lại dùng boolean, nên ta cho phép cả hai
+  status?: LessonStatus | string | boolean | null; 
+  
+  // Thời gian
+  created_at?: string | null;
+  updated_at?: string | null;
 
-// Input dùng cho form tạo/sửa
-export interface LessonFormData {
-  id?: string;
-  title: string;
-  slug?: string;
-  description?: string;
-  thumbnail?: string;
-  type: LessonType;
-  content?: string;
-  file_url?: string;
-  audio_url: string | null;
-  file_mime_type?: string;
-  file_size?: number;
-  category: string;
-  status: boolean; 
-  questions: Array<{
-    id: string;
-    question: string;
-    options: string[];
-    correct_answer: number;
-  }>;
+  // === GIAO DIỆN STUDENT ===
+  duration?: string | null; 
+  lessons_count?: number | null;
+  rating?: number | null;
+  instructor_avatar?: string | null;
+  instructor_name?: string | null;
 }

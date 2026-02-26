@@ -6,11 +6,19 @@ import { Clock, BookOpen, Star } from 'lucide-react'
 import { type Lesson } from '@/types/lesson'
 
 export function LessonCard({ lesson }: { lesson: Lesson }) {
-  const getBadgeColor = (category: string) => {
-    if (category === 'TIẾNG ANH') return 'bg-blue-100 text-blue-600';
-    if (category === 'TIẾNG NGA') return 'bg-rose-100 text-rose-600';
-    if (category === 'CNTT') return 'bg-purple-100 text-purple-600';
-    return 'bg-slate-100 text-slate-600';
+  const getBadgeColor = (category: string | null | undefined) => {
+    if (!category) return "bg-gray-100 text-gray-600";
+    const lowerCategory = category.toLowerCase();
+    switch (lowerCategory) {
+      case "TIẾNG ANH":
+        return "bg-blue-100 text-blue-600";
+      case "TIẾNG NGA":
+        return "bg-rose-100 text-rose-600";
+      case "CNTT":
+        return "bg-purple-100 text-purple-600";
+      default:
+        return "bg-slate-100 text-slate-600";
+    }
   }
 
   return (

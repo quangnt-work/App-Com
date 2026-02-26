@@ -48,6 +48,21 @@ export default async function LessonsPage({ searchParams }: LessonsPageProps) {
   const currentData = lessons || [];
   const totalItems = count || 0;
 
+  const formattedData = currentData.map((lesson) => ({
+    ...lesson,
+
+    thumbnail: lesson.thumbnail ?? null,
+    // 1. Ép kiểu type cho chuẩn với LessonType
+    type: lesson.type as 'text' | 'file' | 'video' | 'audio' | 'quiz',
+    
+    // 2. Ép kiểu status cho chuẩn với LessonStatus
+    status: (lesson.status || 'draft') as 'draft' | 'published' | 'archived',
+    
+    // 3. Category trong Interface của bạn bắt buộc là 'string' (không được null)
+    // Nên nếu Supabase trả về null, ta cho nó thành chuỗi rỗng '' hoặc 'Chưa phân loại'
+    category: lesson.category || '',
+  }));
+
 
   return (
     <div className="p-6 md:p-8 max-w-[1600px] mx-auto min-h-screen bg-slate-50/50">
@@ -56,7 +71,7 @@ export default async function LessonsPage({ searchParams }: LessonsPageProps) {
       <LessonFilters />
 
       <div className="rounded-md border bg-white shadow-sm">
-        <LessonTable data={currentData} />
+        <LessonTable data={formattedData} />
       </div>
       
       {/* Footer & Pagination */}

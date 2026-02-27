@@ -46,9 +46,12 @@ export async function updateSession(request: NextRequest) {
     }
   )
 
-  // 3. Lấy User (Hàm này tự động refresh token nếu cần)
-  // LƯU Ý: Không được cache kết quả này
-  const { data: { user } } = await supabase.auth.getUser()
+  // ==========================================
+  // 3. TỐI ƯU TỐC ĐỘ: Dùng getSession() thay vì getUser()
+  // getSession() chỉ giải mã cookie cục bộ (0ms), không gửi request qua mạng
+  // ==========================================
+  const { data: { session } } = await supabase.auth.getSession()
+  const user = session?.user
 
   const path = request.nextUrl.pathname
 
@@ -68,8 +71,7 @@ export async function updateSession(request: NextRequest) {
 
   // CASE B: Đã đăng nhập
   if (user) {
-    // Lấy Role từ user_metadata (Giả sử bạn lưu role trong metadata khi đăng ký)
-    // Hoặc query bảng profiles nếu role lưu ở bảng riêng (nhưng sẽ chậm hơn chút)
+    // Lấy Role từ user_metadata (đọc trực tiếp từ JWT Token siêu nhanh)
     const role = user.user_metadata?.role || 'student' // mặc định là student nếu không có role
 
     // 1. Nếu đang ở trang Auth (Login/Register) -> Redirect về trang dashboard tương ứng

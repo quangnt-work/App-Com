@@ -19,7 +19,7 @@ interface FileDropzoneProps {
 
 export default function FileDropzone({
   accept = '*',
-  maxSizeMB = 10,
+  maxSizeMB = 50,
   label = 'Tải lên tập tin',
   helperText = 'Kéo thả hoặc nhấn để chọn file',
   onFileSelect,

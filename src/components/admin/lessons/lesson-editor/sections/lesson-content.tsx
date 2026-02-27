@@ -198,9 +198,9 @@ export default function LessonContent({ form }: LessonContentProps) {
                         ) : (
                            <FileDropzone
                              accept=".pdf,.doc,.docx,.pptx"
-                             maxSizeMB={10}
+                             maxSizeMB={50}
                              label="Tải tài liệu bài học"
-                             helperText="Hỗ trợ PDF, Word (Tối đa 10MB)"
+                             helperText="Hỗ trợ PDF, Word (Tối đa 50MB)"
                              onFileSelect={(file) => handleFileUpload(file, field.onChange)}
                            />
                         )}

@@ -42,19 +42,19 @@ export default function HomePage() {
           <FeatureBox 
             icon={<BookOpen size={40} />} 
             title="Bài học" 
-            href="/lessons" 
+            href="/lesson" 
             buttonLabel="Khám phá" 
           />
           <FeatureBox 
             icon={<Bot size={40} />} 
             title="Luyện tập cùng AI" 
-            href="/ai-practice" 
+            href="/ai" 
             buttonLabel="Bắt đầu" 
           />
           <FeatureBox 
             icon={<ClipboardCheck size={40} />} 
             title="Kiểm tra" 
-            href="/quizzes" 
+            href="/exams" 
             buttonLabel="Vào thi" 
           />
           <FeatureBox 

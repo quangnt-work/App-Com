@@ -1,19 +1,18 @@
-import { Header } from '@/components/layout/Header' // Tận dụng Header trang chủ hoặc tạo Header riêng cho Student
+// app/(admin)/layout.tsx hoặc app/(student)/layout.tsx
+import { createClient } from '@/lib/supabase/server'
+import { Header } from '@/components/layout/Header'
 
-export default function StudentLayout({
-  children,
-}: {
-  children: React.ReactNode
-}) {
+export default async function Layout({ children }: { children: React.ReactNode }) {
+  const supabase = await createClient()
+  const { data: { user } } = await supabase.auth.getUser()
+  
+  // Chuyển đổi dữ liệu user phù hợp với HeaderProps
+  const headerUser = user ? { name: user.email?.split('@test.qa') || '', role: 'Học Viên' } : null;
+
   return (
     <div className="min-h-screen bg-slate-50">
-      {/* Navbar dùng chung cho toàn bộ khu vực Student */}
-      <Header /> 
-      
-      {/* Nội dung thay đổi (Profile, Lesson, Lesson...) */}
-      <main className="pt-4">
-        {children}
-      </main>
+      <Header user={headerUser} /> 
+      <main>{children}</main>
     </div>
   )
 }

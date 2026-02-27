@@ -1,8 +1,7 @@
 import Image from 'next/image'
 import Link from 'next/link'
 import { Card } from '@/components/ui/card'
-import { Badge } from '@/components/ui/badge'
-import { Clock, BookOpen, Star } from 'lucide-react'
+import { Star } from 'lucide-react'
 import { type Lesson } from '@/types/lesson'
 
 export function LessonCard({ lesson }: { lesson: Lesson }) {
@@ -31,14 +30,6 @@ export function LessonCard({ lesson }: { lesson: Lesson }) {
           fill 
           className="object-cover group-hover:scale-105 transition-transform duration-500"
         />
-        <div className="absolute top-3 right-3 flex gap-2">
-           <Badge className="bg-black/60 text-white border-none flex items-center gap-1 text-[10px] px-2">
-             <Clock className="w-3 h-3" /> {lesson.duration}
-           </Badge>
-           <Badge className="bg-black/60 text-white border-none flex items-center gap-1 text-[10px] px-2">
-             <BookOpen className="w-3 h-3" /> {lesson.lessons_count} bài
-           </Badge>
-        </div>
       </div>
 
       <div className="p-5 flex flex-col flex-1">
@@ -69,8 +60,7 @@ export function LessonCard({ lesson }: { lesson: Lesson }) {
             )}
           </div>
           <div className="flex flex-col">
-            <span className="text-[10px] text-slate-400 font-medium">Giảng viên</span>
-            <span className="text-xs font-bold text-slate-700">{lesson.instructor_name}</span>
+            <span className="text-[13px] text-slate-400 font-medium">Phạm Quang Anh</span>
           </div>
         </div>
       </div>

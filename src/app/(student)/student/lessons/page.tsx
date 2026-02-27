@@ -3,7 +3,7 @@ import { LessonSection } from '@/components/student/lessons/LessonSection'
 import { Button } from '@/components/ui/button'
 import { Inbox } from 'lucide-react'
 import { LessonRepository } from "@/repositories/lesson-repository";
-import { LessonType, type Lesson } from '@/types/lesson'
+import { type Lesson } from '@/types/lesson'
 
 export default async function LessonsPage() {
   // 1. Fetch dữ liệu thật
@@ -36,15 +36,15 @@ export default async function LessonsPage() {
       )}
       
       <LessonSection 
-        title="Khóa tiếng Anh" 
+        title="Khóa tiếng Nga" 
         icon="english"
-        lessons={(englishLessons.data as unknown as Lesson[]) || []} 
+        lessons={(russianLessons.data as unknown as Lesson[]) || []} 
       />
 
       <LessonSection 
-        title="Khóa tiếng Nga" 
+        title="Khóa tiếng Anh" 
         icon="russian"
-        lessons={(russianLessons.data as unknown as Lesson[]) || []} 
+        lessons={(englishLessons.data as unknown as Lesson[]) || []} 
       />
 
        <LessonSection 

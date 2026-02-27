@@ -22,7 +22,7 @@ export function LessonMainView({ lesson }: { lesson: Lesson }) {
         {activeTab === "documents" && <LessonDocuments lesson={lesson} />}
         
         {activeTab === "practice" && (
-          <div className="bg-white p-12 text-center text-slate-500 rounded-xl border border-slate-200 shadow-sm">
+          <div className="bg-white rounded-xl p-12 text-center border border-slate-200 shadow-sm text-slate-500 italic">
             Tính năng làm bài tập trực tiếp đang được phát triển. Vui lòng quay lại sau!
           </div>
         )}

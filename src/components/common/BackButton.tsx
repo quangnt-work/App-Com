@@ -1,27 +1,21 @@
+// src/components/common/BackButton.tsx
 'use client'
-import { useRouter, usePathname } from 'next/navigation' // Thêm usePathname
-import { Button } from '@/components/ui/button'
-import { ChevronLeft, ChevronLeftCircle } from 'lucide-react'
+import { useRouter } from 'next/navigation'
+import { ArrowLeft } from 'lucide-react'
 
 export function BackButton() {
   const router = useRouter()
-  const pathname = usePathname() // Lấy đường dẫn hiện tại
-
-  // Nếu đang ở trang chủ, trả về null (không hiển thị gì cả)
-  if (pathname === '/') {
-    return null;
-  }
 
   return (
-    <div className="w-full max-w-[1600px] mx-auto px-6 pt-4"> {/* Wrapper để căn lề đẹp */}
-      <Button 
-        variant="ghost" 
-        size="sm" 
-        onClick={() => router.back()} 
-        className="text-slate-500 hover:text-slate-900 pl-0 hover:bg-transparent"
+    <div className="w-full max-w-[1200px] mx-auto px-4 sm:px-6 pt-6">
+      <button 
+        onClick={() => router.back()}
+        className="flex items-center gap-2 text-[#5B4A82] hover:text-[#4a3c6b] transition-all font-bold text-sm group"
       >
-        <ChevronLeftCircle className="w-4 h-4" /> Quay lại
-      </Button>
+        {/* Mũi tên thanh mảnh giống trong ảnh */}
+        <ArrowLeft size={20} strokeWidth={2.5} className="transition-transform group-hover:-translate-x-1" />
+        <span>Quay lại</span>
+      </button>
     </div>
   )
 }

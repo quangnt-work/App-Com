@@ -14,8 +14,6 @@ import { Loader2, User, Lock, EyeOff, Eye } from "lucide-react"
 import { toast } from "sonner"
 import Link from "next/link"
 import { RegisterInput } from "@/lib/schemas/auth"
-import { Header } from "@/components/layout/Header" // Tích hợp Header
-import { Footer } from "@/components/layout/Footer" // Tích hợp Footer
 
 const registerSchema = z.object({
   fullName: z.string().min(2, "Họ tên quá ngắn"),
@@ -221,8 +219,6 @@ export default function RegisterPage() {
         </div>
       </main>
 
-      {/* Footer component */}
-      <Footer />
     </div>
   )
 }

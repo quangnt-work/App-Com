@@ -17,17 +17,14 @@ export default async function HomePage() {
   } : null;
 
   const features = [
-    { id: '1', title: 'Bài học', icon: <BookOpen size={40} />, href: '/lessons', buttonLabel: 'Khám phá' },
-    { id: '2', title: 'Luyện tập cùng AI', icon: <Bot size={40} />, href: '/ai', buttonLabel: 'Bắt đầu' },
-    { id: '3', title: 'Kiểm tra', icon: <ClipboardCheck size={40} />, href: '/exam', buttonLabel: 'Vào thi' },
-    { id: '4', title: 'Tài liệu', icon: <FolderDown size={40} />, href: '/docs', buttonLabel: 'Tải xuống' },
+    { id: '1', title: 'Bài học', icon: <BookOpen size={40} />, href: '/student/courses', buttonLabel: 'Khám phá' },
+    { id: '2', title: 'Luyện tập cùng AI', icon: <Bot size={40} />, href: '/student/ai', buttonLabel: 'Bắt đầu' },
+    { id: '3', title: 'Kiểm tra', icon: <ClipboardCheck size={40} />, href: '/student/exams', buttonLabel: 'Vào thi' },
+    { id: '4', title: 'Tài liệu', icon: <FolderDown size={40} />, href: '/student/documents', buttonLabel: 'Tải xuống' },
   ];
 
   return (
     <div className="flex flex-col min-h-screen bg-[#F8FAFC]">
-      {/* Truyền userData thực tế vào Header */}
-      <Header user={userData} />
-
       <main className="flex-grow flex items-center justify-center py-12 px-4">
         <div className="max-w-6xl w-full">
           <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-8">
@@ -56,8 +53,6 @@ export default async function HomePage() {
           </div>
         </div>
       </main>
-
-      <Footer />
     </div>
   );
 }

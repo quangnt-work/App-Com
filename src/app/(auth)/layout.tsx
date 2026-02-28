@@ -15,7 +15,6 @@ export default async function AuthLayout({ children }: { children: React.ReactNo
   return (
     // Bỏ thẻ <html> và <body> đi
     <div className="flex flex-col min-h-screen">
-      <Header user={userData} />
       <div className="flex-1">
         {children}
       </div>

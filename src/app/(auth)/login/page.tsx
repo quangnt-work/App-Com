@@ -153,9 +153,6 @@ export default function LoginPage() {
         </div>
         {/* Lưu ý: Tôi đã xóa phần "Page Footer (Outside Card)" cũ để thay thế bằng Footer mới của bạn */}
       </main>
-
-      {/* Footer mới của bạn */}
-      <Footer />
     </div>
   )
 }

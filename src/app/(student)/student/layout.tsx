@@ -1,7 +1,7 @@
-// src/app/(auth)/layout.tsx
+// src/app/(student)/student/layout.tsx
 import React from "react"
-import { Header } from '@/components/layout/Header'
 import { createClient } from '@/lib/supabase/server'
+import { BackButton } from "@/components/common/BackButton"
 
 export default async function AuthLayout({ children }: { children: React.ReactNode }) {
   const supabase = await createClient()
@@ -15,7 +15,7 @@ export default async function AuthLayout({ children }: { children: React.ReactNo
   return (
     // Bỏ thẻ <html> và <body> đi
     <div className="flex flex-col min-h-screen">
-      <Header user={userData} />
+      <BackButton />
       <div className="flex-1">
         {children}
       </div>

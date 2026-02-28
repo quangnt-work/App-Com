@@ -14,7 +14,7 @@ export default async function AuthLayout({ children }: { children: React.ReactNo
 
   return (
     // Bỏ thẻ <html> và <body> đi
-    <div className="flex flex-col min-h-screen">
+    <div className="flex flex-col min-h-screen bg-[#f8f9fa]">
       <BackButton />
       <div className="flex-1">
         {children}

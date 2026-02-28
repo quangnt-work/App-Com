@@ -117,10 +117,14 @@ export async function login(data: LoginInput) {
       console.error('❌ Lỗi Self-healing:', insertError)
       return { success: false, message: 'Lỗi: Không thể khởi tạo hồ sơ người dùng.' }
     }
+
+    revalidatePath('/', 'layout');
     
     // Tạo xong thì trả về role mặc định
     return { success: true, role: 'student', message: 'Đăng nhập thành công!' }
   }
+
+  revalidatePath('/', 'layout');
 
   // D. Nếu mọi thứ OK -> Trả về role từ DB
   return { success: true, role: profile.role, message: 'Đăng nhập thành công!' }

@@ -1,18 +1,30 @@
 // src/components/layout/header.tsx
 "use client";
 
-import React from 'react';
+import React, { useTransition } from 'react';
 import Link from 'next/link';
-import Image from 'next/image';
-import { LogOut, User, Menu } from 'lucide-react';
+import { LogOut, User, Loader2, Home } from 'lucide-react'; // Thêm import Home
+import { logout } from '@/lib/actions/auth'; 
+import { toast } from 'sonner';
 
 interface HeaderProps {
-  user?: { name: string; role: string } | null;
+  user?: { name?: string; role?: string } | null; // Cập nhật type cho linh hoạt
 }
 
 export const Header = ({ user }: HeaderProps) => {
-  // Trong thực tế, user sẽ được lấy từ Auth Context hoặc Supabase
   const isLoggedIn = !!user;
+  const [isPending, startTransition] = useTransition(); 
+
+  const handleLogout = () => {
+    startTransition(async () => {
+      try {
+        await logout(); 
+        toast.success("Đã đăng xuất thành công!");
+      } catch (error) {
+        toast.error("Đã xảy ra lỗi khi đăng xuất.");
+      }
+    });
+  };
 
   return (
     <header className="sticky top-0 z-50 w-full border-b bg-white/95 backdrop-blur supports-[backdrop-filter]:bg-white/60">
@@ -51,15 +63,36 @@ export const Header = ({ user }: HeaderProps) => {
             </div>
           ) : (
             <div className="flex items-center gap-4">
-              <div className="flex items-center gap-2 py-1.5 px-3 bg-slate-100 rounded-full border">
+              {/* === NÚT HOME (Chỉ hiện khi đã đăng nhập) === */}
+              <Link 
+                href="/" 
+                className="text-slate-500 hover:text-blue-600 hover:bg-blue-50 p-2 rounded-full transition-colors flex items-center justify-center"
+                title="Trang chủ"
+              >
+                <Home size={20} />
+              </Link>
+
+              {/* === USER PROFILE BUBBLE === */}
+              <div className="flex items-center gap-2 py-1.5 px-3 bg-slate-100 rounded-full border cursor-default">
                 <div className="w-6 h-6 bg-blue-600 rounded-full flex items-center justify-center text-white">
                   <User size={14} />
                 </div>
-                <span className="text-xs font-semibold text-slate-700 uppercase">{user?.role || 'Học viên'}</span>
+                {/* Hiển thị Role hoặc Tên nếu có truyền vào từ props */}
+                <span className="text-xs font-semibold text-slate-700 uppercase">
+                  {user?.role === 'admin' ? 'Quản trị' : (user?.name || 'Học viên')}
+                </span>
               </div>
-              <button className="text-red-500 hover:bg-red-50 p-2 rounded-full transition-colors">
-                <LogOut size={20} />
+              
+              {/* === NÚT LOGOUT === */}
+              <button 
+                onClick={handleLogout}
+                disabled={isPending}
+                className="text-red-500 hover:bg-red-50 p-2 rounded-full transition-colors disabled:opacity-50 flex items-center justify-center"
+                title="Đăng xuất"
+              >
+                {isPending ? <Loader2 size={20} className="animate-spin" /> : <LogOut size={20} />}
               </button>
+              
             </div>
           )}
         </div>

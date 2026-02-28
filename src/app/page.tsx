@@ -13,7 +13,7 @@ export default async function HomePage() {
 
   const userData = user ? { 
     name: user.user_metadata?.full_name || user.email, 
-    role: user.user_metadata?.role || 'STUDENT' 
+    role: user.user_metadata?.role || 'STUDENT'
   } : null;
 
   const features = [

@@ -1,18 +1,24 @@
-// app/(admin)/layout.tsx hoặc app/(student)/layout.tsx
-import { createClient } from '@/lib/supabase/server'
+// src/app/(auth)/layout.tsx
+import React from "react"
 import { Header } from '@/components/layout/Header'
+import { createClient } from '@/lib/supabase/server'
 
-export default async function Layout({ children }: { children: React.ReactNode }) {
+export default async function AuthLayout({ children }: { children: React.ReactNode }) {
   const supabase = await createClient()
   const { data: { user } } = await supabase.auth.getUser()
-  
-  // Chuyển đổi dữ liệu user phù hợp với HeaderProps
-  const headerUser = user ? { name: user.email?.split('@test.qa') || '', role: 'Học Viên' } : null;
+
+  const userData = user ? { 
+    name: user.user_metadata?.full_name, 
+    role: user.user_metadata?.role || 'student' 
+  } : null
 
   return (
-    <div className="min-h-screen bg-slate-50">
-      <Header user={headerUser} /> 
-      <main>{children}</main>
+    // Bỏ thẻ <html> và <body> đi
+    <div className="flex flex-col min-h-screen">
+      <Header user={userData} />
+      <div className="flex-1">
+        {children}
+      </div>
     </div>
   )
 }

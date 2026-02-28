@@ -8,7 +8,10 @@ import { logout } from '@/lib/actions/auth';
 import { toast } from 'sonner';
 
 interface HeaderProps {
-  user?: { name?: string; role?: string } | null; // Cập nhật type cho linh hoạt
+  user?: { 
+    name?: string; 
+    role?: string 
+  } | null; // Cập nhật type cho linh hoạt
 }
 
 export const Header = ({ user }: HeaderProps) => {

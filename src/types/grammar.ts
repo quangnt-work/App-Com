@@ -1,11 +1,11 @@
 // src/types/lesson.ts
 
 // 1. Định nghĩa các hằng số phân loại (Enums)
-export type LessonType = 'text' | 'video' | 'audio' | 'file' | 'quiz' | 'TEXT' | 'VIDEO' | 'AUDIO';
-export type LessonStatus = 'draft' | 'published' | 'archived';
+export type GrammarType = 'text' | 'video' | 'audio' | 'file' | 'quiz' | 'TEXT' | 'VIDEO' | 'AUDIO';
+export type GrammarStatus = 'draft' | 'published' | 'archived';
 
 // 2. Interface chính sử dụng cho toàn bộ dự án
-export interface Lesson {
+export interface Grammar {
   id: string;
   title: string;
   
@@ -23,9 +23,9 @@ export interface Lesson {
   file_size?: number | null;
   
   // Kiểu dữ liệu linh hoạt để chống lỗi xung đột
-  type?: LessonType | string | null; 
+  type?: GrammarType | string | null; 
   // Status trên DB là string, nhưng Form/Zod lại dùng boolean, nên ta cho phép cả hai
-  status?: LessonStatus | string | boolean | null; 
+  status?: GrammarStatus | string | boolean | null; 
   
   // Thời gian
   created_at?: string | null;
@@ -33,7 +33,7 @@ export interface Lesson {
 
   // === GIAO DIỆN STUDENT ===
   duration?: string | null; 
-  lessons_count?: number | null;
+  grammars_count?: number | null;
   rating?: number | null;
   instructor_avatar?: string | null;
   instructor_name?: string | null;

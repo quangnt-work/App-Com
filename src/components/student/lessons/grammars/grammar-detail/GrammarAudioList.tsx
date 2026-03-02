@@ -2,11 +2,11 @@
 "use client";
 
 import { Music, Play, Pause, SkipBack, SkipForward } from "lucide-react";
-import { Lesson } from "@/types/lesson";
+import { Grammar } from "@/types/grammar";
 
-export function LessonAudioList({ lesson }: { lesson: Lesson }) {
+export function GrammarAudioList({ grammar }: { grammar: Grammar }) {
   // Nếu không có audio, không render khối này
-  if (!lesson.audio_url) return null;
+  if (!grammar.audio_url) return null;
 
   return (
     <div className="bg-white rounded-2xl border border-blue-100 shadow-sm overflow-hidden flex flex-col">
@@ -61,7 +61,7 @@ export function LessonAudioList({ lesson }: { lesson: Lesson }) {
          </div>
 
          {/* Audio element thật (bị ẩn) để phát nhạc dựa theo src từ DB */}
-         <audio src={lesson.audio_url} className="hidden" />
+         <audio src={grammar.audio_url} className="hidden" />
       </div>
     </div>
   );

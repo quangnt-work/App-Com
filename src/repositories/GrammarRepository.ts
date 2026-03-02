@@ -1,8 +1,8 @@
 import { createClient } from "@/lib/supabase/server";
 import { Database } from "@/types/database.type";
 
-type LessonInsert = Database['public']['Tables']['lessons']['Insert'];
-type LessonUpdate = Database['public']['Tables']['lessons']['Update'];
+type LessonInsert = Database['public']['Tables']['grammars']['Insert'];
+type LessonUpdate = Database['public']['Tables']['grammars']['Update'];
 
 interface GetLessonsParams {
   page?: number;
@@ -12,10 +12,10 @@ interface GetLessonsParams {
   status?: string; // Thêm lọc theo status (published/draft)
 }
 
-export const LessonRepository = {
+export const GrammarRepository = {
   async findBySlug(slug: string) {
     const supabase = await createClient();
-    return supabase.from('lessons').select('id').eq('slug', slug).single();
+    return supabase.from('grammars').select('id').eq('slug', slug).single();
   },
 
   async getLessons({ page = 1, pageSize = 10, search, category, status }: GetLessonsParams) {
@@ -24,7 +24,7 @@ export const LessonRepository = {
     const end = start + pageSize - 1;
 
     let query = supabase
-      .from('lessons')
+      .from('grammars')
       .select('*', { count: 'exact' });
 
     if (search) query = query.ilike('title', `%${search}%`);
@@ -38,29 +38,29 @@ export const LessonRepository = {
 
   async create(payload: LessonInsert) {
     const supabase = await createClient();
-    return supabase.from('lessons').insert(payload);
+    return supabase.from('grammars').insert(payload);
   },
 
   async update(id: string, payload: LessonUpdate) {
     const supabase = await createClient();
-    return supabase.from('lessons').update(payload).eq('id', id);
+    return supabase.from('grammars').update(payload).eq('id', id);
   },
 
   async delete(id: string) {
     const supabase = await createClient();
-    return supabase.from('lessons').delete().eq('id', id);
+    return supabase.from('grammars').delete().eq('id', id);
   },
 
   async getById(id: string) {
   const supabase = await createClient();
-  return supabase.from('lessons').select('*').eq('id', id).single();
+  return supabase.from('grammars').select('*').eq('id', id).single();
   },
 
   // src/repositories/lesson-repository.ts
 async getByCategory(category: string, limit = 4) {
   const supabase = await createClient();
   return supabase
-    .from('lessons')
+    .from('grammars')
     .select('*')
     .eq('category', category)
     .eq('status', 'published') // Chỉ lấy bài đã public

@@ -1,8 +1,8 @@
-import { LessonRepository } from "@/repositories/lesson-repository";
-import { LessonInput } from "@/lib/schemas/lesson";
+import { GrammarRepository } from "@/repositories/GrammarRepository";
+import { GrammarInput } from "@/lib/schemas/grammar";
 import slugify from "slugify";
 import { createClient } from "@/lib/supabase/server";
-import { LESSON_STATUS } from "@/lib/constants/lesson-constants";
+import { GRAMMAR_STATUS } from "@/lib/constants/GrammarConstants";
 
 // Helper function tách riêng
 async function generateUniqueSlug(title: string, currentId?: string) {
@@ -11,7 +11,7 @@ async function generateUniqueSlug(title: string, currentId?: string) {
   // Logic kiểm tra trùng lặp
   // ... (giữ nguyên logic cũ hoặc cải tiến check DB)
   // Tạm thời giữ nguyên logic check cơ bản
-  const { data } = await LessonRepository.findBySlug(slug);
+  const { data } = await GrammarRepository.findBySlug(slug);
   if (data && data.id !== currentId) {
      slug = `${slug}-${Date.now().toString().slice(-4)}`;
   }
@@ -31,10 +31,10 @@ async function requireAdmin() {
 
 export const LessonService = {
   async getList(page: number, pageSize: number, search: string, category: string) {
-    return await LessonRepository.getLessons({page, pageSize, search, category});
+    return await GrammarRepository.getLessons({page, pageSize, search, category});
   },
 
-  async upsert(data: LessonInput) {
+  async upsert(data: GrammarInput) {
     // 1. Security Check
     await requireAdmin();
 
@@ -55,24 +55,24 @@ export const LessonService = {
       file_url: data.type !== 'text' ? data.file_url : null,
       category: data.category,
       // Dùng Constant thay vì hardcode string
-      status: data.status ? LESSON_STATUS.PUBLISHED : LESSON_STATUS.DRAFT,
+      status: data.status ? GRAMMAR_STATUS.PUBLISHED : GRAMMAR_STATUS.DRAFT,
       updated_at: new Date().toISOString(),
     };
 
     // 4. Gọi Repository
     if (data.id && data.id !== 'new') {
-      return await LessonRepository.update(data.id, payload);
+      return await GrammarRepository.update(data.id, payload);
     } else {
-      return await LessonRepository.create(payload);
+      return await GrammarRepository.create(payload);
     }
   },
   
   async delete(id: string) {
     await requireAdmin();
-    return await LessonRepository.delete(id);
+    return await GrammarRepository.delete(id);
   },
 
   async getDetail(id: string) {
-  return await LessonRepository.getById(id);
+  return await GrammarRepository.getById(id);
   },
 };

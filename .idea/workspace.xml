@@ -1,0 +1,75 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<project version="4">
+  <component name="ChangeListManager">
+    <list default="true" id="14f236b2-fe28-40fe-b621-04c9b69c8367" name="Changes" comment="">
+      <change afterPath="$PROJECT_DIR$/src/app/(student)/student/lessons/grammars/page.tsx" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/actions/lesson-actions.ts" beforeDir="false" afterPath="$PROJECT_DIR$/src/actions/GrammarActions.ts" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/app/(student)/student/courses/page.tsx" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/app/(student)/student/lessons/[id]/page.tsx" beforeDir="false" afterPath="$PROJECT_DIR$/src/app/(student)/student/lessons/grammars/[id]/page.tsx" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/app/(student)/student/lessons/page.tsx" beforeDir="false" afterPath="$PROJECT_DIR$/src/app/(student)/student/lessons/page.tsx" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/components/student/features/CategoryCard.tsx" beforeDir="false" afterPath="$PROJECT_DIR$/src/components/student/lessons/grammars/features/CategoryCard.tsx" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/components/student/lessons/LessonCard.tsx" beforeDir="false" afterPath="$PROJECT_DIR$/src/components/student/lessons/grammars/GrammarCard.tsx" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/components/student/lessons/lesson-detail/LessonAudioList.tsx" beforeDir="false" afterPath="$PROJECT_DIR$/src/components/student/lessons/grammars/grammar-detail/GrammarAudioList.tsx" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/components/student/lessons/lesson-detail/LessonDownloadList.tsx" beforeDir="false" afterPath="$PROJECT_DIR$/src/components/student/lessons/grammars/grammar-detail/GrammarDownloadList.tsx" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/components/student/lessons/lesson-detail/LessonHeader.tsx" beforeDir="false" afterPath="$PROJECT_DIR$/src/components/student/lessons/grammars/grammar-detail/GrammarHeader.tsx" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/components/student/lessons/lesson-detail/LessonMainView.tsx" beforeDir="false" afterPath="$PROJECT_DIR$/src/components/student/lessons/grammars/grammar-detail/GrammarMainView.tsx" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/components/student/lessons/lesson-detail/LessonViewer.tsx" beforeDir="false" afterPath="$PROJECT_DIR$/src/components/student/lessons/grammars/grammar-detail/GrammarViewer.tsx" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/lib/constants/lesson-constants.ts" beforeDir="false" afterPath="$PROJECT_DIR$/src/lib/constants/GrammarConstants.ts" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/lib/schemas/lesson.ts" beforeDir="false" afterPath="$PROJECT_DIR$/src/lib/schemas/grammar.ts" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/repositories/lesson-repository.ts" beforeDir="false" afterPath="$PROJECT_DIR$/src/repositories/GrammarRepository.ts" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/services/lesson-service.ts" beforeDir="false" afterPath="$PROJECT_DIR$/src/services/GrammarService.ts" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/types/database-custom.ts" beforeDir="false" afterPath="$PROJECT_DIR$/src/types/database-custom.ts" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/types/database.type.ts" beforeDir="false" afterPath="$PROJECT_DIR$/src/types/database.type.ts" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/types/lesson.ts" beforeDir="false" afterPath="$PROJECT_DIR$/src/types/grammar.ts" afterDir="false" />
+    </list>
+    <option name="SHOW_DIALOG" value="false" />
+    <option name="HIGHLIGHT_CONFLICTS" value="true" />
+    <option name="HIGHLIGHT_NON_ACTIVE_CHANGELIST" value="false" />
+    <option name="LAST_RESOLUTION" value="IGNORE" />
+  </component>
+  <component name="Git.Settings">
+    <option name="RECENT_GIT_ROOT_PATH" value="$PROJECT_DIR$" />
+  </component>
+  <component name="ProjectColorInfo">{
+  &quot;customColor&quot;: &quot;&quot;,
+  &quot;associatedIndex&quot;: 1
+}</component>
+  <component name="ProjectId" id="3ANehAVbMAlN5mTQCx8uKs3k0Mo" />
+  <component name="ProjectViewState">
+    <option name="hideEmptyMiddlePackages" value="true" />
+    <option name="showLibraryContents" value="true" />
+  </component>
+  <component name="PropertiesComponent">{
+  &quot;keyToString&quot;: {
+    &quot;ModuleVcsDetector.initialDetectionPerformed&quot;: &quot;true&quot;,
+    &quot;RunOnceActivity.ShowReadmeOnStart&quot;: &quot;true&quot;,
+    &quot;RunOnceActivity.git.unshallow&quot;: &quot;true&quot;,
+    &quot;git-widget-placeholder&quot;: &quot;main&quot;,
+    &quot;kotlin-language-version-configured&quot;: &quot;true&quot;,
+    &quot;settings.editor.selected.configurable&quot;: &quot;preferences.lookFeel&quot;
+  }
+}</component>
+  <component name="RecentsManager">
+    <key name="MoveFile.RECENT_KEYS">
+      <recent name="C:\Users\UPSC\Desktop\Quang\App-Com\src\components\student\lessons\grammars" />
+      <recent name="C:\Users\UPSC\Desktop\Quang\App-Com\src\app\(student)\student\lessons" />
+    </key>
+  </component>
+  <component name="SharedIndexes">
+    <attachedChunks>
+      <set>
+        <option value="bundled-jdk-30f59d01ecdd-2fc7cc6b9a17-intellij.indexing.shared.core-IU-253.31033.145" />
+      </set>
+    </attachedChunks>
+  </component>
+  <component name="TaskManager">
+    <task active="true" id="Default" summary="Default task">
+      <changelist id="14f236b2-fe28-40fe-b621-04c9b69c8367" name="Changes" comment="" />
+      <created>1772437574477</created>
+      <option name="number" value="Default" />
+      <option name="presentableId" value="Default" />
+      <updated>1772437574477</updated>
+    </task>
+    <servers />
+  </component>
+</project>

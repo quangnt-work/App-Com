@@ -8,7 +8,7 @@ export type Enums<T extends keyof Database["public"]["Enums"]> =
   Database["public"]["Enums"][T];
 
 // Định nghĩa Business Types
-export type Lesson = Tables<"lessons">;
+export type Grammar = Tables<"grammars">;
 export type Exam = Tables<"exams">;
 export type Question = Tables<"exam_questions">;
 export type UserProfile = Tables<"profiles">;

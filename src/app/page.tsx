@@ -1,7 +1,5 @@
 // src/app/page.tsx
 import React from 'react';
-import { Header } from "@/components/layout/Header";
-import { Footer } from "@/components/layout/Footer";
 import { BookOpen, Bot, ClipboardCheck, FolderDown } from 'lucide-react';
 import Link from 'next/link';
 import { createClient } from '@/lib/supabase/server'; // Import Supabase Server
@@ -17,7 +15,7 @@ export default async function HomePage() {
   } : null;
 
   const features = [
-    { id: '1', title: 'Bài học', icon: <BookOpen size={40} />, href: '/student/courses', buttonLabel: 'Khám phá' },
+    { id: '1', title: 'Bài học', icon: <BookOpen size={40} />, href: '/student/lessons', buttonLabel: 'Khám phá' },
     { id: '2', title: 'Luyện tập cùng AI', icon: <Bot size={40} />, href: '/student/ai', buttonLabel: 'Bắt đầu' },
     { id: '3', title: 'Kiểm tra', icon: <ClipboardCheck size={40} />, href: '/student/exams', buttonLabel: 'Vào thi' },
     { id: '4', title: 'Tài liệu', icon: <FolderDown size={40} />, href: '/student/documents', buttonLabel: 'Tải xuống' },

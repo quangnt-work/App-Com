@@ -1,20 +1,20 @@
 // src/hooks/useLessonFilter.ts
 import { useState, useMemo } from 'react';
-import type { Lesson, LessonStatus } from '@/types/lesson';
+import type { Grammar, GrammarStatus } from '@/types/grammar';
 
 
-export function useLessonFilter(initialData: Lesson[]) {
+export function useGrammarFilter(initialData: Grammar[]) {
   const [searchTerm, setSearchTerm] = useState('');
   // Khởi tạo state với đúng type Union
-  const [statusFilter, setStatusFilter] = useState<LessonStatus>('published');
+  const [statusFilter, setStatusFilter] = useState<GrammarStatus>('published');
 
 
   const filteredData = useMemo(() => {
-    return initialData.filter((lesson) => {
-      const matchSearch = lesson.title.toLowerCase().includes(searchTerm.toLowerCase());
+    return initialData.filter((grammar) => {
+      const matchSearch = grammar.title.toLowerCase().includes(searchTerm.toLowerCase());
      
       // So sánh status chính xác
-      const matchStatus = statusFilter === 'published' || lesson.status === statusFilter;
+      const matchStatus = statusFilter === 'published' || grammar.status === statusFilter;
      
       return matchSearch && matchStatus;
     });

@@ -10,7 +10,7 @@ export const QuestionSchema = z.object({
   explanation: z.string().optional(),
 });
 
-export const LessonSchema = z.object({
+export const GrammarSchema = z.object({
   id: z.string().optional(),
   title: z.string().min(5, "Tên bài học phải ít nhất 5 ký tự"),
   slug: z.string().optional(),
@@ -53,4 +53,4 @@ export const LessonSchema = z.object({
 });
 
 // Giờ đây Output và Input đã khớp nhau 100%, không còn lỗi khi build
-export type LessonInput = z.infer<typeof LessonSchema>;
+export type GrammarInput = z.infer<typeof GrammarSchema>;

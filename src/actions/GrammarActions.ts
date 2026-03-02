@@ -1,8 +1,8 @@
 'use server'
 
 
-import { GrammarSchema, GrammarInput } from "@/lib/schemas/grammar";
-import { LessonService } from "@/services/GrammarService";
+import { LessonSchema, LessonInput } from "@/lib/schemas/lesson";
+import { LessonService } from "@/services/lesson-service";
 import { revalidatePath } from "next/cache";
 
 
@@ -23,10 +23,10 @@ export async function getLesson(id: string) {
 }
 
 
-export async function upsertLesson(formData: GrammarInput, lessonId?: string) {
+export async function upsertLesson(formData: LessonInput, lessonId?: string) {
  
   // 1. Validate Input
-  const validated = GrammarSchema.safeParse(formData);
+  const validated = LessonSchema.safeParse(formData);
   if (!validated.success) {
     return {
       success: false,

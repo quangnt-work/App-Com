@@ -1,8 +1,8 @@
 // src/components/student/lessons/lesson-detail/LessonDownloadList.tsx
 import { FileText, Download } from "lucide-react";
-import { Lesson } from "@/types/lesson";
+import { Grammar } from "@/types/grammar";
 
-export function LessonDownloadList({ lesson }: { lesson: Lesson }) {
+export function GrammarDownloadList({ grammar }: { grammar: Grammar }) {
   // Giả sử có một mảng tài liệu đi kèm. Ở đây mình mock dựa theo ảnh.
   const documents = [
     { name: "Bang_tra_cuu_giong.pdf", url: "#" },

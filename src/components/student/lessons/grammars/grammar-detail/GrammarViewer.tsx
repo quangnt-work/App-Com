@@ -3,13 +3,13 @@
 
 import { useRef } from "react";
 import { Maximize, Download } from "lucide-react";
-import { Lesson } from "@/types/lesson";
+import { Grammar } from "@/types/grammar";
 
-interface LessonViewerProps {
-  lesson: Lesson;
+interface GrammarViewerProps {
+  grammar: Grammar;
 }
 
-export function LessonViewer({ lesson }: LessonViewerProps) {
+export function GrammarViewer({ grammar }: GrammarViewerProps) {
   const iframeContainerRef = useRef<HTMLDivElement>(null);
   
   // Logic phóng to giữ nguyên
@@ -23,13 +23,13 @@ export function LessonViewer({ lesson }: LessonViewerProps) {
     }
   };
 
-  const lessonType = lesson.type?.toUpperCase() || "FILE";
+  const grammarType = grammar.type?.toUpperCase() || "FILE";
 
-  if (lessonType !== "FILE" || !lesson.file_url) {
+  if (grammarType !== "FILE" || !grammar.file_url) {
     return null; // Tạm ẩn nếu không phải file để nhúng
   }
 
-  const fileUrlLower = lesson.file_url.toLowerCase();
+  const fileUrlLower = grammar.file_url.toLowerCase();
   const isPowerPoint = fileUrlLower.includes(".ppt") || fileUrlLower.includes(".pptx");
   const isPdf = fileUrlLower.includes(".pdf");
 
@@ -44,7 +44,7 @@ export function LessonViewer({ lesson }: LessonViewerProps) {
             <Maximize size={18} />
          </button>
          <a 
-            href={lesson.file_url}
+            href={grammar.file_url}
             target="_blank"
             rel="noreferrer"
             className="w-10 h-10 bg-white rounded-xl border border-gray-200 flex items-center justify-center text-gray-700 hover:bg-gray-50 hover:text-blue-600 transition-colors shadow-sm"
@@ -60,7 +60,7 @@ export function LessonViewer({ lesson }: LessonViewerProps) {
       >
         {isPowerPoint && (
           <iframe 
-            src={`https://view.officeapps.live.com/op/embed.aspx?src=${encodeURIComponent(lesson.file_url)}`} 
+            src={`https://view.officeapps.live.com/op/embed.aspx?src=${encodeURIComponent(grammar.file_url)}`} 
             className="w-full h-full" 
             frameBorder="0" 
             allowFullScreen 
@@ -69,7 +69,7 @@ export function LessonViewer({ lesson }: LessonViewerProps) {
         
         {isPdf && (
           <iframe 
-            src={`${lesson.file_url}#view=FitH`} 
+            src={`${grammar.file_url}#view=FitH`} 
             className="w-full h-full" 
             frameBorder="0" 
             allowFullScreen 

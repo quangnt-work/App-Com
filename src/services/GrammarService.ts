@@ -29,7 +29,7 @@ async function requireAdmin() {
   if (profile?.role !== 'admin') throw new Error("Forbidden: Admin access required");
 }
 
-export const LessonService = {
+export const GrammarService = {
   async getList(page: number, pageSize: number, search: string, category: string) {
     return await GrammarRepository.getLessons({page, pageSize, search, category});
   },

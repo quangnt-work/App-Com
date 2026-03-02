@@ -12,30 +12,30 @@ import { ScrollArea } from "@/components/ui/scroll-area";
 import { Separator } from "@/components/ui/separator";
 import { Music, FileText, Maximize } from "lucide-react";
 import DOMPurify from 'isomorphic-dompurify';
-import { Lesson } from "@/types/lesson";
+import { Grammar } from "@/types/grammar";
 
-interface LessonPreviewModalProps {
+interface GrammarPreviewModalProps {
   isOpen: boolean;
   onClose: () => void;
-  lesson: Lesson | null;
+  grammar: Grammar | null;
 }
 
-export function LessonPreviewModal({
+export function GrammarPreviewModal({
   isOpen,
   onClose,
-  lesson,
-}: LessonPreviewModalProps) {
+  grammar,
+}: GrammarPreviewModalProps) {
   const iframeContainerRef = useRef<HTMLDivElement>(null);
 
-  if (!lesson) return null;
+  if (!grammar) return null;
 
-  const lessonType = lesson.type?.toUpperCase() || "TEXT";
+  const GrammarType = grammar.type?.toUpperCase() || "TEXT";
   
   // Xác định trước định dạng file để điều hướng Layout
-  const fileUrlLower = lesson.file_url?.toLowerCase() || "";
+  const fileUrlLower = grammar.file_url?.toLowerCase() || "";
   const isPowerPoint = fileUrlLower.includes('.ppt') || fileUrlLower.includes('.pptx');
   const isPdf = fileUrlLower.includes('.pdf');
-  const isFullscreenDocument = lessonType === "FILE" && (isPowerPoint || isPdf);
+  const isFullscreenDocument = GrammarType === "FILE" && (isPowerPoint || isPdf);
 
   const handleFullScreen = () => {
     if (iframeContainerRef.current) {
@@ -50,20 +50,20 @@ export function LessonPreviewModal({
   };
 
   const renderContent = () => {
-    switch (lessonType) {
+    switch (GrammarType) {
       case "VIDEO":
         return (
           <div className="aspect-video w-full max-w-4xl mx-auto rounded-lg overflow-hidden bg-black flex items-center justify-center">
-            {lesson.file_url ? (
-              lesson.file_url.includes("youtube") ? (
+            {grammar.file_url ? (
+              grammar.file_url.includes("youtube") ? (
                 <iframe
-                  src={lesson.file_url.replace("watch?v=", "embed/")}
+                  src={grammar.file_url.replace("watch?v=", "embed/")}
                   className="w-full h-full"
                   allowFullScreen
                 />
               ) : (
                 <video controls className="w-full h-full">
-                  <source src={lesson.file_url} type="video/mp4" />
+                  <source src={grammar.file_url} type="video/mp4" />
                   Trình duyệt không hỗ trợ thẻ video.
                 </video>
               )
@@ -80,9 +80,9 @@ export function LessonPreviewModal({
               <Music size={32} />
             </div>
             <h4 className="font-medium text-slate-700">File âm thanh bài học</h4>
-            {lesson.audio_url ? (
+            {grammar.audio_url ? (
               <audio controls className="w-full max-w-md">
-                <source src={lesson.audio_url} />
+                <source src={grammar.audio_url} />
                 Trình duyệt không hỗ trợ thẻ audio.
               </audio>
             ) : (
@@ -92,9 +92,9 @@ export function LessonPreviewModal({
         );
 
       case "FILE":
-        if (lesson.file_url) {
+        if (grammar.file_url) {
           if (isPowerPoint) {
-            const embedUrl = `https://view.officeapps.live.com/op/embed.aspx?src=${encodeURIComponent(lesson.file_url)}`;
+            const embedUrl = `https://view.officeapps.live.com/op/embed.aspx?src=${encodeURIComponent(grammar.file_url)}`;
             return (
               // Sử dụng h-full thay vì chiều cao cố định
               <div 
@@ -113,7 +113,7 @@ export function LessonPreviewModal({
                   src={embedUrl} 
                   className="w-full flex-1"
                   frameBorder="0" 
-                  title={lesson.title || "Tài liệu PowerPoint"}
+                  title={grammar.title || "Tài liệu PowerPoint"}
                   allowFullScreen
                 />
               </div>
@@ -136,10 +136,10 @@ export function LessonPreviewModal({
                   <span className="text-sm font-medium">Toàn màn hình</span>
                 </button>
                 <iframe 
-                  src={`${lesson.file_url}#view=FitH`} 
+                  src={`${grammar.file_url}#view=FitH`} 
                   className="w-full flex-1"
                   frameBorder="0" 
-                  title={lesson.title || "Tài liệu PDF"}
+                  title={grammar.title || "Tài liệu PDF"}
                   allowFullScreen
                 />
               </div>
@@ -154,7 +154,7 @@ export function LessonPreviewModal({
                 <h4 className="font-medium text-slate-700">Tài liệu đính kèm</h4>
                 <p className="text-sm text-slate-500">Định dạng tệp này không hỗ trợ xem trực tiếp. Vui lòng tải xuống để xem nội dung.</p>
                 <a 
-                  href={lesson.file_url} 
+                  href={grammar.file_url} 
                   target="_blank" 
                   rel="noopener noreferrer"
                   className="px-6 py-2 bg-blue-600 text-white rounded-md hover:bg-blue-700 transition-colors shadow-sm"
@@ -171,8 +171,8 @@ export function LessonPreviewModal({
       default:
         return (
           <div className="prose max-w-3xl mx-auto dark:prose-invert">
-            {lesson.content ? (
-                <div dangerouslySetInnerHTML={{ __html: DOMPurify.sanitize(lesson.content) }} />
+            {grammar.content ? (
+                <div dangerouslySetInnerHTML={{ __html: DOMPurify.sanitize(grammar.content) }} />
             ) : (
                 <p className="text-slate-400 italic text-center mt-10">Bài học chưa có nội dung văn bản.</p>
             )}
@@ -189,12 +189,12 @@ export function LessonPreviewModal({
         {/* Header chiếm một khoảng không gian cố định (shrink-0) */}
         <DialogHeader className="p-6 pb-4 shrink-0 bg-white">
           <div className="flex items-center gap-2 mb-2">
-            <Badge variant="outline">{lesson.category || "General"}</Badge>
-            <Badge variant={lessonType === "VIDEO" ? "default" : "secondary"}>
-              {lessonType}
+            <Badge variant="outline">{grammar.category || "General"}</Badge>
+            <Badge variant={GrammarType === "VIDEO" ? "default" : "secondary"}>
+              {GrammarType}
             </Badge>
           </div>
-          <DialogTitle className="text-3xl">{lesson.title}</DialogTitle>
+          <DialogTitle className="text-3xl">{grammar.title}</DialogTitle>
         </DialogHeader>
 
         <Separator className="shrink-0"/>

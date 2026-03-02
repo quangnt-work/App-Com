@@ -4,7 +4,7 @@ import Link from "next/link";
 import { Button } from "@/components/ui/button";
 import { Edit, Eye, FileText, Video, ListFilter, Music } from "lucide-react";
 import { Badge } from "@/components/ui/badge";
-import DeleteLessonButton from "./DeleteLessonButton";
+import DeleteGrammarButton from "./DeleteGrammarButton";
 import { format, isValid, parseISO } from "date-fns";
 import { vi } from "date-fns/locale";
 import { useState } from "react";
@@ -16,19 +16,19 @@ import {
   TableHeader,
   TableRow,
 } from "@/components/ui/table";
-import { LessonPreviewModal } from "./lesson-preview-modal";
-import { Lesson } from "@/types/lesson";
+import { GrammarPreviewModal } from "./GrammarPreviewModal";
+import { Grammar } from "@/types/grammar";
 
-interface LessonTableProps {
-  data: Lesson[];
+interface GrammarTableProps {
+  data: Grammar[];
 }
 
-export default function LessonTable({ data }: LessonTableProps) {
-  const [previewLesson, setPreviewLesson] = useState<Lesson | null>(null);
+export default function GrammarTable({ data }: GrammarTableProps) {
+  const [previewGrammar, setPreviewGrammar] = useState<Grammar | null>(null);
   const [isPreviewOpen, setIsPreviewOpen] = useState(false);
 
-  const handlePreview = (lesson: Lesson) => {
-    setPreviewLesson(lesson);
+  const handlePreview = (grammar: Grammar) => {
+    setPreviewGrammar(grammar);
     setIsPreviewOpen(true);
   };
 
@@ -140,7 +140,7 @@ export default function LessonTable({ data }: LessonTableProps) {
                       </Link>
                     </Button>
 
-                    <DeleteLessonButton id={lesson.id} title={lesson.title} />
+                    <DeleteGrammarButton id={lesson.id} title={lesson.title} />
                   </div>
                 </TableCell>
               </TableRow>
@@ -160,10 +160,10 @@ export default function LessonTable({ data }: LessonTableProps) {
       </div>
 
       {/* MODAL ĐẶT Ở NGOÀI CÙNG, BÊN DƯỚI OVERFLOW DIV */}
-      <LessonPreviewModal
+      <GrammarPreviewModal
         isOpen={isPreviewOpen}
         onClose={() => setIsPreviewOpen(false)}
-        lesson={previewLesson} 
+        grammar={previewGrammar} 
       />
     </div>
   );

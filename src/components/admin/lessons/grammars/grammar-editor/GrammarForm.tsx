@@ -3,31 +3,31 @@
 
 import { useForm, FieldErrors } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
-import { LessonSchema, LessonInput } from "@/lib/schemas/lesson";
+import { GrammarSchema, GrammarInput } from "@/lib/schemas/grammar";
 import { Form, FormControl, FormField, FormItem, FormLabel } from "@/components/ui/form";
 import { Button } from "@/components/ui/button";
 import { Switch } from "@/components/ui/switch";
 import { Separator } from "@/components/ui/separator";
 import { toast } from "sonner";
 import { useRouter } from "next/navigation";
-import { upsertLesson } from "@/actions/lesson-actions";
+import { upsertGrammar } from "@/actions/GrammarActions";
 import { ArrowLeft, Loader2, Save } from "lucide-react";
 
 
 // Import các section components
-import GeneralInfo from "./sections/general-info";
-import LessonContent from "./sections/lesson-content";
-import AudioUpload from "./sections/audio-upload";
-import QuizBuilder from "./sections/quiz-builder";
+import GeneralInfo from "./sections/GeneralInfo";
+import GrammarContent from "./sections/GrammarContent";
+import AudioUpload from "./sections/AudioUpload";
+import QuizBuilder from "./sections/QuizBuilder";
 
 
-interface LessonFormProps {
-  initialData?: LessonInput;
+interface GrammarFormProps {
+  initialData?: GrammarInput;
   isEditing?: boolean;
 }
 
 
-const defaultValues: LessonInput = {
+const defaultValues: GrammarInput = {
   title: "",
   description: "",
   type: "text",
@@ -39,13 +39,13 @@ const defaultValues: LessonInput = {
 };
 
 
-export default function LessonForm({ initialData, isEditing }: LessonFormProps) {
+export default function GrammarForm({ initialData, isEditing }: GrammarFormProps) {
   console.log("Dữ liệu đầu vào:", initialData?.status, typeof initialData?.status);
   const router = useRouter();
 
 
-  const form = useForm<LessonInput>({
-    resolver: zodResolver(LessonSchema),
+  const form = useForm<GrammarInput>({
+    resolver: zodResolver(GrammarSchema),
     defaultValues: initialData || defaultValues,
     mode: "onChange",
   });
@@ -54,9 +54,9 @@ export default function LessonForm({ initialData, isEditing }: LessonFormProps) 
   const { isSubmitting } = form.formState;
 
 
-  async function onSubmit(values: LessonInput) {
+  async function onSubmit(values: GrammarInput) {
     try {
-      const result = await upsertLesson(values, initialData?.id);
+      const result = await upsertGrammar(values, initialData?.id);
       if (result.success) {
         toast.success(isEditing ? "Đã cập nhật bài học" : "Đã tạo bài học mới");
         router.push("/admin/lessons");
@@ -70,7 +70,7 @@ export default function LessonForm({ initialData, isEditing }: LessonFormProps) 
   }
 
 
-  function onInvalid(errors: FieldErrors<LessonInput>) {
+  function onInvalid(errors: FieldErrors<GrammarInput>) {
   console.error("Lỗi Validation:", errors);
   // Đếm số lượng lỗi
   const errorCount = Object.keys(errors).length;
@@ -177,7 +177,7 @@ export default function LessonForm({ initialData, isEditing }: LessonFormProps) 
              
               <Separator className="bg-gray-100" />
              
-              <LessonContent form={form} />
+              <GrammarContent form={form} />
              
               <Separator className="bg-gray-100" />
              

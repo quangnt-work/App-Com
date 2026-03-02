@@ -5,7 +5,7 @@
 
 import { Trash2 } from "lucide-react";
 import { Button } from "@/components/ui/button";
-import { deleteLesson } from "@/actions/lesson-actions";
+import { deleteGrammar } from "@/actions/GrammarActions";
 import { toast } from "sonner";
 import { useTransition, useState } from "react";
 import { ConfirmModal } from "@/components/modals/confirm-modal";
@@ -13,7 +13,7 @@ import { ConfirmModal } from "@/components/modals/confirm-modal";
 
 
 
-export default function DeleteLessonButton({ id, title }: { id: string, title: string }) {
+export default function DeleteGrammarButton({ id, title }: { id: string, title: string }) {
   const [open, setOpen] = useState(false);
   const [isPending, startTransition] = useTransition();
 
@@ -22,7 +22,7 @@ export default function DeleteLessonButton({ id, title }: { id: string, title: s
 
   const handleDelete = () => {
     startTransition(async () => {
-      const res = await deleteLesson(id);
+      const res = await deleteGrammar(id);
       if (res.success) {
         toast.success(res.message);
         setOpen(false);

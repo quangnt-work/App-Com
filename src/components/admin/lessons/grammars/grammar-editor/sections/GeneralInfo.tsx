@@ -1,15 +1,14 @@
 import { Control } from "react-hook-form";
-import { LessonInput } from "@/lib/schemas/lesson";
+import { GrammarInput } from "@/lib/schemas/grammar";
 import { FormControl, FormField, FormItem, FormLabel, FormMessage } from "@/components/ui/form";
 import { Input } from "@/components/ui/input";
 import { Textarea } from "@/components/ui/textarea";
-import { Switch } from "@/components/ui/switch";
 import { Info } from "lucide-react";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 
 
 interface GeneralInfoProps {
-  control: Control<LessonInput>;
+  control: Control<GrammarInput>;
 }
 
 

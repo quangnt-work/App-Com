@@ -6,7 +6,7 @@ import { Button } from "@/components/ui/button";
 import { ChevronLeft, ChevronRight } from "lucide-react";
 
 
-interface LessonPaginationProps {
+interface GrammarPaginationProps {
   currentPage: number;
   pageSize: number;
   totalItems: number;
@@ -14,11 +14,11 @@ interface LessonPaginationProps {
 }
 
 
-export function LessonPagination({
+export function GrammarPagination({
   currentPage,
   pageSize,
   totalItems,
-}: LessonPaginationProps) {
+}: GrammarPaginationProps) {
   const router = useRouter();
   const searchParams = useSearchParams();
 

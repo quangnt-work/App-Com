@@ -1,16 +1,16 @@
 // app/(admin)/lessons/create/page.tsx
 import { Metadata } from 'next';
-import LessonForm from '@/components/admin/lessons/lesson-editor/lesson-form';
+import GrammarForm from '@/components/admin/lessons/grammars/grammar-editor/GrammarForm';
 
 export const metadata: Metadata = {
   title: 'Tạo bài học mới | Admin Dashboard',
   description: 'Thêm bài học mới vào hệ thống',
 };
 
-export default function CreateLessonPage() {
+export default function CreateGrammarPage() {
   return (
     <main>
-      <LessonForm isEditing={false} />
+      <GrammarForm isEditing={false} />
     </main>
   );
 }

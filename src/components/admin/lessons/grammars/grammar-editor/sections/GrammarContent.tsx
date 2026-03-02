@@ -1,7 +1,7 @@
 import { useState } from "react";
 import { UseFormReturn } from "react-hook-form";
 // Đảm bảo đường dẫn import đúng với project của bạn
-import { LessonInput } from "@/lib/schemas/lesson";
+import { GrammarInput } from "@/lib/schemas/grammar";
 import { FormControl, FormField, FormItem, FormLabel, FormMessage } from "@/components/ui/form";
 import { RadioGroup, RadioGroupItem } from "@/components/ui/radio-group";
 import { FileText, PenTool, X, File as FileIcon, Loader2 } from "lucide-react";
@@ -11,16 +11,16 @@ import { toast } from "sonner";
 import { createClient } from '@/lib/supabase/client';
 
 
-import FileDropzone from "../shared/file-dropzone";
+import FileDropzone from "../shared/FileDropZone";
 import RichTextEditor from "@/components/ui/rich-text-editor";
 
 
-interface LessonContentProps {
-  form: UseFormReturn<LessonInput>;
+interface GrammarContentProps {
+  form: UseFormReturn<GrammarInput>;
 }
 
 
-export default function LessonContent({ form }: LessonContentProps) {
+export default function GrammarContent({ form }: GrammarContentProps) {
   // Watch type để render giao diện
   const type = form.watch("type");
   const [isUploading, setIsUploading] = useState(false);

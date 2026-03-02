@@ -1,13 +1,13 @@
 'use server'
 
 
-import { LessonSchema, LessonInput } from "@/lib/schemas/lesson";
-import { LessonService } from "@/services/lesson-service";
+import { GrammarSchema, GrammarInput } from "@/lib/schemas/grammar";
+import { GrammarService } from "@/services/GrammarService";
 import { revalidatePath } from "next/cache";
 
 
-export async function getLessons(page = 1, pageSize = 10, search = "", category = "") {
-  const { data, count, error } = await LessonService.getList(page, pageSize, search, category);
+export async function getGrammars(page = 1, pageSize = 10, search = "", category = "") {
+  const { data, count, error } = await GrammarService.getList(page, pageSize, search, category);
   if (error) {
     console.error("Lỗi lấy bài học:", error);
     return { data: [], count: 0, error: error.message };
@@ -16,17 +16,17 @@ export async function getLessons(page = 1, pageSize = 10, search = "", category 
 }
 
 
-export async function getLesson(id: string) {
-  const { data, error } = await LessonService.getDetail(id);
+export async function getGrammar(id: string) {
+  const { data, error } = await GrammarService.getDetail(id);
   if (error) return { error: error.message };
   return { data };
 }
 
 
-export async function upsertLesson(formData: LessonInput, lessonId?: string) {
+export async function upsertGrammar(formData: GrammarInput, grammarId?: string) {
  
   // 1. Validate Input
-  const validated = LessonSchema.safeParse(formData);
+  const validated = GrammarSchema.safeParse(formData);
   if (!validated.success) {
     return {
       success: false,
@@ -39,22 +39,22 @@ export async function upsertLesson(formData: LessonInput, lessonId?: string) {
   try {
     const payload = {
       ...validated.data,
-      ...(lessonId ? { id: lessonId } : {})
+      ...(grammarId ? { id: grammarId } : {})
     }
     // 2. Gọi Service xử lý logic
-    const { error } = await LessonService.upsert(payload);
+    const { error } = await GrammarService.upsert(payload);
     if (error) throw error;
 
 
     // 3. Revalidate cache
     revalidatePath('/admin/lessons');
-    if (lessonId) revalidatePath(`/admin/lessons/${lessonId}`);
+    if (grammarId) revalidatePath(`/admin/lessons/grammars/${grammarId}`);
     revalidatePath('/student/lessons');
    
     return { success: true, message: "Lưu bài học thành công!" };
   } catch (e: unknown) {
     const error = e as Error;
-    console.error("Upsert Lesson Error:", error);
+    console.error("Upsert Grammar Error:", error);
     // Trả về lỗi thân thiện hơn tùy loại lỗi
     const msg = error.message.includes("Forbidden") ? "Bạn không có quyền thực hiện" : (error.message || "Lỗi hệ thống");
     return { success: false, message: msg };
@@ -62,9 +62,9 @@ export async function upsertLesson(formData: LessonInput, lessonId?: string) {
 }
 
 
-export async function deleteLesson(id: string) {
+export async function deleteGrammar(id: string) {
   try {
-    const { error } = await LessonService.delete(id);
+    const { error } = await GrammarService.delete(id);
     if (error) throw error;
    
     revalidatePath('/admin/lessons');

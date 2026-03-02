@@ -1,5 +1,5 @@
 import { useFieldArray, Control } from "react-hook-form";
-import { LessonInput } from "@/lib/schemas/lesson"; // Đảm bảo import đúng đường dẫn Schema
+import { GrammarInput } from "@/lib/schemas/grammar"; // Đảm bảo import đúng đường dẫn Schema
 import {
   FormControl,
   FormField,
@@ -10,13 +10,13 @@ import {
 import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
 import { RadioGroup, RadioGroupItem } from "@/components/ui/radio-group";
-import { Plus, Trash2, HelpCircle, CheckCircle2, GripVertical } from "lucide-react";
+import { Plus, Trash2, CheckCircle2 } from "lucide-react";
 import { Badge } from "@/components/ui/badge";
 import { cn } from "@/lib/utils"; // Hàm utility mặc định của shadcn
 
 
 interface QuizBuilderProps {
-  control: Control<LessonInput>;
+  control: Control<GrammarInput>;
 }
 
 

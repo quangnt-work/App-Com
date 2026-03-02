@@ -4,7 +4,7 @@ import { Users, BookOpen, FileText, Activity, type LucideIcon } from 'lucide-rea
 
 interface DashboardStats {
   totalStudents: number;
-  totalLessons: number;
+  totalGrammars: number;
   totalResources: number;
   totalPractice: number;
 }
@@ -33,7 +33,7 @@ export function StatsSection({ stats }: { stats: DashboardStats }) {
     },
     { 
       label: 'Tổng bài học', 
-      val: stats.totalLessons.toString(), 
+      val: stats.totalGrammars.toString(), 
       sub: 'Bài học public', 
       color: 'text-blue-500', 
       icon: BookOpen, 

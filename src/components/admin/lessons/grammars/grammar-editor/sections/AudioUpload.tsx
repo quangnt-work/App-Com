@@ -1,19 +1,18 @@
 import { useState } from "react";
 import { Control } from "react-hook-form";
-import { LessonInput } from "@/lib/schemas/lesson";
+import { GrammarInput } from "@/lib/schemas/grammar";
 import { FormControl, FormField, FormItem, FormLabel, FormMessage } from "@/components/ui/form";
 import { Button } from "@/components/ui/button";
 import { Headphones, X, Loader2 } from "lucide-react";
-import { toast } from "sonner";
 import { createClient } from '@/lib/supabase/client';
 
 
 // Import FileDropzone
-import FileDropzone from "../shared/file-dropzone";
+import FileDropzone from "../shared/FileDropZone";
 
 
 interface AudioUploadProps {
-  control: Control<LessonInput>;
+  control: Control<GrammarInput>;
 }
 
 
@@ -22,24 +21,26 @@ export default function AudioUpload({ control }: AudioUploadProps) {
 
 
   const handleAudioUpload = async (file: File, onChange: (url: string) => void) => {
-    const supabase = createClient();
-    // eslint-disable-next-line react-hooks/purity
-    const sanitizedName = file.name.replace(/[^a-zA-Z0-9.-]/g, '_');
-    const fileName = `${Date.now()}-${sanitizedName}`;
-    const { data, error } = await supabase.storage
-      .from('lesson-materials') // Đảm bảo bucket này đã tạo trên Supabase
-      .upload(fileName, file);
+    setIsUploading(true);
+    try {
+      const supabase = createClient();
+      const sanitizedName = file.name.replace(/[^a-zA-Z0-9.-]/g, '_');
+      const fileName = `${Date.now()}-${sanitizedName}`;
+      const { data, error } = await supabase.storage
+        .from('lesson-materials') // Đảm bảo bucket này đã tạo trên Supabase
+        .upload(fileName, file);
 
 
-    if (error) throw error;
+      if (error) throw error;
 
+      const { data: { publicUrl } } = supabase.storage
+        .from('lesson-materials')
+        .getPublicUrl(fileName);
 
-    const { data: { publicUrl } } = supabase.storage
-      .from('lesson-materials')
-      .getPublicUrl(fileName);
-
-
-    onChange(publicUrl);
+      onChange(publicUrl);
+    } finally {
+      setIsUploading(false);
+    }
   };
 
 

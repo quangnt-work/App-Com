@@ -1,11 +1,11 @@
-import LessonHeader from "@/components/admin/lessons/LessonHeader";
-import LessonFilters from "@/components/admin/lessons/LessonFilter";
-import LessonTable from "@/components/admin/lessons/LessonTable";
-import { getLessons } from "@/actions/lesson-actions";
+import GrammarHeader from "@/components/admin/lessons/grammars/GrammarHeader";
+import GrammarFilters from "@/components/admin/lessons/grammars/GrammarFilter";
+import GrammarTable from "@/components/admin/lessons/grammars/GrammarTable";
+import { getGrammars } from "@/actions/GrammarActions";
 import { Skeleton } from "@/components/ui/skeleton";
-import { LessonPagination } from "@/components/admin/lessons/lesson-pagination";
+import { GrammarPagination } from "@/components/admin/lessons/grammars/GrammarPagination";
 
-interface LessonsPageProps {
+interface GrammarsPageProps {
   searchParams: Promise<{
     q?: string;
     page?: string;
@@ -18,7 +18,7 @@ export const metadata = {
 };
 
 
-export default async function LessonsPage({ searchParams }: LessonsPageProps) {
+export default async function GrammarsPage({ searchParams }: GrammarsPageProps) {
   const params = await searchParams;
   // 1. Lấy params từ URL
   const currentPage = Number(params.page) || 1;
@@ -28,7 +28,7 @@ export default async function LessonsPage({ searchParams }: LessonsPageProps) {
  
   // 2. Gọi Server Action lấy dữ liệu
   // Lưu ý: getLessons trong file actions trả về { data, count, error }
-  const { data: lessons, count, error } = await getLessons(
+  const { data: grammars, count, error } = await getGrammars(
     currentPage,
     pageSize,
     searchQuery,
@@ -45,39 +45,39 @@ export default async function LessonsPage({ searchParams }: LessonsPageProps) {
     );
   }
 
-  const currentData = lessons || [];
+  const currentData = grammars || [];
   const totalItems = count || 0;
 
-  const formattedData = currentData.map((lesson) => ({
-    ...lesson,
+  const formattedData = currentData.map((grammar) => ({
+    ...grammar,
 
-    thumbnail: lesson.thumbnail ?? null,
-    // 1. Ép kiểu type cho chuẩn với LessonType
-    type: lesson.type as 'text' | 'file' | 'video' | 'audio' | 'quiz',
+    thumbnail: grammar.thumbnail ?? null,
+    // 1. Ép kiểu type cho chuẩn với GrammarType
+    type: grammar.type as 'text' | 'file' | 'video' | 'audio' | 'quiz',
     
-    // 2. Ép kiểu status cho chuẩn với LessonStatus
-    status: (lesson.status || 'draft') as 'draft' | 'published' | 'archived',
+    // 2. Ép kiểu status cho chuẩn với GrammarStatus
+    status: (grammar.status || 'draft') as 'draft' | 'published' | 'archived',
     
     // 3. Category trong Interface của bạn bắt buộc là 'string' (không được null)
     // Nên nếu Supabase trả về null, ta cho nó thành chuỗi rỗng '' hoặc 'Chưa phân loại'
-    category: lesson.category || '',
+    category: grammar.category || '',
   }));
 
 
   return (
     <div className="p-6 md:p-8 max-w-[1600px] mx-auto min-h-screen bg-slate-50/50">
-      <LessonHeader />
+      <GrammarHeader />
      
-      <LessonFilters />
+      <GrammarFilters />
 
       <div className="rounded-md border bg-white shadow-sm">
-        <LessonTable data={formattedData} />
+        <GrammarTable data={formattedData} />
       </div>
       
       {/* Footer & Pagination */}
       <div className="mt-4 flex items-center justify-between text-sm text-slate-500">
-        <p>Hiển thị {(lessons || []).length} trên tổng số {count} bài học</p>
-        <LessonPagination 
+        <p>Hiển thị {(grammars || []).length} trên tổng số {count} bài học</p>
+        <GrammarPagination 
             currentPage={currentPage}
             totalItems={totalItems} // Tổng số bản ghi trong database
             pageSize={pageSize}

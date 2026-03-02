@@ -8,7 +8,7 @@ import { createClient } from '@/lib/supabase/client';
 
 
 // Import FileDropzone
-import FileDropzone from "../shared/FileDropZone";
+import FileDropZone from "../shared/FileDropZone";
 
 
 interface AudioUploadProps {
@@ -102,7 +102,7 @@ export default function AudioUpload({ control }: AudioUploadProps) {
                            <p className="text-sm font-medium text-purple-600">Đang xử lý âm thanh...</p>
                         </div>
                      ) : (
-                        <FileDropzone
+                        <FileDropZone
                           accept="audio/*" // Hoặc ".mp3,.wav,.ogg"
                           maxSizeMB={20}
                           label="Tải lên Audio"

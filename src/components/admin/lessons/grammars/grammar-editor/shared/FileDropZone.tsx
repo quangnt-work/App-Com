@@ -17,7 +17,7 @@ interface FileDropzoneProps {
 }
 
 
-export default function FileDropzone({
+export default function FileDropZone({
   accept = '*',
   maxSizeMB = 50,
   label = 'Tải lên tập tin',

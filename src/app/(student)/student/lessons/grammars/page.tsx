@@ -23,8 +23,11 @@ export default async function LessonsPage() {
       <main className="flex-1 container mx-auto px-4 py-8 max-w-[1200px]">
         
         {/* Banner Cam */}
-        <div className="bg-[#f88137] text-white rounded-xl p-10 md:p-14 relative overflow-hidden mb-6 shadow-sm">
-          <h1 className="text-3xl md:text-5xl font-bold relative z-10 tracking-wide uppercase">
+        <div className="bg-[#f07b32] text-white rounded-[2rem] p-10 flex items-center gap-4 mb-12 shadow-sm">
+          <div className="bg-white/20 p-3 rounded-2xl backdrop-blur-sm">
+            <BookOpen size={32} strokeWidth={2.5} />
+          </div>
+          <h1 className="text-3xl md:text-4xl font-extrabold tracking-wide relative z-10">
             Ngữ pháp
           </h1>
           {/* Icon Book mờ làm background */}

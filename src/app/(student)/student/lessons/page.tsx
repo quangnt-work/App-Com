@@ -24,7 +24,7 @@ export default async function StudentCategoryPage() {
       title: "Nghe",
       description: "Gồm 50 file nghe",
       icon: <Headphones size={36} />,
-      href: "/student/lessons/audio" // Route giả định
+      href: "/student/lessons/audios" // Route giả định
     },
     {
       title: "Video",

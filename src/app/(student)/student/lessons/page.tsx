@@ -1,12 +1,10 @@
-import { LessonHero } from '@/components/student/lessons/LessonHero'
-import { LessonSection } from '@/components/student/lessons/LessonSection'
-import { Button } from '@/components/ui/button'
-import { Inbox } from 'lucide-react'
+import { Inbox, BookOpen } from 'lucide-react'
 import { LessonRepository } from "@/repositories/lesson-repository";
 import { type Lesson } from '@/types/lesson'
+import { LessonCard } from '@/components/student/lessons/LessonCard';
 
 export default async function LessonsPage() {
-  // 1. Fetch dữ liệu thật
+  // 1. Giữ nguyên logic fetch dữ liệu thật
   const [englishLessons, russianLessons, itLessons, otherLessons] = await Promise.all([
     LessonRepository.getByCategory('TIẾNG ANH'),
     LessonRepository.getByCategory('TIẾNG NGA'),
@@ -14,64 +12,57 @@ export default async function LessonsPage() {
     LessonRepository.getByCategory('KHÁC')
   ]);
 
-  const isEmpty = 
-    (englishLessons.data?.length || 0) === 0 && 
-    (russianLessons.data?.length || 0) === 0 &&
-    (itLessons.data?.length || 0) === 0;
+  // Chọn mảng dữ liệu để hiển thị lên Grid (Dựa theo ảnh là trang Ngữ Pháp tiếng Nga)
+  // Bạn có thể sửa logic gộp mảng hoặc lấy mảng tương ứng với trang hiện tại
+  const lessonsToDisplay = (russianLessons.data as unknown as Lesson[]) || [];
+
+  const isEmpty = lessonsToDisplay.length === 0;
 
   return (
-    <div className="min-h-screen bg-white pb-20">
-      <LessonHero />
+    <div className="min-h-screen bg-[#f8f9fc] flex flex-col font-sans">
 
-      {isEmpty && (
-        <div className="container mx-auto px-4 py-20 text-center">
-           <div className="flex justify-center mb-4">
-             <div className="bg-slate-50 p-6 rounded-full">
+      <main className="flex-1 container mx-auto px-4 py-8 max-w-[1200px]">
+        
+        {/* Banner Cam */}
+        <div className="bg-[#f88137] text-white rounded-xl p-10 md:p-14 relative overflow-hidden mb-6 shadow-sm">
+          <h1 className="text-3xl md:text-5xl font-bold relative z-10 tracking-wide uppercase">
+            Ngữ pháp
+          </h1>
+          {/* Icon Book mờ làm background */}
+          <BookOpen 
+            className="absolute -right-6 top-1/2 -translate-y-1/2 w-48 h-48 md:w-64 md:h-64 opacity-20 transform -rotate-12" 
+            strokeWidth={1.5} 
+          />
+        </div>
+
+        {isEmpty ? (
+          <div className="flex flex-col items-center justify-center py-20 bg-white rounded-2xl border border-gray-100 shadow-sm">
+             <div className="bg-slate-50 p-6 rounded-full mb-4">
                <Inbox className="h-12 w-12 text-slate-300" />
              </div>
-           </div>
-           <h3 className="text-xl font-bold text-slate-900">Chưa có bài học nào</h3>
-           <p className="text-slate-500 mt-2">Hệ thống đang được cập nhật. Vui lòng quay lại sau.</p>
-        </div>
-      )}
-      
-      <LessonSection 
-        title="Khóa tiếng Nga" 
-        icon="english"
-        lessons={(russianLessons.data as unknown as Lesson[]) || []} 
-      />
+             <h3 className="text-xl font-bold text-slate-900">Chưa có bài học nào</h3>
+             <p className="text-slate-500 mt-2">Hệ thống đang được cập nhật. Vui lòng quay lại sau.</p>
+          </div>
+        ) : (
+          <>
+            {/* Grid Thẻ bài học */}
+            <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6">
+              {lessonsToDisplay.map((lesson, index) => (
+                <LessonCard 
+                  key={lesson.id} 
+                  lesson={lesson} 
+                  index={index} 
+                />  
+              ))}
+            </div>
 
-      <LessonSection 
-        title="Khóa tiếng Anh" 
-        icon="russian"
-        lessons={(englishLessons.data as unknown as Lesson[]) || []} 
-      />
-
-       <LessonSection 
-        title="Công nghệ thông tin" 
-        icon="it"
-        lessons={(itLessons.data as unknown as Lesson[]) || []} 
-      />
-
-      <LessonSection 
-        title="Bài học khác" 
-        icon="other"
-        lessons={(otherLessons.data as unknown as Lesson[]) || []} 
-      />
-
-      {!isEmpty && (
-        <div className="flex justify-center mt-12">
-            <Button variant="outline" className="border-sky-500 text-sky-600 hover:bg-sky-50 px-8 rounded-full">
-            Xem tất cả bài học ↓
-            </Button>
-        </div>
-      )}
-
-      <footer className="mt-20 border-t pt-12 pb-8 bg-slate-50">
-         <div className="container mx-auto px-4 text-center space-y-4">
-            <p className="text-xs text-slate-400">© 2024 E-Learning Hub. All rights reserved.</p>
-         </div>
-      </footer>
+            {/* 3. PHÂN TRANG CÓ SẴN */}
+            <div className="mt-12 flex justify-center">
+              {/* <Pagination totalPages={10} currentPage={1} /> */}
+            </div>
+          </>
+        )}
+      </main>
     </div>
   )
 }

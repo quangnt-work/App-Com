@@ -42,7 +42,6 @@ export default async function AIPracticePage() {
         
         {/* Banner "LUYỆN TẬP CÙNG AI" */}
         <div className="bg-[#f07b32] text-white rounded-[2rem] p-10 flex items-center justify-between gap-6 mb-12 shadow-sm relative overflow-hidden">
-          {/* Cụm Icon & Tiêu đề bên trái */}
           <div className="relative z-10 max-w-lg">
             <h1 className="text-3xl md:text-5xl lg:text-6xl font-extrabold tracking-wide uppercase mb-3">
               Luyện cùng AI
@@ -51,10 +50,8 @@ export default async function AIPracticePage() {
               Nâng tầm kỹ năng tiếng Nga với trí tuệ nhân tạo thế hệ mới.
             </p>
           </div>
-
-          {/* Slogan bên phải */}
           <div className="relative z-10 hidden md:flex items-center justify-center w-24 h-24 lg:w-28 lg:h-28 rounded-full border-2 lg:border-4 border-white/20 bg-white/10 backdrop-blur-sm">
-            <Bot size={40} strokeWidth={2.5} />
+            <Bot size={48} strokeWidth={2.5} />
           </div>
         </div>
 

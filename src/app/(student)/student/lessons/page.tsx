@@ -53,7 +53,7 @@ export default async function StudentCategoryPage() {
             
             {/* Cột phải: Vòng tròn chứa Icon (Ẩn trên mobile) */}
             <div className="relative z-10 hidden md:flex items-center justify-center w-24 h-24 lg:w-28 lg:h-28 rounded-full border-2 lg:border-4 border-white/20 bg-white/10 backdrop-blur-sm">
-               <GraduationCap size={48} strokeWidth={2} />
+               <GraduationCap size={48} strokeWidth={2.5} />
             </div>
           </div>
 

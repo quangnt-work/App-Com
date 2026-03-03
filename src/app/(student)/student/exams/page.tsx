@@ -30,7 +30,7 @@ export default function ExamsPage() {
           </div>
           {/* Vòng tròn chứa Icon bên phải */}
           <div className="relative z-10 hidden md:flex items-center justify-center w-24 h-24 rounded-full border-2 border-white/20 bg-white/10 backdrop-blur-sm">
-             <ListChecks size={40} strokeWidth={2} />
+             <ListChecks size={48} strokeWidth={2.5} />
           </div>
         </div>
 

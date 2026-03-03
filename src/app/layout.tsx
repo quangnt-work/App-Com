@@ -32,7 +32,7 @@ export default async function RootLayout({ children }: { children: React.ReactNo
 
   return (
     <html lang="vi">
-      <body>
+      <body suppressHydrationWarning>
         <Header user={userData} />
         {children}
         <Toaster position="top-center" richColors /> {/* <-- Thêm dòng này */}

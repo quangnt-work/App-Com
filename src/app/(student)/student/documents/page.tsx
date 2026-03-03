@@ -34,7 +34,7 @@ export default function DocumentsPage() {
           </div>
           {/* Vòng tròn chứa Icon bên phải */}
           <div className="relative z-10 hidden md:flex items-center justify-center w-28 h-28 rounded-full border-4 border-white/20 bg-white/10 backdrop-blur-sm">
-             <FolderOpen size={48} strokeWidth={2} />
+             <FolderOpen size={48} strokeWidth={2.5} />
           </div>
         </div>
 

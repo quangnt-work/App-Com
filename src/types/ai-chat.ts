@@ -2,7 +2,6 @@ import { ReactNode } from 'react';
 
 export interface ChatTopic {
   id: string;
-  slug: string;
   title: string;
   description: string;
   icon: ReactNode;

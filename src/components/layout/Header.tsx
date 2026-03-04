@@ -76,15 +76,20 @@ export const Header = ({ user }: HeaderProps) => {
               </Link>
 
               {/* === USER PROFILE BUBBLE === */}
-              <div className="flex items-center gap-2 py-1.5 px-3 bg-slate-100 rounded-full border cursor-default">
-                <div className="w-6 h-6 bg-blue-600 rounded-full flex items-center justify-center text-white">
-                  <User size={14} />
+              <Link 
+                href={"/student/profile"} 
+                className="text-slate-500 hover:text-blue-600 hover:bg-blue-50 p-2 rounded-full transition-colors flex items-center justify-center"
+                title="Hồ sơ">
+                <div className="flex items-center gap-2 py-1.5 px-3 bg-slate-100 rounded-full border cursor-default">
+                  <div className="w-6 h-6 bg-blue-600 rounded-full flex items-center justify-center text-white">
+                    <User size={14} />
+                  </div>
+                  {/* Hiển thị Role hoặc Tên nếu có truyền vào từ props */}
+                  <span className="text-xs font-semibold text-slate-700 uppercase">
+                    {user?.role === 'admin' ? 'Quản trị' : (user?.name || 'Học viên')}
+                  </span>
                 </div>
-                {/* Hiển thị Role hoặc Tên nếu có truyền vào từ props */}
-                <span className="text-xs font-semibold text-slate-700 uppercase">
-                  {user?.role === 'admin' ? 'Quản trị' : (user?.name || 'Học viên')}
-                </span>
-              </div>
+              </Link>
               
               {/* === NÚT LOGOUT === */}
               <button 

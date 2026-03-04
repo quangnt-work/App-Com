@@ -1,78 +1,88 @@
-import { createClient } from '@/lib/supabase/server'
-import Link from 'next/link'
-// Import các component con đã tách
-import { UserInfoCard } from '@/components/student/profile/UserInfoCard'
-import { CurrentLevelCard } from '@/components/student/profile/CurrentLevelCard'
-import { CompetencyChart } from '@/components/student/profile/CompetencyChart'
-import { HistorySection } from '@/components/student/profile/HistorySection'
-import { SettingsSection } from '@/components/student/profile/SettingsSection'
-import { redirect } from 'next/navigation';
+// src/app/(student)/profile/page.tsx
+'use client';
+import { useState } from 'react';
+import Link from 'next/link';
+import { ArrowLeft } from 'lucide-react';
+import { UserProfileCard } from '@/components/student/profile/UserProfileCard';
+import { ProgressChart } from '@/components/student/profile/ProgressChart';
+import { HistoryTable } from '@/components/student/profile/HistoryTable';
+import { UserProfile, TestRecord, ChartDataPoint } from '@/types/profile';
 
-export default async function UserProfile() {
-  const supabase = await createClient()
-  
-  // 1. Lấy dữ liệu user
-  const { data: { user } } = await supabase.auth.getUser()
-  
-  // === THÊM BẢO VỆ ROUTE VÀ FIX TYPE Ở ĐÂY ===
-  // Nếu không có user hoặc user.id, lập tức chuyển hướng về trang đăng nhập
-  if (!user || !user.id) {
-    redirect('/login'); // Chỉnh sửa '/login' thành route đăng nhập thực tế của bạn nếu cần
-  }
-  
-  // 2. Lấy dữ liệu profile từ DB
-  // Lúc này TypeScript đã hiểu chắc chắn user.id là string, không cần dấu ?
-  const { data: profile } = await supabase
-    .from('profiles')
-    .select('*')
-    .eq('id', user.id) 
-    .single()
+// Mock Data
+const mockProfile: UserProfile = {
+  id: '1',
+  name: 'Nguyễn Văn A',
+  username: 'nguyenvana123',
+  level: 'B1',
+  email: 'nguyenvana@example.com',
+  joinDate: '15/05/2023',
+};
 
-  // 3. Chuẩn bị dữ liệu hiển thị (Đã sửa lỗi Date)
-  const userData = {
-    fullName: profile?.full_name || 'Người dùng',
-    username: profile?.username || 'user',
-    // Vì đã check user ở trên, bạn có thể tự tin dùng thẳng user.email và user.id
-    email: user.email || 'email@example.com',
-    userId: user.id,
-    
-    // === SỬA LỖI TẠI ĐÂY ===
-    // Date.now() trả về số -> Sai kiểu string của interface
-    // new Date().toISOString() trả về chuỗi "2023-10-25T..." -> Đúng
-    joinDate: user.created_at || new Date().toISOString()
-  }
+const mockChartData: ChartDataPoint[] = [
+  { name: 'T1', grammar: 2, reading: 4, vocabulary: 3 },
+  { name: 'T2', grammar: 3.5, listening: 5, vocabulary: 6 },
+  { name: 'T3', grammar: 1, reading: 6.5 },
+  { name: 'T4', grammar: 4.5, listening: 7, vocabulary: 8 },
+  { name: 'T5', reading: 8.5, vocabulary: 9 },
+  { name: 'T6', grammar: 5.5, listening: 8.5 },
+  { name: 'T7', grammar: 6.5, reading: 9 },
+  { name: 'T8', grammar: 4, vocabulary: 10 },
+  { name: 'T9', grammar: 7, listening: 9 },
+  { name: 'T10', grammar: 8.5, reading: 9.5, vocabulary: 10 },
+];
+
+const mockHistory: TestRecord[] = [
+  { id: '1', date: '12/10/2023', name: 'Đề thi thử TRKI B1 - Phần Đọc', type: 'Đọc hiểu', score: 8.5 },
+  { id: '2', date: '05/10/2023', name: 'Ngữ pháp cơ bản B1 - Bài 5', type: 'Ngữ pháp', score: 9.2 },
+  { id: '3', date: '28/09/2023', name: 'Luyện nghe hội thoại hàng ngày', type: 'Nghe', score: 7.8 },
+  { id: '4', date: '15/09/2023', name: 'Từ vựng chuyên đề Du lịch', type: 'Từ vựng', score: 10.0 },
+];
+
+export default function ProfilePage() {
+  const [selectedMonth, setSelectedMonth] = useState('Tháng hiện tại');
 
   return (
-    <div className="container mx-auto p-6 min-h-screen bg-slate-50">
-      {/* Breadcrumb */}
-      <div className="flex items-center gap-2 text-sm text-slate-500 mb-6">
-        <Link href="/" className="hover:text-sky-500">Trang chủ</Link>
-        <span>/</span>
-        <span className="text-slate-900 font-medium">Hồ sơ cá nhân</span>
-      </div>
+    <div className="min-h-screen bg-[#f8f9fc] p-4 md:p-8 font-sans">
+      <div className="max-w-[1200px] mx-auto">
 
-      <div className="grid grid-cols-1 lg:grid-cols-12 gap-8">
-        {/* === LEFT SIDEBAR === */}
-        <div className="lg:col-span-3">
-           <UserInfoCard 
-              fullName={userData.fullName}
-              username={userData.username}
-              userId={userData.userId}
-              joinDate={userData.joinDate}
-           />
-           <CurrentLevelCard />
-        </div>
+        {/* Layout Grid: 1 cột cho Mobile, 3 cột cho Desktop */}
+        <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
+          
+          {/* Cột Trái: Profile Card */}
+          <div className="lg:col-span-1">
+            <UserProfileCard profile={mockProfile} />
+          </div>
 
-        {/* === RIGHT CONTENT === */}
-        <div className="lg:col-span-9 space-y-6">
-           <CompetencyChart />
-           <HistorySection />
-           <SettingsSection 
-              email={userData.email} 
-              fullName={userData.fullName} 
-           />
+          {/* Cột Phải: Thống kê & Lịch sử */}
+          <div className="lg:col-span-2 space-y-6">
+            
+            {/* Header Thống kê & Bộ lọc */}
+            <div className="bg-white p-4 rounded-2xl shadow-sm border border-gray-100 flex items-center justify-between">
+              <h2 className="text-xl font-bold text-gray-800">Thống kê học tập</h2>
+              <div className="flex items-center gap-2">
+                <span className="text-sm text-gray-500">Kết quả theo:</span>
+                <select 
+                  className="bg-gray-50 border border-gray-200 text-sm rounded-lg px-3 py-2 outline-none focus:ring-2 focus:ring-[#7c3aed]"
+                  value={selectedMonth}
+                  onChange={(e) => setSelectedMonth(e.target.value)}
+                >
+                  <option value="Tháng 3/2026">Tháng 3 / 2026</option>
+                  <option value="Tháng 2/2026">Tháng 2 / 2026</option>
+                  <option value="Tháng 1/2026">Tháng 1 / 2026</option>
+                  <option value="Tháng 12/2025">Tháng 12 / 2025</option>
+                </select>
+              </div>
+            </div>
+
+            {/* Chart */}
+            <ProgressChart data={mockChartData} />
+
+            {/* History Table */}
+            <HistoryTable records={mockHistory} />
+
+          </div>
         </div>
       </div>
     </div>
-  )
+  );
 }

@@ -1,8 +1,9 @@
 // src/app/(student)/student/ai/page.tsx
 import React from 'react';
-import { Bot, Mic, BookOpenCheck, MessageSquare, Book } from 'lucide-react';
+import { Bot, Mic, BookOpenCheck, MessageSquare, Book, BookOpen } from 'lucide-react';
 import { CategoryCard } from '@/components/student/features/CategoryCard';
 import { createClient } from '@/lib/supabase/server';
+import { HeroBanner } from '@/components/common/HeroBanner';
 
 export default async function AIPracticePage() {
   // Xác thực người dùng (giống cấu trúc các trang khác của bạn)
@@ -41,19 +42,11 @@ export default async function AIPracticePage() {
       <main className="flex-1 container mx-auto px-4 py-8 max-w-[1200px]">
         
         {/* Banner "LUYỆN TẬP CÙNG AI" */}
-        <div className="bg-[#f07b32] text-white rounded-[2rem] p-10 flex items-center justify-between gap-6 mb-12 shadow-sm relative overflow-hidden">
-          <div className="relative z-10 max-w-lg">
-            <h1 className="text-3xl md:text-5xl lg:text-6xl font-extrabold tracking-wide uppercase mb-3">
-              Luyện cùng AI
-            </h1>
-            <p className="text-white/90 text-sm md:text-base font-medium">
-              Nâng tầm kỹ năng tiếng Nga với trí tuệ nhân tạo thế hệ mới.
-            </p>
-          </div>
-          <div className="relative z-10 hidden md:flex items-center justify-center w-24 h-24 lg:w-28 lg:h-28 rounded-full border-2 lg:border-4 border-white/20 bg-white/10 backdrop-blur-sm">
-            <Bot size={48} strokeWidth={2.5} />
-          </div>
-        </div>
+        <HeroBanner 
+          title="Luyện cùng AI"
+          description="Nâng tầm kỹ năng tiếng Nga với trí tuệ nhân tạo thế hệ mới."
+          icon={Bot}
+        />
 
         {/* Grid tính năng AI (4 cột) */}
         <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6">

@@ -9,6 +9,7 @@ import { EvaluationFeedback } from '@/components/student/ai/speaking/EvaluationF
 import { PracticeControls } from '@/components/student/ai/speaking/PracticeControls';
 import { Volume2 } from 'lucide-react';
 import { DictionaryWord } from '@/types/dictionary';
+import { toast } from 'sonner';
 
 
 interface Props {
@@ -53,7 +54,7 @@ export default function VocabularyPracticeClient({ vocabularies, topicName }: Pr
         setIsRecording(true);
         setEvaluation(null); 
       } catch (err) {
-        alert("Vui lòng cấp quyền sử dụng Micro để luyện nói.");
+        toast.error("Vui lòng cấp quyền sử dụng Micro để luyện nói.");
       }
     }
   };
@@ -78,7 +79,7 @@ export default function VocabularyPracticeClient({ vocabularies, topicName }: Pr
       setEvaluation(data);
     } catch (error) {
       console.error(error);
-      alert(`AI không thể chấm điểm. Vui lòng thử lại. (${error instanceof Error ? error.message : 'Lỗi không xác định'})`);
+      toast.error(`AI không thể chấm điểm. Vui lòng thử lại. (${error instanceof Error ? error.message : 'Lỗi không xác định'})`);
     } finally {
       setIsEvaluating(false);
     }

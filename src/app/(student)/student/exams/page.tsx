@@ -2,6 +2,7 @@
 import React from 'react';
 import { FileText, BookOpen, Headphones, ListChecks, Activity, Component } from 'lucide-react';
 import { ExamCard, type ExamItem } from '@/components/student/exams/ExamCard';
+import { HeroBanner } from '@/components/common/HeroBanner';
 
 export default function ExamsPage() {
   // Dữ liệu mẫu (Mock data)
@@ -19,20 +20,11 @@ export default function ExamsPage() {
       <main className="flex-1 container mx-auto px-4 py-8 max-w-[1200px]">
         
         {/* Banner KIỂM TRA */}
-        <div className="bg-[#f07b32] text-white rounded-[2rem] p-10 flex items-center justify-between gap-6 mb-12 shadow-sm relative overflow-hidden">
-          <div className="relative z-10 max-w-lg">
-            <h1 className="text-3xl md:text-5xl font-extrabold tracking-wide uppercase mb-3">
-              KIỂM TRA
-            </h1>
-            <p className="text-white/90 text-sm md:text-base font-medium">
-              Hệ thống bài tập đánh giá năng lực tiếng Nga của bạn
-            </p>
-          </div>
-          {/* Vòng tròn chứa Icon bên phải */}
-          <div className="relative z-10 hidden md:flex items-center justify-center w-24 h-24 rounded-full border-2 border-white/20 bg-white/10 backdrop-blur-sm">
-             <ListChecks size={48} strokeWidth={2.5} />
-          </div>
-        </div>
+        <HeroBanner 
+          title="KIỂM TRA"
+          description="Đánh giá năng lực tiếng Nga của bạn thông qua các bài kiểm tra đa dạng."
+          icon={FileText}
+        />
 
         {/* Lưới Thẻ Bài Kiểm Tra (3 cột theo thiết kế) */}
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8">

@@ -8,6 +8,7 @@ import { Sentence, EvaluationResult } from '@/types/ai-practice';
 import { SentenceDisplay } from '@/components/student/ai/speaking/SentenceDisplay';
 import { EvaluationFeedback } from '@/components/student/ai/speaking/EvaluationFeedback';
 import { PracticeControls } from '@/components/student/ai/speaking/PracticeControls';
+import { toast } from 'sonner';
 
 interface Props {
   sentences: Sentence[];
@@ -51,7 +52,7 @@ export default function SpeakingPracticeClient({ sentences, topicName }: Props) 
         setIsRecording(true);
         setEvaluation(null); 
       } catch (err) {
-        alert("Vui lòng cấp quyền sử dụng Micro để luyện nói.");
+        toast.error("Vui lòng cấp quyền sử dụng Micro để luyện nói.");
       }
     }
   };
@@ -78,7 +79,7 @@ export default function SpeakingPracticeClient({ sentences, topicName }: Props) 
       setEvaluation(data);
     } catch (error) {
       console.error(error);
-      alert(`AI không thể chấm điểm. Vui lòng thử lại. (${error instanceof Error ? error.message : 'Lỗi không xác định'})`);
+      toast.error(`AI không thể chấm điểm. Vui lòng thử lại. (${error instanceof Error ? error.message : 'Lỗi không xác định'})`);
     } finally {
       setIsEvaluating(false);
     }

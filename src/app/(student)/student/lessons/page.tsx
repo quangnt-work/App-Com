@@ -1,8 +1,9 @@
 // src/app/student/lessons/page.tsx
 import React from 'react';
 import { CategoryCard } from '@/components/student/features/CategoryCard';
-import { Book, Headphones, PlayCircle, GraduationCap } from 'lucide-react';
+import { Book, Headphones, PlayCircle, GraduationCap, BookOpen } from 'lucide-react';
 import { createClient } from '@/lib/supabase/server';
+import { HeroBanner } from '@/components/common/HeroBanner';
 
 export default async function StudentCategoryPage() {
   const supabase = await createClient();
@@ -40,22 +41,11 @@ export default async function StudentCategoryPage() {
           
           {/* Banner Title "BÀI HỌC" */}
           {/* Đã thêm justify-center để căn giữa toàn bộ nội dung (icon + text) */}
-          <div className="bg-[#f07b32] text-white rounded-[2rem] p-10 flex items-center justify-between gap-6 mb-12 shadow-sm relative overflow-hidden">
-            {/* Cột trái: Tiêu đề & Mô tả */}
-            <div className="relative z-10 max-w-lg">
-              <h1 className="text-3xl md:text-5xl lg:text-6xl font-extrabold tracking-wide uppercase mb-3">
-                BÀI HỌC
-              </h1>
-              <p className="text-white/90 text-sm md:text-base font-medium">
-                Khám phá kho tàng bài giảng đa dạng giúp bạn làm chủ tiếng Nga một cách toàn diện.
-              </p>
-            </div>
-            
-            {/* Cột phải: Vòng tròn chứa Icon (Ẩn trên mobile) */}
-            <div className="relative z-10 hidden md:flex items-center justify-center w-24 h-24 lg:w-28 lg:h-28 rounded-full border-2 lg:border-4 border-white/20 bg-white/10 backdrop-blur-sm">
-               <GraduationCap size={48} strokeWidth={2.5} />
-            </div>
-          </div>
+          <HeroBanner 
+            title="BÀI HỌC"
+            description="Khám phá kho tàng bài giảng đa dạng giúp bạn làm chủ tiếng Nga một cách toàn diện."
+            icon={BookOpen}
+          />
 
           {/* Grid Categories */}
           <div className="grid grid-cols-1 md:grid-cols-3 gap-8">

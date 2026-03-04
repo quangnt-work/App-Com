@@ -1,7 +1,6 @@
+//src/components/admin/lessons/grammars/DeleteGrammarButton.tsx
+
 "use client";
-
-
-
 
 import { Trash2 } from "lucide-react";
 import { Button } from "@/components/ui/button";
@@ -11,14 +10,9 @@ import { useTransition, useState } from "react";
 import { ConfirmModal } from "@/components/modals/confirm-modal";
 
 
-
-
 export default function DeleteGrammarButton({ id, title }: { id: string, title: string }) {
   const [open, setOpen] = useState(false);
   const [isPending, startTransition] = useTransition();
-
-
-
 
   const handleDelete = () => {
     startTransition(async () => {
@@ -31,8 +25,6 @@ export default function DeleteGrammarButton({ id, title }: { id: string, title: 
       }
     });
   };
-
-
 
 
   return (

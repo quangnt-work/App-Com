@@ -1,8 +1,8 @@
+import Link from 'next/link';
+import { ArrowLeft } from 'lucide-react';
 import GrammarHeader from "@/components/admin/lessons/grammars/GrammarHeader";
-import GrammarFilters from "@/components/admin/lessons/grammars/GrammarFilter";
 import GrammarTable from "@/components/admin/lessons/grammars/GrammarTable";
 import { getGrammars } from "@/actions/GrammarActions";
-import { Skeleton } from "@/components/ui/skeleton";
 import { GrammarPagination } from "@/components/admin/lessons/grammars/GrammarPagination";
 
 interface GrammarsPageProps {
@@ -14,27 +14,23 @@ interface GrammarsPageProps {
 }
 
 export const metadata = {
-  title: "Quản lý bài học | Admin Dashboard",
+  title: "Quản lý ngữ pháp | Admin Dashboard",
 };
-
 
 export default async function GrammarsPage({ searchParams }: GrammarsPageProps) {
   const params = await searchParams;
-  // 1. Lấy params từ URL
+  
+  // 1. Lấy params từ URL (Mặc định page 1)
   const currentPage = Number(params.page) || 1;
-  const pageSize = 10; // Bạn có thể cấu hình số lượng item mỗi trang tại đây
-  const searchQuery = params.q || "";
-  const categoryFilter = params.category || undefined;
- 
+  const pageSize = 5; // Trong ảnh hiển thị 5 item mỗi trang
+  
   // 2. Gọi Server Action lấy dữ liệu
-  // Lưu ý: getLessons trong file actions trả về { data, count, error }
   const { data: grammars, count, error } = await getGrammars(
     currentPage,
     pageSize,
-    searchQuery,
-    categoryFilter
+    "", // Bỏ search
+    ""  // Bỏ category
   );
-
 
   if (error) {
     return (
@@ -50,51 +46,33 @@ export default async function GrammarsPage({ searchParams }: GrammarsPageProps) 
 
   const formattedData = currentData.map((grammar) => ({
     ...grammar,
-
     thumbnail: grammar.thumbnail ?? null,
-    // 1. Ép kiểu type cho chuẩn với GrammarType
     type: grammar.type as 'text' | 'file' | 'video' | 'audio' | 'quiz',
-    
-    // 2. Ép kiểu status cho chuẩn với GrammarStatus
     status: (grammar.status || 'draft') as 'draft' | 'published' | 'archived',
-    
-    // 3. Category trong Interface của bạn bắt buộc là 'string' (không được null)
-    // Nên nếu Supabase trả về null, ta cho nó thành chuỗi rỗng '' hoặc 'Chưa phân loại'
     category: grammar.category || '',
   }));
 
-
   return (
-    <div className="p-6 md:p-8 max-w-[1600px] mx-auto min-h-screen bg-slate-50/50">
-      <GrammarHeader />
-     
-      <GrammarFilters />
+    <div className="min-h-screen bg-[#f8f9fc] p-6 lg:p-10 font-sans">
+      <div className="max-w-6xl mx-auto">
 
-      <div className="rounded-md border bg-white shadow-sm">
-        <GrammarTable data={formattedData} />
-      </div>
-      
-      {/* Footer & Pagination */}
-      <div className="mt-4 flex items-center justify-between text-sm text-slate-500">
-        <p>Hiển thị {(grammars || []).length} trên tổng số {count} bài học</p>
-        <GrammarPagination 
-            currentPage={currentPage}
-            totalItems={totalItems} // Tổng số bản ghi trong database
-            pageSize={pageSize}
-        />
+        {/* Header & Banner */}
+        <GrammarHeader />
+
+        {/* Khung Bảng dữ liệu */}
+        <div className="bg-white rounded-2xl shadow-sm border border-gray-100 mt-6 overflow-hidden">
+          <GrammarTable data={formattedData} />
+          
+          {/* Footer & Pagination */}
+          <div className="p-6 border-t border-gray-100 bg-white">
+            <GrammarPagination 
+                currentPage={currentPage}
+                totalItems={totalItems}
+                pageSize={pageSize}
+            />
+          </div>
         </div>
-    </div>
-  );
-}
-
-
-// Skeleton loading cho bảng
-function TableSkeleton() {
-  return (
-    <div className="space-y-4">
-      <Skeleton className="h-[60px] w-full rounded-xl" />
-      <Skeleton className="h-[60px] w-full rounded-xl" />
-      <Skeleton className="h-[60px] w-full rounded-xl" />
+      </div>
     </div>
   );
 }

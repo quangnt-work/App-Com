@@ -1,7 +1,7 @@
 // src/app/student/lessons/page.tsx
 import React from 'react';
 import { CategoryCard } from '@/components/student/features/CategoryCard';
-import { Book, Headphones, PlayCircle, GraduationCap, BookOpen } from 'lucide-react';
+import { Book, Headphones, PlayCircle, BookOpen } from 'lucide-react';
 import { createClient } from '@/lib/supabase/server';
 import { HeroBanner } from '@/components/common/HeroBanner';
 

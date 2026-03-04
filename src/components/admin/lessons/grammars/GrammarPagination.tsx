@@ -1,18 +1,13 @@
 "use client";
 
-
 import { useRouter, useSearchParams } from "next/navigation";
-import { Button } from "@/components/ui/button";
 import { ChevronLeft, ChevronRight } from "lucide-react";
-
 
 interface GrammarPaginationProps {
   currentPage: number;
   pageSize: number;
   totalItems: number;
-  // hasNextPage: boolean; // Không cần thiết nữa vì ta sẽ tự tính toán
 }
-
 
 export function GrammarPagination({
   currentPage,
@@ -22,15 +17,9 @@ export function GrammarPagination({
   const router = useRouter();
   const searchParams = useSearchParams();
 
-
-  // 1. Tính toán tổng số trang
   const totalPages = Math.ceil(totalItems / pageSize);
-
-
-  // 2. Logic kiểm tra nút Next/Prev
   const hasNextPage = currentPage < totalPages;
   const hasPrevPage = currentPage > 1;
-
 
   const handlePageChange = (newPage: number) => {
     const params = new URLSearchParams(searchParams.toString());
@@ -38,49 +27,52 @@ export function GrammarPagination({
     router.push(`?${params.toString()}`);
   };
 
+  if (totalItems === 0) return null;
 
-  // Nếu không có dữ liệu hoặc chỉ có 1 trang thì ẩn phân trang đi cho gọn
-  if (totalPages <= 1) return null;
+  const startItem = Math.min((currentPage - 1) * pageSize + 1, totalItems);
+  const endItem = Math.min(currentPage * pageSize, totalItems);
 
+  // Tạo mảng số trang
+  const pages = Array.from({ length: totalPages }, (_, i) => i + 1);
 
   return (
-    <div className="flex items-center justify-between px-2 py-4 w-full">
-      {/* Hiển thị thông tin chi tiết: 1-10 of 50 */}
-      <div className="flex-1 text-sm text-muted-foreground hidden sm:block">
-        Hiển thị <strong>{Math.min((currentPage - 1) * pageSize + 1, totalItems)}</strong> -{" "}
-        <strong>{Math.min(currentPage * pageSize, totalItems)}</strong> trên tổng số{" "}
-        <strong>{totalItems}</strong> kết quả
+    <div className="flex flex-col sm:flex-row items-center justify-between w-full gap-4">
+      {/* Label Text */}
+      <div className="text-sm text-gray-500">
+        Hiển thị {startItem}-{endItem} trên tổng số {totalItems} bài học
       </div>
 
+      {/* Pagination Controls */}
+      <div className="flex items-center space-x-1">
+        <button
+          className="w-9 h-9 flex items-center justify-center text-gray-400 hover:text-gray-700 transition-colors disabled:opacity-50"
+          onClick={() => handlePageChange(currentPage - 1)}
+          disabled={!hasPrevPage}
+        >
+          <ChevronLeft className="h-5 w-5" />
+        </button>
+        
+        {pages.map((page) => (
+          <button
+            key={page}
+            onClick={() => handlePageChange(page)}
+            className={`w-9 h-9 flex items-center justify-center rounded-md text-sm font-semibold transition-colors ${
+              currentPage === page
+                ? "bg-[#f97316] text-white shadow-sm"
+                : "text-gray-600 hover:bg-gray-100"
+            }`}
+          >
+            {page}
+          </button>
+        ))}
 
-      <div className="flex items-center space-x-6 lg:space-x-8 ml-auto">
-        <div className="flex w-[100px] items-center justify-center text-sm font-medium">
-          Trang {currentPage} / {totalPages}
-        </div>
-       
-        <div className="flex items-center space-x-2">
-          <Button
-            variant="outline"
-            size="icon" // Dùng size icon cho đẹp
-            className="h-8 w-8"
-            onClick={() => handlePageChange(currentPage - 1)}
-            disabled={!hasPrevPage}
-          >
-            <span className="sr-only">Trang trước</span>
-            <ChevronLeft className="h-4 w-4" />
-          </Button>
-         
-          <Button
-            variant="outline"
-            size="icon"
-            className="h-8 w-8"
-            onClick={() => handlePageChange(currentPage + 1)}
-            disabled={!hasNextPage}
-          >
-            <span className="sr-only">Trang sau</span>
-            <ChevronRight className="h-4 w-4" />
-          </Button>
-        </div>
+        <button
+          className="w-9 h-9 flex items-center justify-center text-gray-400 hover:text-gray-700 transition-colors disabled:opacity-50"
+          onClick={() => handlePageChange(currentPage + 1)}
+          disabled={!hasNextPage}
+        >
+          <ChevronRight className="h-5 w-5" />
+        </button>
       </div>
     </div>
   );

@@ -1,3 +1,5 @@
+//src/components/admin/lessons/grammars/GrammarPreviewModal.tsx
+
 "use client";
 
 import { useRef } from "react";

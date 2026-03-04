@@ -2,8 +2,7 @@
 
 import Link from "next/link";
 import { Button } from "@/components/ui/button";
-import { Edit, Eye, FileText, Video, ListFilter, Music } from "lucide-react";
-import { Badge } from "@/components/ui/badge";
+import { Edit, Eye, FileText, FileUp, FileSignature } from "lucide-react";
 import DeleteGrammarButton from "./DeleteGrammarButton";
 import { format, isValid, parseISO } from "date-fns";
 import { vi } from "date-fns/locale";
@@ -32,17 +31,25 @@ export default function GrammarTable({ data }: GrammarTableProps) {
     setIsPreviewOpen(true);
   };
 
-  const getTypeIcon = (type?: string | null) => {
-    const typeKey = type?.toLowerCase();
-    switch (typeKey) {
-      case "video": return <Video className="w-4 h-4 text-blue-500" />;
-      case "text": return <FileText className="w-4 h-4 text-orange-500" />;
-      case "audio": return <Music className="w-4 h-4 text-purple-500" />;
-      default: return <ListFilter className="w-4 h-4 text-slate-500" />;
-    }
+  // Render Icon giả lập định dạng PDF, Word, v.v.
+  const renderFormatIcons = (type?: string | null) => {
+    const t = type?.toLowerCase();
+    return (
+      <div className="flex items-center justify-center gap-2">
+         {t === 'file' ? (
+           <>
+            <FileText className="w-5 h-5 text-red-500" />
+            <FileSignature className="w-5 h-5 text-blue-600" />
+           </>
+         ) : t === 'video' ? (
+           <FileUp className="w-5 h-5 text-orange-500" />
+         ) : (
+           <FileText className="w-5 h-5 text-blue-500" />
+         )}
+      </div>
+    );
   };
 
-  // Hàm helper an toàn để format ngày tháng
   const safeFormatDate = (dateString?: string | null) => {
     if (!dateString) return "-";
     const date = typeof dateString === 'string' ? parseISO(dateString) : new Date(dateString);
@@ -50,91 +57,51 @@ export default function GrammarTable({ data }: GrammarTableProps) {
   };
 
   return (
-    <div className="bg-white rounded-xl border border-slate-200 shadow-sm overflow-hidden">
-      {/* Container của Bảng (Có overflow-x-auto) */}
+    <>
       <div className="overflow-x-auto">
         <Table className="w-full text-sm text-left">
-          <TableHeader className="bg-slate-50 border-b border-slate-200 text-slate-500 font-medium">
-            <TableRow>
-              <TableHead className="py-4 px-6 w-[300px]">TIÊU ĐỀ</TableHead>
-              <TableHead className="py-4 px-6">DANH MỤC</TableHead>
-              <TableHead className="py-4 px-6">LOẠI</TableHead>
-              <TableHead className="py-4 px-6">NGÀY TẠO</TableHead>
-              <TableHead className="py-4 px-6 text-center">TRẠNG THÁI</TableHead>
-              <TableHead className="py-4 px-6 text-right">THAO TÁC</TableHead>
+          <TableHeader className="bg-white border-b border-gray-100 text-gray-500 text-xs font-bold uppercase">
+            <TableRow className="hover:bg-white">
+              <TableHead className="py-5 px-6 font-bold w-[45%]">TÊN BÀI HỌC</TableHead>
+              <TableHead className="py-5 px-6 font-bold text-center">ĐỊNH DẠNG</TableHead>
+              <TableHead className="py-5 px-6 font-bold text-center">NGÀY TẠO</TableHead>
+              <TableHead className="py-5 px-6 font-bold text-center">THAO TÁC</TableHead>
             </TableRow>
           </TableHeader>
-          <TableBody className="divide-y divide-slate-100">
+          <TableBody className="divide-y divide-gray-50">
             {data.map((lesson) => (
-              <TableRow
-                key={lesson.id}
-                className="hover:bg-slate-50/50 transition-colors group"
-              >
-                {/* Cột Tiêu đề */}
-                <TableCell className="py-4 px-6 font-medium text-slate-700">
+              <TableRow key={lesson.id} className="hover:bg-gray-50/50 transition-colors">
+                {/* Tên bài học */}
+                <TableCell className="py-4 px-6 text-gray-800">
                   {lesson.title}
                 </TableCell>
 
-                {/* Cột Danh Mục */}
-                <TableCell className="py-4 px-6">
-                  <Badge
-                    variant="outline"
-                    className="font-normal text-slate-600 bg-slate-100 border-slate-200 whitespace-nowrap"
-                  >
-                    {lesson.category || "Chưa phân loại"}
-                  </Badge>
+                {/* Định dạng */}
+                <TableCell className="py-4 px-6 text-center">
+                  {renderFormatIcons(lesson.type)}
                 </TableCell>
 
-                {/* Cột Loại */}
-                <TableCell className="py-4 px-6">
-                  <div className="flex items-center gap-2 capitalize text-slate-600">
-                    {getTypeIcon(lesson.type)}
-                    <span>{lesson.type || "Khác"}</span>
-                  </div>
-                </TableCell>
-
-                {/* Cột Ngày Tạo (Đã dùng hàm an toàn) */}
-                <TableCell className="py-4 px-6 text-slate-600 whitespace-nowrap">
+                {/* Ngày tạo */}
+                <TableCell className="py-4 px-6 text-center text-gray-500">
                   {safeFormatDate(lesson.created_at)}
                 </TableCell>
 
-                {/* Cột Trạng Thái (Fix cứng ép kiểu boolean nếu status từ form/db lưu nhầm) */}
+                {/* Thao tác */}
                 <TableCell className="py-4 px-6 text-center">
-                  <span
-                    className={`inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium border ${
-                      lesson.status === "published" || lesson.status === true
-                        ? "bg-emerald-50 text-emerald-700 border-emerald-100"
-                        : "bg-slate-100 text-slate-600 border-slate-200"
-                    }`}
-                  >
-                    <span
-                      className={`w-1.5 h-1.5 rounded-full mr-1.5 ${
-                        lesson.status === "published" || lesson.status === true
-                          ? "bg-emerald-500"
-                          : "bg-slate-400"
-                      }`}
-                    />
-                    {lesson.status === "published" || lesson.status === true ? "Công khai" : "Nháp"}
-                  </span>
-                </TableCell>
-
-                {/* Cột Hành Động */}
-                <TableCell className="py-4 px-6 text-right">
-                  <div className="flex items-center justify-end gap-1">
+                  <div className="flex items-center justify-center gap-2">
                     <Button
                       variant="ghost"
                       size="icon"
-                      className="h-8 w-8 text-slate-400 hover:text-sky-600 hover:bg-sky-50"
+                      className="h-8 w-8 text-gray-400 hover:text-gray-700 hover:bg-gray-100 rounded-full"
                       onClick={(e) => {
                          e.stopPropagation();
                          handlePreview(lesson);
                       }}
-                      title="Xem trước"
                     >
                       <Eye className="w-4 h-4" />
                     </Button>
 
-                    <Button asChild variant="ghost" size="icon" className="h-8 w-8 text-slate-400 hover:text-amber-600 hover:bg-amber-50" title="Chỉnh sửa">
+                    <Button asChild variant="ghost" size="icon" className="h-8 w-8 text-gray-400 hover:text-gray-700 hover:bg-gray-100 rounded-full">
                       <Link href={`/admin/lessons/${lesson.id}`}>
                         <Edit className="w-4 h-4" />
                       </Link>
@@ -148,23 +115,18 @@ export default function GrammarTable({ data }: GrammarTableProps) {
           </TableBody>
         </Table>
 
-        {/* Trạng thái Empty */}
         {data.length === 0 && (
-          <div className="p-12 text-center text-slate-500">
-            <div className="flex justify-center mb-4">
-               <ListFilter className="w-12 h-12 text-slate-200" />
-            </div>
-            <p>Không tìm thấy bài học nào phù hợp.</p>
+          <div className="p-12 text-center text-gray-500">
+            <p>Không tìm thấy bài học nào.</p>
           </div>
         )}
       </div>
 
-      {/* MODAL ĐẶT Ở NGOÀI CÙNG, BÊN DƯỚI OVERFLOW DIV */}
       <GrammarPreviewModal
         isOpen={isPreviewOpen}
         onClose={() => setIsPreviewOpen(false)}
         grammar={previewGrammar} 
       />
-    </div>
+    </>
   );
 }

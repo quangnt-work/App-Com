@@ -7,6 +7,7 @@ import { useRouter } from 'next/navigation';
 import { ChatMessageType, ChatAssessment } from '@/types/ai-chat';
 // Import Component ChatMessage chúng ta vừa tạo
 import { ChatMessage } from '@/components/student/ai/chat/ChatMessage';
+import { toast } from 'sonner';
 
 // 1. Khai báo data danh sách chủ đề ngay tại đây để tra cứu
 const TOPICS_DATA = [
@@ -60,7 +61,7 @@ export default function AIChatInterfacePage({ params }: { params: Promise<{ topi
       setMessages([{ role: 'model', content: data.content, type: 'text' }]);
     } catch (error) {
       console.error(error);
-      alert("Lỗi kết nối AI. Vui lòng thử lại.");
+      toast.error("Lỗi kết nối AI. Vui lòng thử lại.");
     } finally {
       setIsTyping(false);
     }
@@ -103,7 +104,7 @@ export default function AIChatInterfacePage({ params }: { params: Promise<{ topi
       setAssessment(data);
     } catch (error) {
       console.error(error);
-      alert("Đã xảy ra lỗi khi AI đang đánh giá.");
+      toast.error("Đã xảy ra lỗi khi AI đang đánh giá.");
     } finally {
       setIsTyping(false);
     }
@@ -141,9 +142,6 @@ export default function AIChatInterfacePage({ params }: { params: Promise<{ topi
     <div className="max-w-4xl mx-auto h-[85vh] flex flex-col bg-white rounded-3xl shadow-sm border mt-6 overflow-hidden">
       {/* Header */}
       <div className="p-5 border-b flex items-center justify-between bg-white shadow-sm z-10">
-        <button onClick={() => router.back()} className="flex items-center text-gray-500 hover:text-[#f07b32] transition-colors font-medium">
-          <ChevronLeft className="mr-1" /> Quay lại
-        </button>
         <div className="flex items-center gap-3">
           <div className="p-2 bg-green-50 text-green-600 rounded-xl">{topic.icon}</div>
           <span className="font-bold text-lg text-gray-800">{topic.title}</span>

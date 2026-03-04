@@ -1,65 +1,70 @@
-import { NextRequest, NextResponse } from 'next/server';
-import { GoogleGenAI } from '@google/genai';
+import { NextResponse } from "next/server";
+import Groq from "groq-sdk";
 
+// Khởi tạo Groq client
+const groq = new Groq({ apiKey: process.env.GROQ_API_KEY });
 
-// Khởi tạo SDK mới của Google
-const ai = new GoogleGenAI({ apiKey: process.env.GEMINI_API_KEY });
-
-
-export async function POST(req: NextRequest) {
+export async function POST(request: Request) {
   try {
-    const formData = await req.formData();
-    const audioFile = formData.get('audio') as Blob;
-    const targetText = formData.get('targetText') as string;
+    // 1. Lấy file audio từ FormData do client gửi lên
+    const formData = await request.formData();
+    const audioFile = formData.get("audio") as File;
 
-
-    if (!audioFile || !targetText) {
-      return NextResponse.json({ error: 'Thiếu file âm thanh hoặc câu mẫu' }, { status: 400 });
+    if (!audioFile) {
+      return NextResponse.json({ error: "Không tìm thấy file audio" }, { status: 400 });
     }
 
-
-    // Chuyển file audio thành Base64 để gửi cho Gemini
-    const arrayBuffer = await audioFile.arrayBuffer();
-    const buffer = Buffer.from(arrayBuffer);
-    const base64Audio = buffer.toString('base64');
-    const mimeType = audioFile.type || 'audio/webm';
-
-
-    const prompt = `Bạn là một giảng viên ngữ âm tại Đại học Tổng hợp Quốc gia Saint Petersburg. Hãy nghe đoạn ghi âm và đối chiếu với văn bản: '${targetText}'.
-    Hãy chú ý kỹ:
-    1. Trọng âm (Stress): Người Nga rất khắt khe về trọng âm.
-    2. Biến âm: Các phụ âm đứng cuối từ có bị vô thanh hóa đúng cách không (vd: 'в' đọc thành 'ф')?
-    3. Độ rung: Âm 'Р' có đủ độ rung không?
-    Trả về JSON: { 'score': điểm/10.00, 'tip': 'nhận xét ngắn gọn bằng tiếng Việt' }`;
-
-    const response = await ai.models.generateContent({
-      model: 'gemini-2.5-flash', // Đã cập nhật sang model mới nhất
-      contents: [
-        {
-          role: 'user',
-          parts: [
-            { inlineData: { data: base64Audio, mimeType: mimeType } },
-            { text: prompt }
-          ]
-        }
-      ],
-      config: {
-        // Tính năng mới: Ép AI luôn luôn trả về chuẩn JSON
-        responseMimeType: "application/json", 
-      }
+    // ==========================================
+    // GIAI ĐOẠN 1: SPEECH-TO-TEXT VỚI WHISPER
+    // ==========================================
+    const transcription = await groq.audio.transcriptions.create({
+      file: audioFile,
+      model: "whisper-large-v3", // Model STT tốt nhất hiện tại trên Groq
+      response_format: "json",
+      language: "ru", // Đổi thành "en" nếu đánh giá tiếng Anh, "ru" cho tiếng Nga
     });
 
+    const studentText = transcription.text;
 
-    const aiText = response.text || "{}";
-    
-    // Vì đã bật responseMimeType JSON, ta có thể parse thẳng một cách an toàn
-    const result = JSON.parse(aiText);
-    
-    return NextResponse.json(result);
+    if (!studentText) {
+      return NextResponse.json({ error: "Không thể nhận diện giọng nói" }, { status: 400 });
+    }
 
+    // ==========================================
+    // GIAI ĐOẠN 2: ĐÁNH GIÁ BẰNG LLAMA 3
+    // ==========================================
+    const systemPrompt = `
+      Bạn là một chuyên gia ngôn ngữ học khó tính. 
+      Nhiệm vụ của bạn là đánh giá câu nói của sinh viên dựa trên văn bản được bóc băng.
+      
+      Văn bản của sinh viên: "${studentText}"
+      
+      Hãy đánh giá và BẮT BUỘC trả về định dạng JSON chính xác như sau, không kèm theo bất kỳ văn bản nào khác:
+      {
+        "transcript": "Văn bản đã nhận diện được",
+        "score": [Điểm từ 1.00 đến 10.00],
+        "feedback": "Nhận xét chi tiết về ngữ pháp và từ vựng",
+        "errors": ["Lỗi 1", "Lỗi 2"] 
+      }
+    `;
+
+    const evaluation = await groq.chat.completions.create({
+      messages: [
+        { role: "system", content: systemPrompt }
+      ],
+      model: "llama-3.3-70b-versatile", // Model thông minh nhất của Groq hiện tại
+      response_format: { type: "json_object" }, // Ép Groq trả về chuẩn JSON
+      temperature: 0.2, // Giảm sự sáng tạo để đánh giá chuẩn xác và ổn định hơn
+    });
+
+    // Parse kết quả JSON từ Llama 3
+    const resultJson = JSON.parse(evaluation.choices[0]?.message?.content || "{}");
+
+    // Trả kết quả về cho Frontend
+    return NextResponse.json(resultJson, { status: 200 });
 
   } catch (error) {
-    console.error("Lỗi chấm điểm AI:", error);
-    return NextResponse.json({ error: 'Đã xảy ra lỗi khi chấm điểm' }, { status: 500 });
+    console.error("Lỗi xử lý đánh giá Groq:", error);
+    return NextResponse.json({ error: "Đã có lỗi xảy ra khi gọi AI" }, { status: 500 });
   }
 }

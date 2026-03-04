@@ -1,5 +1,3 @@
-//src/app/(student)/student/ai/speaking/[topicSlug]/sentences/SpeakingPracticeClient.tsx
-
 'use client';
 
 import React, { useState, useRef } from 'react';
@@ -57,31 +55,46 @@ export default function SpeakingPracticeClient({ sentences, topicName }: Props) 
     }
   };
 
-  const evaluateAudio = async (blob: Blob) => {
-    setIsEvaluating(true);
+  const evaluateAudio = async (audioBlob: Blob) => {
+    setIsEvaluating(true); 
+    
     try {
-      const formData = new FormData();
-      formData.append('audio', blob);
-      formData.append('targetText', currentSentence.russian_text);
+      const file = new File([audioBlob], "recording.webm", {
+        type: audioBlob.type,
+      });
 
-      const res = await fetch('/api/evaluate-speech', {
-        method: 'POST',
+      const formData = new FormData();
+      formData.append("audio", file);
+      formData.append("targetText", currentSentence.russian_text); 
+
+      const response = await fetch("/api/evaluate-speech", {
+        method: "POST",
         body: formData,
       });
 
-      if (!res.ok) {
-  const errorData = await res.json().catch(() => ({}));
-  // LOG RA CONSOLE ĐỂ XEM LỖI THẬT SỰ TỪ GOOGLE LÀ GÌ
-  console.error("Lỗi từ Server API:", errorData); 
-  throw new Error(errorData.error || `Mã lỗi HTTP: ${res.status}`);
-}
-      const data: EvaluationResult = await res.json();
-      setEvaluation(data);
+      if (!response.ok) {
+        throw new Error("Lỗi API đánh giá");
+      }
+
+      const data = await response.json();
+      
+      let combinedTip = data.feedback || "";
+      if (data.errors && Array.isArray(data.errors) && data.errors.length > 0) {
+        combinedTip += ` Lỗi phát âm: ${data.errors.join(", ")}.`;
+      }
+
+      const formattedResult: EvaluationResult = {
+        score: data.score,
+        tip: combinedTip || "Phát âm tốt!", 
+      };
+
+      setEvaluation(formattedResult);
+
     } catch (error) {
       console.error(error);
-      toast.error(`AI không thể chấm điểm. Vui lòng thử lại. (${error instanceof Error ? error.message : 'Lỗi không xác định'})`);
+      toast.error("Có lỗi xảy ra khi phân tích giọng nói.");
     } finally {
-      setIsEvaluating(false);
+      setIsEvaluating(false); 
     }
   };
 
@@ -102,16 +115,16 @@ export default function SpeakingPracticeClient({ sentences, topicName }: Props) 
 
   return (
     <div className="max-w-3xl mx-auto py-10 px-4 font-sans">
-
       <div className="bg-white rounded-3xl shadow-[0_8px_30px_rgb(0,0,0,0.04)] p-8 md:p-12 text-center flex flex-col items-center border border-gray-100">
         
         <SentenceDisplay sentence={currentSentence} onPlayExample={playExample} />
         
+        {/* Chỉ gọi EvaluationFeedback, trạng thái loading đã được đẩy xuống PracticeControls */}
         <EvaluationFeedback evaluation={evaluation} />
 
         <PracticeControls 
           isRecording={isRecording}
-          isEvaluating={isEvaluating}
+          isEvaluating={isEvaluating} // Biến này sẽ giúp đổi text ở nút thu âm
           isLastSentence={isLastSentence}
           evaluation={evaluation}
           onToggleRecording={toggleRecording}

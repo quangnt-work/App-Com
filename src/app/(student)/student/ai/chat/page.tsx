@@ -106,16 +106,6 @@ export default function AIChatPage() {
           ))}
         </div>
 
-        {/* Footer gợi ý */}
-        <div className="mt-12 text-center">
-          <p className="text-slate-500 font-medium">
-            Bạn cần chủ đề khác?{' '}
-            <button className="text-[#f07b32] hover:underline font-bold transition-all">
-              Gợi ý cho chúng tôi
-            </button>
-          </p>
-        </div>
-
       </main>
     </div>
   );

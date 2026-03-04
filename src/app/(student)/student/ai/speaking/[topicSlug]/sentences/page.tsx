@@ -2,7 +2,6 @@
 
 import { createClient } from '@/lib/supabase/server';
 import SpeakingPracticeClient from './SpeakingPracticeClient';
-import { Sentence } from '@/types/ai-practice';
 
 export default async function AISpeakingPage({ params }: { params: Promise<{ topicSlug: string }> }) {
   const supabase = await createClient();

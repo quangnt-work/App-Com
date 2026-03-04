@@ -1,3 +1,5 @@
+//src/types/ai-chat.ts
+
 import { ReactNode } from 'react';
 
 export interface ChatTopic {

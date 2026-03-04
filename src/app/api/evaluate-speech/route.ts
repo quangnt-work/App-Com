@@ -1,8 +1,10 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { GoogleGenAI } from '@google/genai';
 
+
 // Khởi tạo SDK mới của Google
 const ai = new GoogleGenAI({ apiKey: process.env.GEMINI_API_KEY });
+
 
 export async function POST(req: NextRequest) {
   try {
@@ -10,9 +12,11 @@ export async function POST(req: NextRequest) {
     const audioFile = formData.get('audio') as Blob;
     const targetText = formData.get('targetText') as string;
 
+
     if (!audioFile || !targetText) {
       return NextResponse.json({ error: 'Thiếu file âm thanh hoặc câu mẫu' }, { status: 400 });
     }
+
 
     // Chuyển file audio thành Base64 để gửi cho Gemini
     const arrayBuffer = await audioFile.arrayBuffer();
@@ -20,11 +24,13 @@ export async function POST(req: NextRequest) {
     const base64Audio = buffer.toString('base64');
     const mimeType = audioFile.type || 'audio/webm';
 
-    const prompt = `Bạn là giáo viên dạy phát âm tiếng Nga. Hãy nghe đoạn ghi âm sau. 
-    Học viên đang cố gắng đọc câu này: "${targetText}".
-    Hãy đánh giá cách phát âm của họ từ thang điểm 1 đến 10.
-    Trả về KẾT QUẢ DUY NHẤT bằng một chuỗi JSON có định dạng như sau:
-    { "score": 8, "tip": "Nhận xét/mẹo sửa lỗi ngắn gọn bằng tiếng Việt" }`;
+
+    const prompt = `Bạn là một giảng viên ngữ âm tại Đại học Tổng hợp Quốc gia Saint Petersburg. Hãy nghe đoạn ghi âm và đối chiếu với văn bản: '${targetText}'.
+    Hãy chú ý kỹ:
+    1. Trọng âm (Stress): Người Nga rất khắt khe về trọng âm.
+    2. Biến âm: Các phụ âm đứng cuối từ có bị vô thanh hóa đúng cách không (vd: 'в' đọc thành 'ф')?
+    3. Độ rung: Âm 'Р' có đủ độ rung không?
+    Trả về JSON: { 'score': điểm/10.00, 'tip': 'nhận xét ngắn gọn bằng tiếng Việt' }`;
 
     const response = await ai.models.generateContent({
       model: 'gemini-2.5-flash', // Đã cập nhật sang model mới nhất
@@ -43,12 +49,14 @@ export async function POST(req: NextRequest) {
       }
     });
 
+
     const aiText = response.text || "{}";
     
     // Vì đã bật responseMimeType JSON, ta có thể parse thẳng một cách an toàn
     const result = JSON.parse(aiText);
     
     return NextResponse.json(result);
+
 
   } catch (error) {
     console.error("Lỗi chấm điểm AI:", error);

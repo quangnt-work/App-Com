@@ -1,18 +1,22 @@
+// src/app/(student)/student/ai/speaking/[topicSlug]/vocabulary/VocabularyPracticeClient.tsx
+
 'use client';
 
 import React, { useState, useRef } from 'react';
 import { useRouter } from 'next/navigation';
-import { Sentence, EvaluationResult } from '@/types/ai-practice';
-import { SentenceDisplay } from '@/components/student/ai/speaking/SentenceDisplay';
+import { EvaluationResult } from '@/types/ai-practice';
 import { EvaluationFeedback } from '@/components/student/ai/speaking/EvaluationFeedback';
 import { PracticeControls } from '@/components/student/ai/speaking/PracticeControls';
+import { Volume2 } from 'lucide-react';
+import { DictionaryWord } from '@/types/dictionary';
+
 
 interface Props {
-  sentences: Sentence[];
+  vocabularies: DictionaryWord[]; 
   topicName: string;
 }
 
-export default function SpeakingPracticeClient({ sentences, topicName }: Props) {
+export default function VocabularyPracticeClient({ vocabularies, topicName }: Props) {
   const router = useRouter();
   const [currentIndex, setCurrentIndex] = useState(0);
   const [isRecording, setIsRecording] = useState(false);
@@ -22,8 +26,8 @@ export default function SpeakingPracticeClient({ sentences, topicName }: Props) 
   const mediaRecorderRef = useRef<MediaRecorder | null>(null);
   const audioChunksRef = useRef<Blob[]>([]);
 
-  const currentSentence = sentences[currentIndex];
-  const isLastSentence = currentIndex === sentences.length - 1;
+  const currentWord = vocabularies[currentIndex];
+  const isLastWord = currentIndex === vocabularies.length - 1;
 
   const toggleRecording = async () => {
     if (isRecording) {
@@ -59,7 +63,7 @@ export default function SpeakingPracticeClient({ sentences, topicName }: Props) 
     try {
       const formData = new FormData();
       formData.append('audio', blob);
-      formData.append('targetText', currentSentence.russian_text);
+      formData.append('targetText', currentWord.russian_word); 
 
       const res = await fetch('/api/evaluate-speech', {
         method: 'POST',
@@ -81,8 +85,8 @@ export default function SpeakingPracticeClient({ sentences, topicName }: Props) 
   };
 
   const handleNext = () => {
-    if (isLastSentence) {
-      router.push('/student/ai/speaking'); 
+    if (isLastWord) {
+      router.push(`/student/ai/speaking/${topicName}`); 
     } else {
       setCurrentIndex(prev => prev + 1);
       setEvaluation(null); 
@@ -90,32 +94,46 @@ export default function SpeakingPracticeClient({ sentences, topicName }: Props) 
   };
 
   const playExample = () => {
-    const utterance = new SpeechSynthesisUtterance(currentSentence.russian_text);
+    const utterance = new SpeechSynthesisUtterance(currentWord.russian_word);
     utterance.lang = 'ru-RU'; 
     window.speechSynthesis.speak(utterance);
   };
 
   return (
     <div className="max-w-3xl mx-auto py-10 px-4 font-sans">
-
       <div className="bg-white rounded-3xl shadow-[0_8px_30px_rgb(0,0,0,0.04)] p-8 md:p-12 text-center flex flex-col items-center border border-gray-100">
         
-        <SentenceDisplay sentence={currentSentence} onPlayExample={playExample} />
+        {/* Khối hiển thị Từ vựng (Thay cho SentenceDisplay để tối ưu hiển thị 1 từ) */}
+        <h2 className="text-4xl md:text-5xl font-extrabold text-[#1a202c] mb-4 tracking-tight">
+          {currentWord.russian_word}
+        </h2>
+        <p className="text-[#3b82f6] text-lg md:text-xl font-medium tracking-widest mb-4">
+          /{currentWord.phonetic}/
+        </p>
+        <div className="bg-[#f8fafc] text-gray-600 px-6 py-2 rounded-xl text-base md:text-lg mb-8 inline-block">
+          {currentWord.vietnamese_meaning}
+        </div>
+        <div className="w-full border-2 border-dashed border-[#cbd5e1] rounded-2xl p-6 mb-8 bg-[#f8fafc]/50">
+          <p className="text-gray-500 mb-4">Bấm mic, đọc to và bấm dừng.</p>
+          <button 
+            onClick={playExample}
+            className="flex items-center justify-center mx-auto text-[#2563eb] font-semibold hover:text-blue-700 transition-colors"
+          >
+            <Volume2 size={20} className="mr-2" />
+            Nghe mẫu
+          </button>
+        </div>
         
         <EvaluationFeedback evaluation={evaluation} />
 
         <PracticeControls 
           isRecording={isRecording}
           isEvaluating={isEvaluating}
-          isLastSentence={isLastSentence}
+          isLastSentence={isLastWord}
           evaluation={evaluation}
           onToggleRecording={toggleRecording}
           onNext={handleNext}
         />
-
-        <div className="mt-8 text-sm text-gray-400 font-medium tracking-wide">
-          Câu {currentIndex + 1} / {sentences.length}
-        </div>
       </div>
     </div>
   );

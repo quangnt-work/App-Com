@@ -14,7 +14,7 @@ export function SentenceDisplay({ sentence, onPlayExample }: SentenceDisplayProp
         {sentence.russian_text}
       </h2>
       <p className="text-[#3b82f6] text-lg md:text-xl font-medium tracking-widest mb-4">
-        {sentence.phonetic}
+        /{sentence.phonetic}/
       </p>
       <div className="bg-[#f8fafc] text-gray-600 px-6 py-2 rounded-xl text-base md:text-lg mb-8 inline-block">
         {sentence.vietnamese_text}

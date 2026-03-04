@@ -1,14 +1,10 @@
 import { createClient } from '@/lib/supabase/server'
-import { DashboardHeader } from '@/components/admin/dashboard/DashboardHeader'
-import { StatsSection } from '@/components/admin/dashboard/StatsSection'
-import { ManagementSection } from '@/components/admin/dashboard/ManagementSection'
-import { RecentActivity } from '@/components/admin/dashboard/RecentActivity'
+import { AdminBanner } from '@/components/admin/dashboard/AdminBanner'
+import { AdminStatsSection } from '@/components/admin/dashboard/AdminStatsSection'
 
-// Hàm lấy thống kê tổng quan
 async function getDashboardStats() {
   const supabase = await createClient()
 
-  // Sử dụng Promise.all để chạy các query song song -> Tăng tốc độ
   const [
     { count: studentCount },
     { count: grammarCount },
@@ -17,27 +13,12 @@ async function getDashboardStats() {
     { count: practiceCount },
     { data: recentUsers }
   ] = await Promise.all([
-    // 1. Đếm Student
     supabase.from('profiles').select('*', { count: 'exact', head: true }).eq('role', 'student'),
-    
-    // 2. Đếm Bài học
     supabase.from('grammars').select('*', { count: 'exact', head: true }),
-    
-    // 3. Đếm Tài liệu
     supabase.from('documents').select('*', { count: 'exact', head: true }),
-    
-    // 4. Đếm Đề thi
     supabase.from('exams').select('*', { count: 'exact', head: true }),
-
-    // 5. Đếm Bài tập
     supabase.from('practice_exercises').select('*', { count: 'exact', head: true }),
-
-    // 6. Lấy 5 user mới nhất
-    supabase
-      .from('profiles')
-      .select('id, full_name, username, avatar_url, created_at, role')
-      .order('created_at', { ascending: false })
-      .limit(5)
+    supabase.from('profiles').select('id, full_name, username, avatar_url, created_at, role').order('created_at', { ascending: false }).limit(5)
   ])
 
   return {
@@ -52,26 +33,25 @@ async function getDashboardStats() {
 }
 
 export default async function AdminDashboard() {
-  // Fetch dữ liệu Server Side
   const { stats, recentUsers } = await getDashboardStats()
 
   return (
-    <div className="p-6 lg:p-8 bg-slate-50 min-h-screen space-y-8">
-      {/* 1. Header */}
-      <DashboardHeader />
+    <div className="p-6 lg:p-8 bg-[#f8f9fa] min-h-screen">
+      <div className="max-w-[1400px] mx-auto">
+        {/* 2. Banner cam mới */}
+        <AdminBanner />
 
-      {/* 2. Thống kê số liệu thật */}
-      <StatsSection stats={stats} />
+        {/* 3. Thống kê Card mới */}
+        <AdminStatsSection stats={stats} />
 
-      <div className="grid grid-cols-1 lg:grid-cols-7 gap-8">
-        {/* 3. Hoạt động gần đây (Chiếm 4 cột) */}
-        <RecentActivity users={recentUsers} />
-        
-        {/* 4. Menu chức năng quản lý (Chiếm 3 cột - Layout Grid) */}
-        <div className="lg:col-span-3">
-             {/* Lưu ý: ManagementSection cần sửa nhẹ lại Grid class nếu muốn khớp layout 2 cột ở đây */}
+        {/* 4. Các block cũ giữ nguyên ở dưới (Hoạt động gần đây & Menu) */}
+        {/* <div className="grid grid-cols-1 lg:grid-cols-7 gap-8 mt-8">
+          <RecentActivity users={recentUsers} />
+          <div className="lg:col-span-3">
              <ManagementSection /> 
-        </div>
+          </div>
+        </div> */}
+        
       </div>
     </div>
   )

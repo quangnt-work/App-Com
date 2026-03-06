@@ -100,7 +100,8 @@ export default function AudioForm({ initialData, isEditing }: AudioFormProps) {
 
         setUploadFiles((prev) => [...prev, ...newFiles]);
 
-        if (isEditing && newFiles.length === 1) {
+        const totalCount = uploadFiles.length + newFiles.length;
+        if (totalCount === 1) {
             uploadSingle(newFiles[0]);
         } else {
             uploadAll(newFiles);

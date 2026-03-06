@@ -52,7 +52,8 @@ export const GrammarService = {
       thumbnail: data.thumbnail,
       type: data.type,
       content: data.type === 'text' ? data.content : null,
-      file_url: data.type !== 'text' ? data.file_url : null,
+      file_url: data.type !== 'text' ? (data.file_url || data.audio_url) : null,
+      audio_url: data.audio_url || null,
       category: data.category,
       // Dùng Constant thay vì hardcode string
       status: data.status ? GRAMMAR_STATUS.PUBLISHED : GRAMMAR_STATUS.DRAFT,

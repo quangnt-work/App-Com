@@ -7,58 +7,62 @@ import { HeroBanner } from '@/components/common/HeroBanner';
 
 export default async function StudentCategoryPage() {
   const supabase = await createClient();
-  const { data: { user } } = await supabase.auth.getUser();
 
-  const userData = user ? { 
-    name: String(user.user_metadata?.full_name || user.email || "Học viên"), 
-    role: String(user.user_metadata?.role || 'STUDENT') 
-  } : null;
+  // Fetch counts thực từ DB theo type
+  const [
+    { count: grammarCount },
+    { count: audioCount },
+    { count: videoCount },
+  ] = await Promise.all([
+    supabase.from('grammars').select('*', { count: 'exact', head: true }).eq('type', 'file').eq('status', 'published'),
+    supabase.from('grammars').select('*', { count: 'exact', head: true }).eq('type', 'audio').eq('status', 'published'),
+    supabase.from('grammars').select('*', { count: 'exact', head: true }).eq('type', 'video').eq('status', 'published'),
+  ]);
 
   const categories = [
     {
       title: "Ngữ pháp",
-      description: "Gồm 23 bài giảng Power point",
+      description: `Gồm ${grammarCount ?? 0} bài giảng`,
       icon: <Book size={36} />,
-      href: "/student/lessons/grammars" // Điều hướng tới trang lessons hiện tại
+      href: "/student/lessons/grammars"
     },
     {
       title: "Nghe",
-      description: "Gồm 50 file nghe",
+      description: `Gồm ${audioCount ?? 0} file nghe`,
       icon: <Headphones size={36} />,
-      href: "/student/lessons/audios" // Route giả định
+      href: "/student/lessons/audios"
     },
     {
       title: "Video",
-      description: "Gồm 20 video",
+      description: `Gồm ${videoCount ?? 0} video`,
       icon: <PlayCircle size={36} />,
-      href: "/student/lessons/videos" // Route giả định
+      href: "/student/lessons/videos"
     }
   ];
 
   return (
     <div className="min-h-screen bg-[#f8f9fc] flex flex-col font-sans">
       <main className="flex-1 container mx-auto px-4 py-8 max-w-[1200px]">
-          
-          {/* Banner Title "BÀI HỌC" */}
-          {/* Đã thêm justify-center để căn giữa toàn bộ nội dung (icon + text) */}
-          <HeroBanner 
-            title="BÀI HỌC"
-            description="Khám phá kho tàng bài giảng đa dạng giúp bạn làm chủ tiếng Nga một cách toàn diện."
-            icon={BookOpen}
-          />
 
-          {/* Grid Categories */}
-          <div className="grid grid-cols-1 md:grid-cols-3 gap-8">
-            {categories.map((cat, index) => (
-              <CategoryCard 
-                key={index}
-                title={cat.title}
-                description={cat.description}
-                icon={cat.icon}
-                href={cat.href}
-              />
-            ))}
-          </div>
+        {/* Banner Title "BÀI HỌC" */}
+        <HeroBanner
+          title="BÀI HỌC"
+          description="Khám phá kho tàng bài giảng đa dạng giúp bạn làm chủ tiếng Nga một cách toàn diện."
+          icon={BookOpen}
+        />
+
+        {/* Grid Categories */}
+        <div className="grid grid-cols-1 md:grid-cols-3 gap-8">
+          {categories.map((cat, index) => (
+            <CategoryCard
+              key={index}
+              title={cat.title}
+              description={cat.description}
+              icon={cat.icon}
+              href={cat.href}
+            />
+          ))}
+        </div>
       </main>
     </div>
   );

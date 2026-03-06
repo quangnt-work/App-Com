@@ -79,7 +79,7 @@ export const GrammarRepository = {
       .select('*', { count: 'exact' })
       .eq('type', type)
       .eq('status', 'published')
-      .order('created_at', { ascending: false })
+      .order('created_at', { ascending: true }) // ASC: Bài cũ (Bài 1) hiển thị trước
       .range(start, end);
   },
 };

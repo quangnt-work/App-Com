@@ -11,14 +11,18 @@ async function getDashboardStats() {
     { count: docCount },
     { count: examCount },
     { count: practiceCount },
-    { data: recentUsers }
+    { count: grammarFileCount },
+    { count: audioCount },
+    { count: videoCount },
   ] = await Promise.all([
     supabase.from('profiles').select('*', { count: 'exact', head: true }).eq('role', 'student'),
     supabase.from('grammars').select('*', { count: 'exact', head: true }),
     supabase.from('documents').select('*', { count: 'exact', head: true }),
     supabase.from('exams').select('*', { count: 'exact', head: true }),
     supabase.from('practice_exercises').select('*', { count: 'exact', head: true }),
-    supabase.from('profiles').select('id, full_name, username, avatar_url, created_at, role').order('created_at', { ascending: false }).limit(5)
+    supabase.from('grammars').select('*', { count: 'exact', head: true }).eq('type', 'file'),
+    supabase.from('grammars').select('*', { count: 'exact', head: true }).eq('type', 'audio'),
+    supabase.from('grammars').select('*', { count: 'exact', head: true }).eq('type', 'video'),
   ])
 
   return {
@@ -27,31 +31,24 @@ async function getDashboardStats() {
       totalGrammars: grammarCount || 0,
       totalResources: (docCount || 0) + (examCount || 0),
       totalPractice: practiceCount || 0,
+      grammarFileCount: grammarFileCount || 0,
+      audioCount: audioCount || 0,
+      videoCount: videoCount || 0,
     },
-    recentUsers: recentUsers || []
   }
 }
 
 export default async function AdminDashboard() {
-  const { stats, recentUsers } = await getDashboardStats()
+  const { stats } = await getDashboardStats()
 
   return (
     <div className="p-6 lg:p-8 bg-[#f8f9fa] min-h-screen">
       <div className="max-w-[1400px] mx-auto">
-        {/* 2. Banner cam mới */}
+        {/* Banner */}
         <AdminBanner />
 
-        {/* 3. Thống kê Card mới */}
+        {/* Thống kê Card */}
         <AdminStatsSection stats={stats} />
-
-        {/* 4. Các block cũ giữ nguyên ở dưới (Hoạt động gần đây & Menu) */}
-        {/* <div className="grid grid-cols-1 lg:grid-cols-7 gap-8 mt-8">
-          <RecentActivity users={recentUsers} />
-          <div className="lg:col-span-3">
-             <ManagementSection /> 
-          </div>
-        </div> */}
-        
       </div>
     </div>
   )

@@ -11,9 +11,9 @@ interface Props {
 export function AdminStatsSection({ stats }: Props) {
   return (
     <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6 mb-8 items-stretch">
-      
+
       {/* Card 1: Tổng học viên */}
-      <Link 
+      <Link
         href="/admin/students" // Sửa lại đường dẫn này theo cấu trúc thư mục của bạn
         className="block bg-white rounded-2xl p-6 shadow-sm border border-gray-100 flex flex-col min-h-[250px] transition-all duration-300 hover:shadow-md hover:-translate-y-1 hover:border-orange-200"
       >
@@ -34,7 +34,7 @@ export function AdminStatsSection({ stats }: Props) {
       </Link>
 
       {/* Card 2: Tổng bài học */}
-      <Link 
+      <Link
         href="/admin/lessons" // Sửa lại đường dẫn này theo cấu trúc thư mục của bạn
         className="block bg-white rounded-2xl p-6 shadow-sm border border-gray-100 flex flex-col min-h-[250px] transition-all duration-300 hover:shadow-md hover:-translate-y-1 hover:border-orange-200"
       >
@@ -50,14 +50,14 @@ export function AdminStatsSection({ stats }: Props) {
           </span>
         </div>
         <div className="mt-auto pt-6 text-gray-500 text-sm space-y-2">
-          <p className="flex items-center gap-2">📄 Ngữ pháp: 45</p>
-          <p className="flex items-center gap-2">▶️ Video: 30</p>
-          <p className="flex items-center gap-2">🎧 Audio: 50</p>
+          <p className="flex items-center gap-2">📄 Ngữ pháp: {stats.grammarFileCount}</p>
+          <p className="flex items-center gap-2">▶️ Video: {stats.videoCount}</p>
+          <p className="flex items-center gap-2">🎧 Audio: {stats.audioCount}</p>
         </div>
       </Link>
 
       {/* Card 3: Tổng đề thi */}
-      <Link 
+      <Link
         href="/admin/exams" // Sửa lại đường dẫn này theo cấu trúc thư mục của bạn
         className="block bg-white rounded-2xl p-6 shadow-sm border border-gray-100 flex flex-col min-h-[250px] transition-all duration-300 hover:shadow-md hover:-translate-y-1 hover:border-orange-200"
       >
@@ -72,16 +72,13 @@ export function AdminStatsSection({ stats }: Props) {
             {stats.totalPractice.toLocaleString()}
           </span>
         </div>
-          <div className="grid grid-cols-2 gap-y-2 gap-x-1 text-gray-500 text-sm mt-auto pt-6">
-            <p className="flex items-center gap-2">🎧 Nghe: 10</p>
-            <p className="flex items-center gap-2">📖 Đọc hiểu: 15</p>
-            <p className="flex items-center gap-2">📝 Ngữ pháp: 20</p>
-            <p className="flex items-center gap-2">🔤 Từ vựng: 15</p>
-          </div>
+        <div className="mt-auto pt-6 text-gray-500 text-sm">
+          <p className="flex items-center gap-2">📝 Tổng bài luyện tập: {stats.totalPractice}</p>
+        </div>
       </Link>
 
       {/* Card 4: Tài liệu */}
-      <Link 
+      <Link
         href="/admin/documents" // Sửa lại đường dẫn này theo cấu trúc thư mục của bạn
         className="block bg-white rounded-2xl p-6 shadow-sm border border-gray-100 flex flex-col min-h-[250px] transition-all duration-300 hover:shadow-md hover:-translate-y-1 hover:border-orange-200"
       >
@@ -96,11 +93,8 @@ export function AdminStatsSection({ stats }: Props) {
             {stats.totalResources.toLocaleString()}
           </span>
         </div>
-        <div className="mt-auto pt-6 w-full">
-          <div className="w-full bg-gray-100 rounded-full h-2 mb-2">
-            <div className="bg-[#ea580c] h-2 rounded-full" style={{ width: '45%' }}></div>
-          </div>
-          <p className="text-xs text-gray-500">Đã dùng 4.5 GB / 10 GB</p>
+        <div className="mt-auto pt-6 text-gray-500 text-sm space-y-1">
+          <p className="flex items-center gap-2">📄 Đề thi: {stats.totalResources}</p>
         </div>
       </Link>
 

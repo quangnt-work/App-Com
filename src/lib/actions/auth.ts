@@ -27,10 +27,10 @@ export type AuthState = {
 // ==========================================
 // 2. SERVER ACTION: SIGNUP
 // ==========================================
-export async function signup(data: SignupData){
+export async function signup(data: SignupData) {
   const supabase = await createClient()
   const { fullName, username, password } = data
-  
+
   // Tạo email giả định
   const fakeEmail = `${username}@test.qa`
 
@@ -41,7 +41,7 @@ export async function signup(data: SignupData){
       data: {
         full_name: fullName,
         username: username,
-        role: 'student', 
+        role: 'student',
       },
     },
   })
@@ -60,7 +60,7 @@ export async function signup(data: SignupData){
 export async function login(data: LoginInput) {
   const validatedFields = LoginSchema.safeParse(data);
   if (!validatedFields.success) {
-    return {success: false, message: "Dữ liệu không hợp lệ"}
+    return { success: false, message: "Dữ liệu không hợp lệ" }
   }
   const supabase = await createClient()
   const { identifier, password } = validatedFields.data;
@@ -83,7 +83,7 @@ export async function login(data: LoginInput) {
 
   // B. Lấy thông tin User để check Role & Self-Healing
   const { data: { user } } = await supabase.auth.getUser()
-  
+
   if (!user) {
     return { success: false, message: 'Lỗi hệ thống: Không lấy được thông tin người dùng.' }
   }
@@ -99,7 +99,7 @@ export async function login(data: LoginInput) {
   // Nếu Login thành công nhưng chưa có Profile (do lỗi lúc Signup cũ) -> Tạo ngay
   if (!profile || profileError) {
     console.log('⚠️ Phát hiện user chưa có profile, đang tự động tạo...')
-    
+
     // Lấy thông tin từ metadata
     const metaName = user.user_metadata.full_name || 'Người dùng mới'
     const metaUsername = user.user_metadata.username || identifier.split('@')[0]
@@ -112,19 +112,29 @@ export async function login(data: LoginInput) {
         username: metaUsername,
         role: 'student' // Mặc định role là student
       })
-    
+
     if (insertError) {
       console.error('❌ Lỗi Self-healing:', insertError)
       return { success: false, message: 'Lỗi: Không thể khởi tạo hồ sơ người dùng.' }
     }
 
+    // 🔒 SECURITY FIX: Sync role 'student' vào JWT metadata
+    // Đảm bảo middleware luôn đọc được role đúng từ token
+    await supabase.auth.updateUser({ data: { role: 'student' } })
+
     revalidatePath('/', 'layout');
-    
+
     // Tạo xong thì trả về role mặc định
     return { success: true, role: 'student', message: 'Đăng nhập thành công!' }
   }
 
   revalidatePath('/', 'layout');
+
+  // 🔒 SECURITY FIX: Sync role từ DB vào JWT metadata
+  // Middleware đọc role từ JWT (nhanh, không cần query DB thêm).
+  // Nhưng JWT phải luôn đồng bộ với giá trị thực trong bảng profiles.
+  // Giải quyết trường hợp: admin đổi role user trong DB nhưng JWT cũ vẫn có role cũ.
+  await supabase.auth.updateUser({ data: { role: profile.role } })
 
   // D. Nếu mọi thứ OK -> Trả về role từ DB
   return { success: true, role: profile.role, message: 'Đăng nhập thành công!' }

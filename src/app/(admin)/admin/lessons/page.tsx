@@ -1,26 +1,39 @@
 //src/app/(admin)/admin/lessons/page.tsx
 
 import { BookOpen, Headphones, PlayCircle, Settings } from 'lucide-react';
-import LessonCard, { LessonCardProps } from '@/components/admin/lessons/LessonCard'; // Nhớ sửa đường dẫn import cho đúng
+import LessonCard, { LessonCardProps } from '@/components/admin/lessons/LessonCard';
+import { createClient } from '@/lib/supabase/server';
 
-export default function AdminLessonsPage() {
-  // Dữ liệu tĩnh (Mock data) - Sau này bạn có thể fetch số lượng bài từ Database (Supabase)
+export default async function AdminLessonsPage() {
+  const supabase = await createClient();
+
+  // Fetch số lượng thực từ DB
+  const [
+    { count: grammarCount },
+    { count: audioCount },
+    { count: videoCount },
+  ] = await Promise.all([
+    supabase.from('grammars').select('*', { count: 'exact', head: true }).eq('type', 'file'),
+    supabase.from('grammars').select('*', { count: 'exact', head: true }).eq('type', 'audio'),
+    supabase.from('grammars').select('*', { count: 'exact', head: true }).eq('type', 'video'),
+  ]);
+
   const lessonCategories: LessonCardProps[] = [
     {
       title: 'QUẢN LÝ NGỮ PHÁP',
-      count: 45,
+      count: grammarCount ?? 0,
       icon: BookOpen,
       href: '/admin/lessons/grammars',
     },
     {
       title: 'QUẢN LÝ NGHE',
-      count: 50,
+      count: audioCount ?? 0,
       icon: Headphones,
       href: '/admin/lessons/audios',
     },
     {
       title: 'QUẢN LÝ VIDEO',
-      count: 30,
+      count: videoCount ?? 0,
       icon: PlayCircle,
       href: '/admin/lessons/videos',
     },
@@ -45,7 +58,7 @@ export default function AdminLessonsPage() {
         {/* Grid chứa các thẻ (Cards) */}
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8">
           {lessonCategories.map((category, index) => (
-            <LessonCard 
+            <LessonCard
               key={index}
               title={category.title}
               count={category.count}

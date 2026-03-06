@@ -36,16 +36,16 @@ export default function GrammarTable({ data }: GrammarTableProps) {
     const t = type?.toLowerCase();
     return (
       <div className="flex items-center justify-center gap-2">
-         {t === 'file' ? (
-           <>
+        {t === 'file' ? (
+          <>
             <FileText className="w-5 h-5 text-red-500" />
             <FileSignature className="w-5 h-5 text-blue-600" />
-           </>
-         ) : t === 'video' ? (
-           <FileUp className="w-5 h-5 text-orange-500" />
-         ) : (
-           <FileText className="w-5 h-5 text-blue-500" />
-         )}
+          </>
+        ) : t === 'video' ? (
+          <FileUp className="w-5 h-5 text-orange-500" />
+        ) : (
+          <FileText className="w-5 h-5 text-blue-500" />
+        )}
       </div>
     );
   };
@@ -94,15 +94,15 @@ export default function GrammarTable({ data }: GrammarTableProps) {
                       size="icon"
                       className="h-8 w-8 text-gray-400 hover:text-gray-700 hover:bg-gray-100 rounded-full"
                       onClick={(e) => {
-                         e.stopPropagation();
-                         handlePreview(lesson);
+                        e.stopPropagation();
+                        handlePreview(lesson);
                       }}
                     >
                       <Eye className="w-4 h-4" />
                     </Button>
 
                     <Button asChild variant="ghost" size="icon" className="h-8 w-8 text-gray-400 hover:text-gray-700 hover:bg-gray-100 rounded-full">
-                      <Link href={`/admin/lessons/${lesson.id}`}>
+                      <Link href={`/admin/lessons/grammars/${lesson.id}`}>
                         <Edit className="w-4 h-4" />
                       </Link>
                     </Button>
@@ -125,7 +125,7 @@ export default function GrammarTable({ data }: GrammarTableProps) {
       <GrammarPreviewModal
         isOpen={isPreviewOpen}
         onClose={() => setIsPreviewOpen(false)}
-        grammar={previewGrammar} 
+        grammar={previewGrammar}
       />
     </>
   );

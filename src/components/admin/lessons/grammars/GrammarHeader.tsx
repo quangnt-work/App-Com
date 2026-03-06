@@ -18,7 +18,7 @@ export default function GrammarHeader() {
       </div>
 
       {/* Nút Action */}
-      <Link href="/admin/lessons/create">
+      <Link href="/admin/lessons/grammars/create">
         <Button className="bg-[#f97316] hover:bg-[#ea580c] text-white shadow-sm font-medium rounded-lg px-6 h-11">
           <Plus className="w-5 h-5 mr-2" />
           Thêm mới bài học

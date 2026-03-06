@@ -3,7 +3,7 @@ import { Metadata } from 'next';
 import { notFound } from 'next/navigation';
 import { createClient } from '@/lib/supabase/server'; // Hàm khởi tạo Supabase Server Client
 import GrammarForm from '@/components/admin/lessons/grammars/grammar-editor/GrammarForm';
-import { GrammarType, Grammar} from '@/types/grammar';
+import { GrammarType, Grammar } from '@/types/grammar';
 import { GrammarInput } from '@/lib/schemas/grammar';
 
 interface EditGrammarPageProps {
@@ -26,7 +26,7 @@ export async function generateMetadata({ params }: EditGrammarPageProps): Promis
   };
 }
 
-export default async function EditGrammarPage(props : EditGrammarPageProps) {
+export default async function EditGrammarPage(props: EditGrammarPageProps) {
   const params = await props.params;
   const grammarId = params.id;
   const supabase = await createClient();
@@ -41,29 +41,27 @@ export default async function EditGrammarPage(props : EditGrammarPageProps) {
   // 2. Xử lý trường hợp không tìm thấy hoặc lỗi
   if (error || !grammar) {
     if (error) console.error("Error fetching grammar:", error);
-    notFound(); 
+    notFound();
   }
 
   const formattedData: GrammarInput = {
-      id: grammar.id,
-      title: grammar.title,
-      description: grammar.description || '',
-      type: (grammar.type?.toLowerCase() || 'text') as "text" | "file" | "video" | "quiz" | "audio", 
-      file_url: grammar.file_url || '',
-      content: grammar.content || '',
-      audio_url: grammar.audio_url || null,
-      questions: Array.isArray(grammar.questions) 
-    ? (grammar.questions as { id: string; question: string; options: string[]; correct_answer: number; }[]) 
-    : [],
-      category: grammar.category || '',
-      status: grammar.status === 'published'
+    id: grammar.id,
+    title: grammar.title,
+    description: grammar.description || '',
+    type: "file",   // Grammar module chỉ dùng type='file'
+    file_url: grammar.file_url || '',
+    content: grammar.content || '',
+    audio_url: grammar.audio_url || null,
+    questions: [],
+    category: grammar.category || '',
+    status: grammar.status === 'published'
   };
 
   return (
     <main>
-      <GrammarForm 
-        initialData={formattedData} 
-        isEditing={true} 
+      <GrammarForm
+        initialData={formattedData}
+        isEditing={true}
       />
     </main>
   );

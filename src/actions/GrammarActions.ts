@@ -6,8 +6,8 @@ import { GrammarService } from "@/services/GrammarService";
 import { revalidatePath } from "next/cache";
 
 
-export async function getGrammars(page = 1, pageSize = 10, search = "", category = "") {
-  const { data, count, error } = await GrammarService.getList(page, pageSize, search, category);
+export async function getGrammars(page = 1, pageSize = 10, search = "", category = "", type = "") {
+  const { data, count, error } = await GrammarService.getList(page, pageSize, search, category, type || undefined);
   if (error) {
     console.error("Lỗi lấy bài học:", error);
     return { data: [], count: 0, error: error.message };
@@ -24,7 +24,7 @@ export async function getGrammar(id: string) {
 
 
 export async function upsertGrammar(formData: GrammarInput, grammarId?: string) {
- 
+
   // 1. Validate Input
   const validated = GrammarSchema.safeParse(formData);
   if (!validated.success) {
@@ -48,9 +48,12 @@ export async function upsertGrammar(formData: GrammarInput, grammarId?: string) 
 
     // 3. Revalidate cache
     revalidatePath('/admin/lessons');
+    revalidatePath('/admin/lessons/grammars');
+    revalidatePath('/admin/lessons/audios');
+    revalidatePath('/admin/lessons/videos');
     if (grammarId) revalidatePath(`/admin/lessons/grammars/${grammarId}`);
     revalidatePath('/student/lessons');
-   
+
     return { success: true, message: "Lưu bài học thành công!" };
   } catch (e: unknown) {
     const error = e as Error;
@@ -66,7 +69,7 @@ export async function deleteGrammar(id: string) {
   try {
     const { error } = await GrammarService.delete(id);
     if (error) throw error;
-   
+
     revalidatePath('/admin/lessons');
     return { success: true, message: "Đã xóa bài học" };
   } catch (e: unknown) {

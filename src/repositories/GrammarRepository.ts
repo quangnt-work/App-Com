@@ -9,7 +9,8 @@ interface GetLessonsParams {
   pageSize?: number;
   search?: string;
   category?: string;
-  status?: string; // Thêm lọc theo status (published/draft)
+  status?: string;
+  type?: string; // Lọc theo type: 'audio' | 'video' | 'text' | ...
 }
 
 export const GrammarRepository = {
@@ -18,7 +19,7 @@ export const GrammarRepository = {
     return supabase.from('grammars').select('id').eq('slug', slug).single();
   },
 
-  async getLessons({ page = 1, pageSize = 10, search, category, status }: GetLessonsParams) {
+  async getLessons({ page = 1, pageSize = 10, search, category, status, type }: GetLessonsParams) {
     const supabase = await createClient();
     const start = (page - 1) * pageSize;
     const end = start + pageSize - 1;
@@ -30,6 +31,7 @@ export const GrammarRepository = {
     if (search) query = query.ilike('title', `%${search}%`);
     if (category && category !== 'ALL') query = query.eq('category', category);
     if (status && status !== 'all') query = query.eq('status', status);
+    if (type) query = query.eq('type', type); // filter theo type
 
     return await query
       .range(start, end)
@@ -52,19 +54,32 @@ export const GrammarRepository = {
   },
 
   async getById(id: string) {
-  const supabase = await createClient();
-  return supabase.from('grammars').select('*').eq('id', id).single();
+    const supabase = await createClient();
+    return supabase.from('grammars').select('*').eq('id', id).single();
   },
 
   // src/repositories/lesson-repository.ts
-async getByCategory(category: string, limit = 4) {
-  const supabase = await createClient();
-  return supabase
-    .from('grammars')
-    .select('*')
-    .eq('category', category)
-    .eq('status', 'published') // Chỉ lấy bài đã public
-    .order('created_at', { ascending: false })
-    .limit(limit);
+  async getByCategory(category: string, limit = 4) {
+    const supabase = await createClient();
+    return supabase
+      .from('grammars')
+      .select('*')
+      .eq('category', category)
+      .eq('status', 'published') // Chỉ lấy bài đã public
+      .order('created_at', { ascending: false })
+      .limit(limit);
+  },
+
+  async getByType(type: string, page = 1, pageSize = 12) {
+    const supabase = await createClient();
+    const start = (page - 1) * pageSize;
+    const end = start + pageSize - 1;
+    return supabase
+      .from('grammars')
+      .select('*', { count: 'exact' })
+      .eq('type', type)
+      .eq('status', 'published')
+      .order('created_at', { ascending: false })
+      .range(start, end);
   },
 };

@@ -19,17 +19,18 @@ export const metadata = {
 
 export default async function GrammarsPage({ searchParams }: GrammarsPageProps) {
   const params = await searchParams;
-  
+
   // 1. Lấy params từ URL (Mặc định page 1)
   const currentPage = Number(params.page) || 1;
   const pageSize = 5; // Trong ảnh hiển thị 5 item mỗi trang
-  
-  // 2. Gọi Server Action lấy dữ liệu
+
+  // 2. Gọi Server Action lấy dữ liệu - chỉ lấy bài học type='text'
   const { data: grammars, count, error } = await getGrammars(
     currentPage,
     pageSize,
-    "", // Bỏ search
-    ""  // Bỏ category
+    "", // search
+    "", // category
+    "file" // Chỉ lấy bài ngữ pháp type='text'
   );
 
   if (error) {
@@ -62,13 +63,13 @@ export default async function GrammarsPage({ searchParams }: GrammarsPageProps) 
         {/* Khung Bảng dữ liệu */}
         <div className="bg-white rounded-2xl shadow-sm border border-gray-100 mt-6 overflow-hidden">
           <GrammarTable data={formattedData} />
-          
+
           {/* Footer & Pagination */}
           <div className="p-6 border-t border-gray-100 bg-white">
-            <GrammarPagination 
-                currentPage={currentPage}
-                totalItems={totalItems}
-                pageSize={pageSize}
+            <GrammarPagination
+              currentPage={currentPage}
+              totalItems={totalItems}
+              pageSize={pageSize}
             />
           </div>
         </div>

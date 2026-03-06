@@ -6,12 +6,17 @@ const groq = new Groq({ apiKey: process.env.GROQ_API_KEY });
 
 export async function POST(request: Request) {
   try {
-    // 1. Lấy file audio từ FormData do client gửi lên
+    // 1. Lấy file audio và targetText từ FormData do client gửi lên
     const formData = await request.formData();
     const audioFile = formData.get("audio") as File;
+    const targetText = (formData.get("targetText") as string) || "";
 
     if (!audioFile) {
       return NextResponse.json({ error: "Không tìm thấy file audio" }, { status: 400 });
+    }
+
+    if (!targetText.trim()) {
+      return NextResponse.json({ error: "Không tìm thấy văn bản mẫu để đánh giá" }, { status: 400 });
     }
 
     // ==========================================
@@ -19,32 +24,46 @@ export async function POST(request: Request) {
     // ==========================================
     const transcription = await groq.audio.transcriptions.create({
       file: audioFile,
-      model: "whisper-large-v3", // Model STT tốt nhất hiện tại trên Groq
+      model: "whisper-large-v3",
       response_format: "json",
-      language: "ru", // Đổi thành "en" nếu đánh giá tiếng Anh, "ru" cho tiếng Nga
+      language: "ru",
     });
 
-    const studentText = transcription.text;
+    const studentText = transcription.text?.trim();
 
+    // Nếu Whisper không nhận diện được gì (audio im lặng / quá ngắn)
     if (!studentText) {
-      return NextResponse.json({ error: "Không thể nhận diện giọng nói" }, { status: 400 });
+      return NextResponse.json({
+        score: 0,
+        feedback: "Không nhận diện được giọng nói. Vui lòng ghi âm rõ hơn.",
+        errors: ["Không có âm thanh được nhận diện"],
+        transcript: "",
+      }, { status: 200 });
     }
 
     // ==========================================
     // GIAI ĐOẠN 2: ĐÁNH GIÁ BẰNG LLAMA 3
+    // So sánh trực tiếp studentText với targetText
     // ==========================================
     const systemPrompt = `
-      Bạn là một chuyên gia ngôn ngữ học khó tính. 
-      Nhiệm vụ của bạn là đánh giá câu nói của sinh viên dựa trên văn bản được bóc băng.
-      
-      Văn bản của sinh viên: "${studentText}"
-      
-      Hãy đánh giá và BẮT BUỘC trả về định dạng JSON chính xác như sau, không kèm theo bất kỳ văn bản nào khác:
+      Bạn là một chuyên gia ngôn ngữ học tiếng Nga. Nhiệm vụ của bạn là đánh giá độ chính xác phát âm và nội dung của sinh viên so với câu mẫu.
+
+      - Câu mẫu (câu đúng): "${targetText}"
+      - Văn bản bóc băng từ giọng nói của sinh viên: "${studentText}"
+
+      Hãy so sánh hai câu trên và đánh giá:
+      1. Sinh viên có đọc đúng nội dung câu mẫu không?
+      2. Có lỗi phát âm hoặc thiếu/thừa từ so với mẫu không?
+      3. Điểm từ 1 đến 10 (10 là hoàn toàn khớp với câu mẫu).
+
+      Nếu câu bóc băng hoàn toàn khác câu mẫu (sinh viên không đọc câu mẫu), cho điểm thấp (1-3) và giải thích rõ.
+
+      BẮT BUỘC trả về định dạng JSON chính xác như sau, không kèm theo bất kỳ văn bản nào khác:
       {
         "transcript": "Văn bản đã nhận diện được",
         "score": [Điểm từ 1.00 đến 10.00],
-        "feedback": "Nhận xét chi tiết về ngữ pháp và từ vựng",
-        "errors": ["Lỗi 1", "Lỗi 2"] 
+        "feedback": "Nhận xét chi tiết so với câu mẫu",
+        "errors": ["Lỗi cụ thể 1", "Lỗi cụ thể 2"]
       }
     `;
 
@@ -52,15 +71,13 @@ export async function POST(request: Request) {
       messages: [
         { role: "system", content: systemPrompt }
       ],
-      model: "llama-3.3-70b-versatile", // Model thông minh nhất của Groq hiện tại
-      response_format: { type: "json_object" }, // Ép Groq trả về chuẩn JSON
-      temperature: 0.2, // Giảm sự sáng tạo để đánh giá chuẩn xác và ổn định hơn
+      model: "llama-3.3-70b-versatile",
+      response_format: { type: "json_object" },
+      temperature: 0.2,
     });
 
-    // Parse kết quả JSON từ Llama 3
     const resultJson = JSON.parse(evaluation.choices[0]?.message?.content || "{}");
 
-    // Trả kết quả về cho Frontend
     return NextResponse.json(resultJson, { status: 200 });
 
   } catch (error) {

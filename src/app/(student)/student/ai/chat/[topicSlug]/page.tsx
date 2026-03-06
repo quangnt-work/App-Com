@@ -1,41 +1,61 @@
 'use client';
 
-import React, { useState, use } from 'react';
-import { Mic, Send, ChevronLeft, Users, Plane, ShoppingBag, HeartPulse, Briefcase } from 'lucide-react';
+import React, { useState, useRef, use, useEffect } from 'react';
+import { Mic, Send, Users, Plane, ShoppingBag, HeartPulse, Briefcase, Loader2, Square } from 'lucide-react';
 import { useRouter } from 'next/navigation';
-// Đổi tên type import để không trùng với tên Component
 import { ChatMessageType, ChatAssessment } from '@/types/ai-chat';
-// Import Component ChatMessage chúng ta vừa tạo
 import { ChatMessage } from '@/components/student/ai/chat/ChatMessage';
 import { toast } from 'sonner';
 
-// 1. Khai báo data danh sách chủ đề ngay tại đây để tra cứu
 const TOPICS_DATA = [
   { id: 'social', title: 'Xã giao & Đời sống', icon: <Users size={24} /> },
   { id: 'travel', title: 'Du lịch & Di chuyển', icon: <Plane size={24} /> },
   { id: 'service', title: 'Dịch vụ & Mua sắm', icon: <ShoppingBag size={24} /> },
   { id: 'health', title: 'Sức khỏe & Khẩn cấp', icon: <HeartPulse size={24} /> },
-  { id: 'work', title: 'Học tập & Công việc', icon: <Briefcase size={24} /> }
+  { id: 'work', title: 'Học tập & Công việc', icon: <Briefcase size={24} /> },
 ];
+
+// Helper: chuyển Blob thành base64 string
+function blobToBase64(blob: Blob): Promise<string> {
+  return new Promise((resolve, reject) => {
+    const reader = new FileReader();
+    reader.onloadend = () => {
+      const result = reader.result as string;
+      // Tách phần base64 sau dấu ","
+      resolve(result.split(',')[1]);
+    };
+    reader.onerror = reject;
+    reader.readAsDataURL(blob);
+  });
+}
 
 export default function AIChatInterfacePage({ params }: { params: Promise<{ topicSlug: string }> }) {
   const router = useRouter();
-
-  // 2. Lấy topicSlug từ URL (Sử dụng React.use để unwrap Promise theo chuẩn Next.js mới)
   const resolvedParams = use(params);
   const topicSlug = resolvedParams.topicSlug;
-
-  // 3. Tìm chủ đề tương ứng trong mảng TOPICS_DATA
   const topic = TOPICS_DATA.find(t => t.id === topicSlug);
 
-  // Khởi tạo các State quản lý hội thoại
   const [messages, setMessages] = useState<ChatMessageType[]>([]);
   const [isStarted, setIsStarted] = useState(false);
   const [input, setInput] = useState('');
   const [isTyping, setIsTyping] = useState(false);
   const [assessment, setAssessment] = useState<ChatAssessment | null>(null);
+  const [assessmentMode, setAssessmentMode] = useState<'audio' | 'text' | null>(null);
 
-  // Xử lý lỗi nếu người dùng gõ bậy URL không có chủ đề
+  // === GHI ÂM STATE ===
+  const [isRecording, setIsRecording] = useState(false);
+  const [isTranscribing, setIsTranscribing] = useState(false);
+  const mediaRecorderRef = useRef<MediaRecorder | null>(null);
+  const audioChunksRef = useRef<Blob[]>([]);
+
+  // Lưu tối đa 3 audio blobs gần nhất để đánh giá ngữ điệu
+  const audioSamplesRef = useRef<Blob[]>([]);
+
+  const messagesEndRef = useRef<HTMLDivElement>(null);
+  useEffect(() => {
+    messagesEndRef.current?.scrollIntoView({ behavior: 'smooth' });
+  }, [messages, isTyping]);
+
   if (!topic) {
     return (
       <div className="min-h-screen flex flex-col items-center justify-center bg-gray-50">
@@ -47,88 +67,194 @@ export default function AIChatInterfacePage({ params }: { params: Promise<{ topi
     );
   }
 
-  // Logic Bắt đầu chat
+  // === HELPER: gọi API chat thường ===
+  const callChatAPI = async (msgs: ChatMessageType[]) => {
+    const res = await fetch('/api/chat-ai', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ messages: msgs, topic: topic.title, isAssessment: false }),
+    });
+    if (!res.ok) {
+      const err = await res.json().catch(() => ({}));
+      throw new Error(err.error || `Lỗi HTTP ${res.status}`);
+    }
+    return res.json();
+  };
+
+  // === BẮT ĐẦU CHAT ===
   const startChat = async () => {
     setIsStarted(true);
     setIsTyping(true);
     try {
-      const res = await fetch('/api/chat-ai', {
-        method: 'POST',
-        body: JSON.stringify({ messages: [], topic: topic.title, isAssessment: false }),
-      });
-      if (!res.ok) throw new Error(`Lỗi HTTP: ${res.status}`);
-      const data = await res.json();
-      setMessages([{ role: 'model', content: data.content, type: 'text' }]);
+      const data = await callChatAPI([]);
+      setMessages([{ role: 'model', content: data.data, type: 'text' }]);
     } catch (error) {
       console.error(error);
-      toast.error("Lỗi kết nối AI. Vui lòng thử lại.");
+      toast.error(`Lỗi kết nối AI: ${error instanceof Error ? error.message : 'Không xác định'}`);
+      setIsStarted(false);
     } finally {
       setIsTyping(false);
     }
   };
 
-  // Logic Gửi tin nhắn
+  // === GỬI TIN NHẮN VĂN BẢN ===
   const handleSend = async (content: string) => {
-    if (!content.trim()) return;
+    if (!content.trim() || isTyping) return;
     const newMessages: ChatMessageType[] = [...messages, { role: 'user', content, type: 'text' }];
     setMessages(newMessages);
     setInput('');
     setIsTyping(true);
-
     try {
-      const res = await fetch('/api/chat-ai', {
-        method: 'POST',
-        body: JSON.stringify({ messages: newMessages, topic: topic.title, isAssessment: false }),
-      });
-      if (!res.ok) throw new Error(`Lỗi HTTP: ${res.status}`);
-      const data = await res.json();
-      setMessages([...newMessages, { role: 'model', content: data.content, type: 'text' }]);
+      const data = await callChatAPI(newMessages);
+      setMessages([...newMessages, { role: 'model', content: data.data, type: 'text' }]);
     } catch (error) {
       console.error(error);
-      alert("Lỗi kết nối AI khi gửi tin nhắn.");
+      toast.error('Lỗi kết nối AI khi gửi tin nhắn.');
     } finally {
       setIsTyping(false);
     }
   };
 
-  // Logic Kết thúc và Đánh giá
+  // === KẾT THÚC & ĐÁNH GIÁ ===
   const endChat = async () => {
+    if (messages.length === 0) {
+      toast.error('Hãy trò chuyện trước khi kết thúc!');
+      return;
+    }
     setIsTyping(true);
     try {
-      const res = await fetch('/api/chat-ai', {
+      // Encode tối đa 3 audio blobs gần nhất sang base64
+      const samples = audioSamplesRef.current.slice(-3);
+      const audioSamples = await Promise.all(
+        samples.map(async (blob) => ({
+          data: await blobToBase64(blob),
+          mimeType: blob.type || 'audio/webm',
+        }))
+      );
+
+      const res = await fetch('/api/assess-chat', {
         method: 'POST',
-        body: JSON.stringify({ messages, topic: topic.title, isAssessment: true }),
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          messages,
+          topic: topic.title,
+          // Chỉ gửi audio nếu user có ghi âm trong buổi chat
+          ...(audioSamples.length > 0 && { audioSamples }),
+        }),
       });
-      if (!res.ok) throw new Error(`Lỗi HTTP: ${res.status}`);
+
+      if (!res.ok) {
+        const err = await res.json().catch(() => ({}));
+        throw new Error(err.error || `Lỗi HTTP ${res.status}`);
+      }
+
       const data = await res.json();
-      setAssessment(data);
+      setAssessment(data.data);
+      setAssessmentMode(data.mode); // 'audio' | 'text'
     } catch (error) {
       console.error(error);
-      toast.error("Đã xảy ra lỗi khi AI đang đánh giá.");
+      toast.error('Đã xảy ra lỗi khi AI đang đánh giá.');
     } finally {
       setIsTyping(false);
     }
   };
 
-  // Giao diện khi AI trả về kết quả Đánh giá
+  // === GHI ÂM: TOGGLE MIC ===
+  const toggleRecording = async () => {
+    if (isRecording) {
+      mediaRecorderRef.current?.stop();
+      setIsRecording(false);
+    } else {
+      try {
+        const stream = await navigator.mediaDevices.getUserMedia({ audio: true });
+        const recorder = new MediaRecorder(stream);
+        mediaRecorderRef.current = recorder;
+        audioChunksRef.current = [];
+
+        recorder.ondataavailable = (e) => {
+          if (e.data.size > 0) audioChunksRef.current.push(e.data);
+        };
+
+        recorder.onstop = async () => {
+          stream.getTracks().forEach(t => t.stop());
+          const audioBlob = new Blob(audioChunksRef.current, { type: 'audio/webm' });
+          // Lưu blob để đánh giá ngữ điệu sau
+          audioSamplesRef.current.push(audioBlob);
+          await transcribeAndSend(audioBlob);
+        };
+
+        recorder.start();
+        setIsRecording(true);
+        toast.info('Đang ghi âm... Bấm nút đỏ để dừng.');
+      } catch {
+        toast.error('Vui lòng cấp quyền sử dụng Micro.');
+      }
+    }
+  };
+
+  // === TRANSCRIBE AUDIO → GỬI VÀO CHAT ===
+  const transcribeAndSend = async (blob: Blob) => {
+    setIsTranscribing(true);
+    try {
+      const file = new File([blob], 'voice-message.webm', { type: blob.type });
+      const formData = new FormData();
+      formData.append('audio', file);
+      formData.append('targetText', ' '); // khoảng trắng để pass validation
+
+      const res = await fetch('/api/evaluate-speech', {
+        method: 'POST',
+        body: formData,
+      });
+
+      const data = await res.json();
+      const transcript = data.transcript?.trim();
+
+      if (!transcript) {
+        toast.error('Không nhận diện được giọng nói. Vui lòng thử lại.');
+        // Xóa blob vừa thêm vì không dùng được
+        audioSamplesRef.current.pop();
+        return;
+      }
+
+      await handleSend(transcript);
+    } catch (error) {
+      console.error(error);
+      toast.error('Lỗi khi xử lý giọng nói.');
+      audioSamplesRef.current.pop();
+    } finally {
+      setIsTranscribing(false);
+    }
+  };
+
+  // === GIAO DIỆN KẾT QUẢ ĐÁNH GIÁ ===
   if (assessment) {
     return (
       <div className="max-w-2xl mx-auto p-8 bg-white rounded-3xl shadow-xl border mt-10 animate-in fade-in duration-300">
-        <h2 className="text-2xl font-bold text-center mb-6 text-gray-800">Kết quả đánh giá giao tiếp</h2>
+        <h2 className="text-2xl font-bold text-center mb-2 text-gray-800">Kết quả đánh giá giao tiếp</h2>
+        {assessmentMode === 'audio' && (
+          <p className="text-center text-sm text-emerald-600 font-medium mb-6">
+            ✅ Đánh giá bằng AI nghe audio — bao gồm ngữ điệu thật sự
+          </p>
+        )}
+        {assessmentMode === 'text' && (
+          <p className="text-center text-sm text-gray-400 mb-6">
+            📝 Đánh giá dựa trên văn bản (không có audio ghi âm)
+          </p>
+        )}
         <div className="space-y-4">
           <div className="p-4 bg-blue-50 border border-blue-100 rounded-xl">
             <p className="font-bold text-blue-700 text-lg">Trình độ ước tính: {assessment.overall_level}</p>
           </div>
-          <div className="bg-gray-50 p-4 rounded-xl border border-gray-100">
-            <p className="mb-2"><strong className="text-gray-700">📚 Từ vựng:</strong> {assessment.vocabulary}</p>
-            <p className="mb-2"><strong className="text-gray-700">🗣️ Ngữ điệu/Ngữ pháp:</strong> {assessment.intonation}</p>
+          <div className="bg-gray-50 p-4 rounded-xl border border-gray-100 space-y-2">
+            <p><strong className="text-gray-700">📚 Từ vựng:</strong> {assessment.vocabulary}</p>
+            <p><strong className="text-gray-700">🎙️ Ngữ điệu / Ngữ pháp:</strong> {assessment.intonation}</p>
           </div>
           <div className="bg-orange-50 p-4 rounded-xl border border-orange-100">
-            <p className="italic text-gray-700">`{assessment.general_feedback}`</p>
+            <p className="italic text-gray-700">{assessment.general_feedback}</p>
           </div>
         </div>
-        <button 
-          onClick={() => router.push('/student/ai/chat')} 
+        <button
+          onClick={() => router.push('/student/ai/chat')}
           className="w-full mt-8 bg-[#f07b32] hover:bg-[#d46522] transition-colors text-white py-4 rounded-2xl font-bold text-lg"
         >
           Hoàn thành luyện tập
@@ -137,7 +263,7 @@ export default function AIChatInterfacePage({ params }: { params: Promise<{ topi
     );
   }
 
-  // Giao diện Chat chính
+  // === GIAO DIỆN CHAT CHÍNH ===
   return (
     <div className="max-w-4xl mx-auto h-[85vh] flex flex-col bg-white rounded-3xl shadow-sm border mt-6 overflow-hidden">
       {/* Header */}
@@ -146,7 +272,16 @@ export default function AIChatInterfacePage({ params }: { params: Promise<{ topi
           <div className="p-2 bg-green-50 text-green-600 rounded-xl">{topic.icon}</div>
           <span className="font-bold text-lg text-gray-800">{topic.title}</span>
         </div>
-        <div className="w-24"></div> {/* Spacer để căn giữa tiêu đề */}
+        {isStarted && (
+          <button
+            onClick={endChat}
+            disabled={isTyping || isTranscribing}
+            className="text-red-500 font-semibold px-4 py-2 hover:bg-red-50 rounded-xl transition-colors text-sm border border-red-200 disabled:opacity-50"
+          >
+            {isTyping ? <Loader2 size={16} className="animate-spin inline mr-1" /> : null}
+            Kết thúc & Đánh giá
+          </button>
+        )}
       </div>
 
       {/* Body / Lịch sử Chat */}
@@ -160,30 +295,37 @@ export default function AIChatInterfacePage({ params }: { params: Promise<{ topi
             <p className="text-gray-500 mb-8 max-w-sm">
               Sẵn sàng luyện tập phản xạ tiếng Nga về chủ đề <strong>{topic.title}</strong> chưa?
             </p>
-            <button 
+            <p className="text-xs text-gray-400 mb-6 max-w-xs">
+              💡 Sử dụng nút <strong>Mic</strong> để ghi âm — AI sẽ đánh giá cả ngữ điệu khi kết thúc
+            </p>
+            <button
               onClick={startChat}
               disabled={isTyping}
-              className="bg-[#f07b32] text-white px-10 py-4 rounded-2xl font-bold text-lg hover:shadow-lg hover:bg-[#e26a24] transition-all flex items-center gap-2"
+              className="bg-[#f07b32] text-white px-10 py-4 rounded-2xl font-bold text-lg hover:shadow-lg hover:bg-[#e26a24] transition-all flex items-center gap-2 disabled:opacity-60"
             >
-              {isTyping ? 'Đang kết nối...' : '🚀 Bắt đầu giao tiếp'}
+              {isTyping ? (
+                <><Loader2 size={20} className="animate-spin" /> Đang kết nối...</>
+              ) : '🚀 Bắt đầu giao tiếp'}
             </button>
           </div>
         ) : (
           <div className="space-y-2">
-            {/* Gọi Component ChatMessage ở đây */}
             {messages.map((m, i) => (
               <ChatMessage key={i} message={m} />
             ))}
-
-            {isTyping && (
+            {(isTyping || isTranscribing) && (
               <div className="flex justify-start mb-6">
                 <div className="p-4 bg-white rounded-2xl rounded-bl-sm border border-gray-100 shadow-sm flex items-center gap-2">
-                  <span className="w-2 h-2 bg-gray-300 rounded-full animate-bounce"></span>
-                  <span className="w-2 h-2 bg-gray-300 rounded-full animate-bounce delay-100"></span>
-                  <span className="w-2 h-2 bg-gray-300 rounded-full animate-bounce delay-200"></span>
+                  <span className="text-xs text-gray-400 mr-1">
+                    {isTranscribing ? 'Đang nhận diện giọng nói...' : 'AI đang soạn...'}
+                  </span>
+                  <span className="w-2 h-2 bg-gray-300 rounded-full animate-bounce" />
+                  <span className="w-2 h-2 bg-gray-300 rounded-full animate-bounce delay-100" />
+                  <span className="w-2 h-2 bg-gray-300 rounded-full animate-bounce delay-200" />
                 </div>
               </div>
             )}
+            <div ref={messagesEndRef} />
           </div>
         )}
       </div>
@@ -191,33 +333,41 @@ export default function AIChatInterfacePage({ params }: { params: Promise<{ topi
       {/* Input Area */}
       {isStarted && (
         <div className="p-4 bg-white border-t flex items-center gap-3">
-          <button 
-            onClick={endChat} 
-            disabled={isTyping}
-            className="text-red-500 font-semibold px-4 py-3 hover:bg-red-50 rounded-xl transition-colors whitespace-nowrap"
-          >
-            Kết thúc
-          </button>
           <div className="flex-1 relative">
-            <input 
-              type="text" 
+            <input
+              type="text"
               value={input}
-              disabled={isTyping}
+              disabled={isTyping || isRecording || isTranscribing}
               onChange={(e) => setInput(e.target.value)}
               onKeyDown={(e) => e.key === 'Enter' && handleSend(input)}
-              placeholder="Nhập tin nhắn tiếng Nga..."
-              className="w-full p-4 pr-14 rounded-2xl bg-gray-50 border-transparent focus:bg-white focus:border-[#f07b32] focus:ring-2 focus:ring-orange-100 transition-all outline-none text-gray-700"
+              placeholder={
+                isRecording ? '🔴 Đang ghi âm...'
+                  : isTranscribing ? 'Đang nhận diện...'
+                    : 'Nhập tin nhắn tiếng Nga...'
+              }
+              className="w-full p-4 pr-14 rounded-2xl bg-gray-50 border border-transparent focus:bg-white focus:border-[#f07b32] focus:ring-2 focus:ring-orange-100 transition-all outline-none text-gray-700"
             />
-            <button 
-              onClick={() => handleSend(input)} 
-              disabled={isTyping || !input.trim()}
+            <button
+              onClick={() => handleSend(input)}
+              disabled={isTyping || !input.trim() || isRecording || isTranscribing}
               className="absolute right-3 top-1/2 -translate-y-1/2 w-10 h-10 bg-[#f07b32] text-white rounded-xl flex items-center justify-center hover:bg-[#e26a24] disabled:opacity-50 disabled:bg-gray-300 transition-colors"
             >
               <Send size={18} className="ml-0.5" />
             </button>
           </div>
-          <button className="w-14 h-14 bg-gray-50 border border-gray-200 rounded-2xl text-gray-500 hover:text-[#f07b32] hover:bg-orange-50 hover:border-orange-200 transition-all flex items-center justify-center">
-            <Mic size={24} />
+
+          {/* Nút Mic */}
+          <button
+            onClick={toggleRecording}
+            disabled={isTyping || isTranscribing}
+            title={isRecording ? 'Bấm để dừng ghi âm' : 'Bấm để ghi âm giọng nói'}
+            className={`w-14 h-14 rounded-2xl flex items-center justify-center transition-all disabled:opacity-50
+              ${isRecording
+                ? 'bg-red-500 text-white border-2 border-red-300 shadow-lg shadow-red-200 animate-pulse'
+                : 'bg-gray-50 border border-gray-200 text-gray-500 hover:text-[#f07b32] hover:bg-orange-50 hover:border-orange-200'
+              }`}
+          >
+            {isRecording ? <Square size={22} fill="white" /> : <Mic size={24} />}
           </button>
         </div>
       )}

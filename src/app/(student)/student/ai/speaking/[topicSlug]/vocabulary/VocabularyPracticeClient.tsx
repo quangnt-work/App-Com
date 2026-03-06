@@ -13,7 +13,7 @@ import { toast } from 'sonner';
 
 
 interface Props {
-  vocabularies: DictionaryWord[]; 
+  vocabularies: DictionaryWord[];
   topicName: string;
 }
 
@@ -23,7 +23,7 @@ export default function VocabularyPracticeClient({ vocabularies, topicName }: Pr
   const [isRecording, setIsRecording] = useState(false);
   const [isEvaluating, setIsEvaluating] = useState(false);
   const [evaluation, setEvaluation] = useState<EvaluationResult | null>(null);
-  
+
   const mediaRecorderRef = useRef<MediaRecorder | null>(null);
   const audioChunksRef = useRef<Blob[]>([]);
 
@@ -52,19 +52,22 @@ export default function VocabularyPracticeClient({ vocabularies, topicName }: Pr
 
         mediaRecorderRef.current.start();
         setIsRecording(true);
-        setEvaluation(null); 
+        setEvaluation(null);
       } catch (err) {
         toast.error("Vui lòng cấp quyền sử dụng Micro để luyện nói.");
       }
     }
   };
 
-  const evaluateAudio = async (blob: Blob) => {
+  const evaluateAudio = async (audioBlob: Blob) => {
     setIsEvaluating(true);
     try {
+      // Bọc blob trong File object (đồng bộ với SpeakingPracticeClient)
+      const file = new File([audioBlob], 'recording.webm', { type: audioBlob.type });
+
       const formData = new FormData();
-      formData.append('audio', blob);
-      formData.append('targetText', currentWord.russian_word); 
+      formData.append('audio', file);
+      formData.append('targetText', currentWord.russian_word);
 
       const res = await fetch('/api/evaluate-speech', {
         method: 'POST',
@@ -75,8 +78,21 @@ export default function VocabularyPracticeClient({ vocabularies, topicName }: Pr
         const errorData = await res.json().catch(() => ({}));
         throw new Error(errorData.error || `Mã lỗi HTTP: ${res.status}`);
       }
-      const data: EvaluationResult = await res.json();
-      setEvaluation(data);
+
+      const data = await res.json();
+
+      // Ghép feedback + errors[] thành một tip (đồng bộ với SpeakingPracticeClient)
+      let combinedTip = data.feedback || '';
+      if (data.errors && Array.isArray(data.errors) && data.errors.length > 0) {
+        combinedTip += ` Lỗi phát âm: ${data.errors.join(', ')}.`;
+      }
+
+      const formattedResult: EvaluationResult = {
+        score: data.score,
+        tip: combinedTip || 'Phát âm tốt!',
+      };
+
+      setEvaluation(formattedResult);
     } catch (error) {
       console.error(error);
       toast.error(`AI không thể chấm điểm. Vui lòng thử lại. (${error instanceof Error ? error.message : 'Lỗi không xác định'})`);
@@ -87,23 +103,23 @@ export default function VocabularyPracticeClient({ vocabularies, topicName }: Pr
 
   const handleNext = () => {
     if (isLastWord) {
-      router.push(`/student/ai/speaking/${topicName}`); 
+      router.push(`/student/ai/speaking/${topicName}`);
     } else {
       setCurrentIndex(prev => prev + 1);
-      setEvaluation(null); 
+      setEvaluation(null);
     }
   };
 
   const playExample = () => {
     const utterance = new SpeechSynthesisUtterance(currentWord.russian_word);
-    utterance.lang = 'ru-RU'; 
+    utterance.lang = 'ru-RU';
     window.speechSynthesis.speak(utterance);
   };
 
   return (
     <div className="max-w-3xl mx-auto py-10 px-4 font-sans">
       <div className="bg-white rounded-3xl shadow-[0_8px_30px_rgb(0,0,0,0.04)] p-8 md:p-12 text-center flex flex-col items-center border border-gray-100">
-        
+
         {/* Khối hiển thị Từ vựng (Thay cho SentenceDisplay để tối ưu hiển thị 1 từ) */}
         <h2 className="text-4xl md:text-5xl font-extrabold text-[#1a202c] mb-4 tracking-tight">
           {currentWord.russian_word}
@@ -116,7 +132,7 @@ export default function VocabularyPracticeClient({ vocabularies, topicName }: Pr
         </div>
         <div className="w-full border-2 border-dashed border-[#cbd5e1] rounded-2xl p-6 mb-8 bg-[#f8fafc]/50">
           <p className="text-gray-500 mb-4">Bấm mic, đọc to và bấm dừng.</p>
-          <button 
+          <button
             onClick={playExample}
             className="flex items-center justify-center mx-auto text-[#2563eb] font-semibold hover:text-blue-700 transition-colors"
           >
@@ -124,10 +140,10 @@ export default function VocabularyPracticeClient({ vocabularies, topicName }: Pr
             Nghe mẫu
           </button>
         </div>
-        
+
         <EvaluationFeedback evaluation={evaluation} />
 
-        <PracticeControls 
+        <PracticeControls
           isRecording={isRecording}
           isEvaluating={isEvaluating}
           isLastSentence={isLastWord}

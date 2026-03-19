@@ -8,4 +8,9 @@ export interface DashboardStatsType {
   grammarFileCount: number;
   audioCount: number;
   videoCount: number;
+  // Per-type exam counts
+  examMixedCount: number;
+  examGrammarCount: number;
+  examReadingCount: number;
+  examListeningCount: number;
 }

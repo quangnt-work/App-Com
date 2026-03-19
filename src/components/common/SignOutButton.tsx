@@ -6,7 +6,10 @@ import { LogOut } from 'lucide-react'
 export function SignOutButton() {
   return (
     <Button 
-      onClick={() => logout()} 
+      onClick={async () => {
+        await logout()
+        window.location.href = '/'
+      }} 
       variant="destructive" 
       size="sm" 
       className="gap-2"

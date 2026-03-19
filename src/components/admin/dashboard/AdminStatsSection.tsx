@@ -72,8 +72,11 @@ export function AdminStatsSection({ stats }: Props) {
             {stats.totalExams.toLocaleString()}
           </span>
         </div>
-        <div className="mt-auto pt-6 text-gray-500 text-sm">
-          <p className="flex items-center gap-2">📝 Đề thi định kỳ: {stats.totalExams}</p>
+        <div className="mt-auto pt-6 text-gray-500 text-sm space-y-2">
+          <p className="flex items-center gap-2">🔗 Tổng hợp: {stats.examMixedCount}</p>
+          <p className="flex items-center gap-2">📝 Ngữ pháp: {stats.examGrammarCount}</p>
+          <p className="flex items-center gap-2">📖 Đọc hiểu: {stats.examReadingCount}</p>
+          <p className="flex items-center gap-2">🎧 Nghe: {stats.examListeningCount}</p>
         </div>
       </Link>
 

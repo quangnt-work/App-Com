@@ -23,6 +23,7 @@ export const Header = ({ user }: HeaderProps) => {
       try {
         await logout(); 
         toast.success("Đã đăng xuất thành công!");
+        window.location.href = '/';
       } catch (error) {
         toast.error("Đã xảy ra lỗi khi đăng xuất.");
       }

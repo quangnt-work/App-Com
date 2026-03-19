@@ -3,17 +3,62 @@ import React from 'react';
 import { FileText, BookOpen, Headphones, ListChecks, Activity, Component } from 'lucide-react';
 import { ExamCard, type ExamItem } from '@/components/student/exams/ExamCard';
 import { HeroBanner } from '@/components/common/HeroBanner';
+import { createClient } from '@/lib/supabase/server';
+import { redirect } from 'next/navigation';
 
-export default function ExamsPage() {
-  // Dữ liệu mẫu (Mock data)
-  const exams: ExamItem[] = [
-    { id: '1', title: "Bài kiểm tra 1: Ngữ pháp cơ bản", category: "SƠ CẤP A1", duration: "20 phút", questionsCount: "15 câu hỏi", icon: <FileText size={24} />, href: "#" },
-    { id: '2', title: "Bài kiểm tra 2: Từ vựng thông dụng", category: "TỪ VỰNG", duration: "15 phút", questionsCount: "10 câu hỏi", icon: <BookOpen size={24} />, href: "#" },
-    { id: '3', title: "Bài kiểm tra 3: Kỹ năng nghe hiểu", category: "KỸ NĂNG NGHE", duration: "30 phút", questionsCount: "20 câu hỏi", icon: <Headphones size={24} />, href: "#" },
-    { id: '4', title: "Bài kiểm tra 4: Cấu trúc câu", category: "CẤU TRÚC", duration: "20 phút", questionsCount: "15 câu hỏi", icon: <ListChecks size={24} />, href: "#" },
-    { id: '5', title: "Bài kiểm tra 5: Tiền tố động từ", category: "ĐỘNG TỪ", duration: "18 phút", questionsCount: "12 câu hỏi", icon: <Activity size={24} />, href: "#" },
-    { id: '6', title: "Bài kiểm tra 6: Danh từ cách 2", category: "DANH TỪ", duration: "20 phút", questionsCount: "15 câu hỏi", icon: <Component size={24} />, href: "#" },
-  ];
+export default async function ExamsPage() {
+  const supabase = await createClient();
+  const { data: { user } } = await supabase.auth.getUser();
+
+  if (!user) {
+    redirect('/login');
+  }
+
+  // Fetch real exams
+  const { data: examsData, error } = await supabase
+    .from('exams')
+    .select('*')
+    .eq('status', 'published')
+    .order('created_at', { ascending: false });
+
+  if (error) {
+    console.error("Error fetching exams:", error.message);
+  }
+
+  // Lấy danh sách các bài đã làm
+  const { data: submissions } = await supabase
+    .from('exam_submissions')
+    .select('exam_id')
+    .eq('user_id', user.id);
+
+  const completedExamIds = new Set((submissions || []).map(s => s.exam_id));
+
+  const exams: ExamItem[] = (examsData || []).map(exam => {
+    let icon = <FileText size={24} />;
+    let categoryName = 'TỔNG HỢP';
+    
+    if (exam.exam_type === 'grammar') {
+      icon = <ListChecks size={24} />;
+      categoryName = 'NGỮ PHÁP';
+    } else if (exam.exam_type === 'reading') {
+      icon = <BookOpen size={24} />;
+      categoryName = 'ĐỌC HIỂU';
+    } else if (exam.exam_type === 'listening') {
+      icon = <Headphones size={24} />;
+      categoryName = 'NGHE HIỂU';
+    }
+
+    return {
+      id: exam.id,
+      title: exam.title,
+      category: `${categoryName} ${exam.level}`.toUpperCase(),
+      duration: `${exam.duration || 0} phút`,
+      questionsCount: `${exam.question_count || 0} câu hỏi`,
+      icon,
+      href: `/student/exams/${exam.id}`, // Placeholder until detail page is built
+      isCompleted: completedExamIds.has(exam.id),
+    };
+  });
 
   return (
     <div className="min-h-screen bg-[#f8f9fc] flex flex-col font-sans">
@@ -27,28 +72,32 @@ export default function ExamsPage() {
         />
 
         {/* Lưới Thẻ Bài Kiểm Tra (3 cột theo thiết kế) */}
-        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8">
-          {exams.map((exam) => (
-            <ExamCard key={exam.id} exam={exam} />
-          ))}
-        </div>
+        {exams.length > 0 ? (
+          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8">
+            {exams.map((exam) => (
+              <ExamCard key={exam.id} exam={exam} />
+            ))}
+          </div>
+        ) : (
+          <div className="text-center py-20 text-gray-500 bg-white rounded-2xl shadow-sm border border-gray-100">
+            Hiện tại chưa có bài kiểm tra nào được phát hành.
+          </div>
+        )}
 
         {/* Phân trang (Mockup theo ảnh) */}
-         <div className="mt-16 flex justify-center gap-2">
+        {exams.length > 0 && (
+          <div className="mt-16 flex justify-center gap-2">
             <button className="w-10 h-10 flex items-center justify-center rounded-lg border border-gray-200 text-gray-400 hover:bg-gray-50 bg-white">
               <span className="sr-only">Trang trước</span>
               &lt;
             </button>
             <button className="w-10 h-10 flex items-center justify-center rounded-lg bg-[#f07b32] text-white font-bold shadow-sm">1</button>
-            <button className="w-10 h-10 flex items-center justify-center rounded-lg border border-gray-200 text-gray-600 hover:bg-gray-50 bg-white font-medium">2</button>
-            <button className="w-10 h-10 flex items-center justify-center rounded-lg border border-gray-200 text-gray-600 hover:bg-gray-50 bg-white font-medium">3</button>
-            <span className="flex items-center justify-center px-2 text-gray-400">...</span>
-            <button className="w-10 h-10 flex items-center justify-center rounded-lg border border-gray-200 text-gray-600 hover:bg-gray-50 bg-white font-medium">10</button>
             <button className="w-10 h-10 flex items-center justify-center rounded-lg border border-gray-200 text-gray-400 hover:bg-gray-50 bg-white">
               <span className="sr-only">Trang sau</span>
               &gt;
             </button>
-         </div>
+          </div>
+        )}
 
       </main>
     </div>

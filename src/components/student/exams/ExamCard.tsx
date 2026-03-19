@@ -11,6 +11,7 @@ export interface ExamItem {
   questionsCount: string;
   icon: ReactNode;
   href: string;
+  isCompleted?: boolean;
 }
 
 interface ExamCardProps {
@@ -26,9 +27,16 @@ export function ExamCard({ exam }: ExamCardProps) {
         <div className="w-12 h-12 bg-[#fff2ea] text-[#f07b32] rounded-xl flex items-center justify-center">
           {exam.icon}
         </div>
-        <span className="text-[11px] font-bold text-gray-400 uppercase tracking-widest pt-2">
-          {exam.category}
-        </span>
+        <div className="flex flex-col items-end gap-1">
+          <span className="text-[11px] font-bold text-gray-400 uppercase tracking-widest pt-2">
+            {exam.category}
+          </span>
+          {exam.isCompleted && (
+            <span className="bg-green-100 text-green-700 text-[10px] font-bold px-2 py-0.5 rounded-full">
+              ✅ Đã làm
+            </span>
+          )}
+        </div>
       </div>
 
       {/* Thông tin bài kiểm tra */}
@@ -48,12 +56,16 @@ export function ExamCard({ exam }: ExamCardProps) {
         </div>
       </div>
 
-      {/* Nút Làm bài */}
+      {/* Nút Làm bài / Làm lại */}
       <Link 
         href={exam.href}
-        className="w-full py-3 flex items-center justify-center gap-2 bg-[#f07b32] text-white font-bold rounded-xl hover:bg-[#d96b27] transition-colors mt-auto"
+        className={`w-full py-3 flex items-center justify-center gap-2 font-bold rounded-xl transition-colors mt-auto ${
+          exam.isCompleted 
+            ? 'bg-gray-100 text-gray-600 hover:bg-gray-200' 
+            : 'bg-[#f07b32] text-white hover:bg-[#d96b27]'
+        }`}
       >
-        Làm bài
+        {exam.isCompleted ? 'Làm lại' : 'Làm bài'}
         <Play size={14} fill="currentColor" className="ml-1" />
       </Link>
     </div>

@@ -66,30 +66,32 @@ export const Header = ({ user }: HeaderProps) => {
             </div>
           ) : (
             <div className="flex items-center gap-4">
-              {/* === NÚT HOME (Chỉ hiện khi đã đăng nhập) === */}
+              {/* === NÚT HOME === */}
               <Link 
-                href="/" 
+                href={user?.role === 'admin' ? '/admin/dashboard' : '/'} 
                 className="text-slate-500 hover:text-blue-600 hover:bg-blue-50 p-2 rounded-full transition-colors flex items-center justify-center"
-                title="Trang chủ"
+                title={user?.role === 'admin' ? "Admin Dashboard" : "Trang chủ"}
               >
                 <Home size={20} />
               </Link>
 
-              {/* === USER PROFILE BUBBLE === */}
-              <Link 
-                href={"/student/profile"} 
-                className="text-slate-500 hover:text-blue-600 hover:bg-blue-50 p-2 rounded-full transition-colors flex items-center justify-center"
-                title="Hồ sơ">
-                <div className="flex items-center gap-2 py-1.5 px-3 bg-slate-100 rounded-full border cursor-default">
-                  <div className="w-6 h-6 bg-blue-600 rounded-full flex items-center justify-center text-white">
-                    <User size={14} />
-                  </div>
-                  {/* Hiển thị Role hoặc Tên nếu có truyền vào từ props */}
-                  <span className="text-xs font-semibold text-slate-700 uppercase">
-                    {user?.role === 'admin' ? 'Quản trị' : (user?.name || 'Học viên')}
-                  </span>
-                </div>
-              </Link>
+              {/* === NÚT PROFILE (CHỈ CHO HỌC VIÊN) === */}
+              {user?.role !== 'admin' && (
+                <Link 
+                  href="/student/profile" 
+                  className="text-slate-500 hover:text-blue-600 hover:bg-blue-50 p-2 rounded-full transition-colors flex items-center justify-center"
+                  title="Hồ sơ cá nhân"
+                >
+                  <User size={20} />
+                </Link>
+              )}
+
+              {/* === TÊN USER (CHỈ HIỂN THỊ) === */}
+              <div className="flex items-center gap-2 py-1.5 px-3 bg-slate-100 rounded-full border cursor-default" title="Vai trò">
+                <span className="text-xs font-semibold text-slate-700 uppercase">
+                  {user?.role === 'admin' ? 'Quản trị' : (user?.name || 'Học viên')}
+                </span>
+              </div>
               
               {/* === NÚT LOGOUT === */}
               <button 

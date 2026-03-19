@@ -21,7 +21,11 @@ import { useFormContext } from "react-hook-form";
 import { ExamInput, EXAM_TYPE_LABELS, EXAM_LEVEL_LABELS } from "@/lib/schemas/exam";
 import { Clock, FileText, Tag, AlignLeft, BarChart } from "lucide-react";
 
-export default function ExamGeneralInfo() {
+interface ExamGeneralInfoProps {
+  isEditing?: boolean;
+}
+
+export default function ExamGeneralInfo({ isEditing }: ExamGeneralInfoProps) {
   const form = useFormContext<ExamInput>();
 
   return (
@@ -50,6 +54,7 @@ export default function ExamGeneralInfo() {
                   placeholder="VD: Đề thi Ngữ pháp - Số 1"
                   {...field}
                   className="h-11"
+                  disabled={isEditing}
                 />
               </FormControl>
               <FormMessage />
@@ -71,6 +76,7 @@ export default function ExamGeneralInfo() {
                 <Select
                   onValueChange={field.onChange}
                   defaultValue={field.value}
+                  disabled={isEditing}
                 >
                   <FormControl>
                     <SelectTrigger className="h-11 bg-white">
@@ -103,6 +109,7 @@ export default function ExamGeneralInfo() {
                 <Select
                   onValueChange={field.onChange}
                   defaultValue={field.value}
+                  disabled={isEditing}
                 >
                   <FormControl>
                     <SelectTrigger className="h-11 bg-white">
@@ -146,6 +153,7 @@ export default function ExamGeneralInfo() {
                         )
                       }
                       value={field.value ?? ""}
+                      disabled={isEditing}
                     />
                     <span className="absolute right-3 top-1/2 -translate-y-1/2 text-sm text-gray-400 pointer-events-none">
                       phút
@@ -174,6 +182,7 @@ export default function ExamGeneralInfo() {
                   rows={3}
                   {...field}
                   value={field.value ?? ""}
+                  disabled={isEditing}
                 />
               </FormControl>
               <FormMessage />

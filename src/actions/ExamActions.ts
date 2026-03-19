@@ -14,6 +14,17 @@ export async function getExams(page = 1, pageSize = 10, search = "") {
   return { data, count, error: null };
 }
 
+export async function getExamDetail(id: string) {
+  try {
+    const { data, error } = await ExamService.getDetail(id);
+    if (error) throw error;
+    return { data, error: null };
+  } catch (e: unknown) {
+    const error = e as Error;
+    return { data: null, error: error.message };
+  }
+}
+
 export async function getExamQuestions(examId: string) {
   try {
     const { data, error } = await ExamService.getQuestions(examId);

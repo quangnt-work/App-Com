@@ -145,7 +145,7 @@ export default function ExamForm({ initialData, isEditing }: ExamFormProps) {
             <div className="p-6 md:p-8 space-y-6">
 
               {/* Thông tin đề thi */}
-              <ExamGeneralInfo />
+              <ExamGeneralInfo isEditing={isEditing} />
 
               {/* Danh sách câu hỏi */}
               <QuestionBuilder />

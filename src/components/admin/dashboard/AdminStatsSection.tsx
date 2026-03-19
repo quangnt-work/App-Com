@@ -69,11 +69,11 @@ export function AdminStatsSection({ stats }: Props) {
         </div>
         <div>
           <span className="text-4xl lg:text-5xl font-extrabold text-gray-800">
-            {stats.totalPractice.toLocaleString()}
+            {stats.totalExams.toLocaleString()}
           </span>
         </div>
         <div className="mt-auto pt-6 text-gray-500 text-sm">
-          <p className="flex items-center gap-2">📝 Tổng bài luyện tập: {stats.totalPractice}</p>
+          <p className="flex items-center gap-2">📝 Đề thi định kỳ: {stats.totalExams}</p>
         </div>
       </Link>
 
@@ -90,11 +90,11 @@ export function AdminStatsSection({ stats }: Props) {
         </div>
         <div>
           <span className="text-4xl lg:text-5xl font-extrabold text-gray-800">
-            {stats.totalResources.toLocaleString()}
+            {stats.totalDocuments.toLocaleString()}
           </span>
         </div>
         <div className="mt-auto pt-6 text-gray-500 text-sm space-y-1">
-          <p className="flex items-center gap-2">📄 Đề thi: {stats.totalResources}</p>
+          <p className="flex items-center gap-2">📄 Tổng tài liệu số: {stats.totalDocuments}</p>
         </div>
       </Link>
 

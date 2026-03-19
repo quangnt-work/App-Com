@@ -1,8 +1,9 @@
 export interface DashboardStatsType {
   totalStudents: number;
   totalGrammars: number;
-  totalResources: number;
-  totalPractice: number;
+  totalDocuments: number;
+  totalExams: number;
+  totalPractice: number; // Tạm giữ lại nếu sau này làm tới bảng bài tập
   // Per-type lesson counts
   grammarFileCount: number;
   audioCount: number;

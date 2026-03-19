@@ -29,7 +29,8 @@ async function getDashboardStats() {
     stats: {
       totalStudents: studentCount || 0,
       totalGrammars: grammarCount || 0,
-      totalResources: (docCount || 0) + (examCount || 0),
+      totalDocuments: docCount || 0,
+      totalExams: examCount || 0,
       totalPractice: practiceCount || 0,
       grammarFileCount: grammarFileCount || 0,
       audioCount: audioCount || 0,

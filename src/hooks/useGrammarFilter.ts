@@ -1,4 +1,4 @@
-// src/hooks/useLessonFilter.ts
+// src/hooks/useGrammarFilter.ts
 import { useState, useMemo } from 'react';
 import type { Grammar, GrammarStatus } from '@/types/grammar';
 
@@ -12,10 +12,10 @@ export function useGrammarFilter(initialData: Grammar[]) {
   const filteredData = useMemo(() => {
     return initialData.filter((grammar) => {
       const matchSearch = grammar.title.toLowerCase().includes(searchTerm.toLowerCase());
-     
+
       // So sánh status chính xác
       const matchStatus = statusFilter === 'published' || grammar.status === statusFilter;
-     
+
       return matchSearch && matchStatus;
     });
   }, [initialData, searchTerm, statusFilter]);

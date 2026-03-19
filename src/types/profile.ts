@@ -1,5 +1,5 @@
 // src/types/profile.ts
-export type TestCategory = 'Đọc hiểu' | 'Ngữ pháp' | 'Nghe' | 'Từ vựng';
+export type TestCategory = 'Tổng hợp' | 'Đọc hiểu' | 'Ngữ pháp' | 'Nghe hiểu';
 
 export interface UserProfile {
   id: string;
@@ -24,5 +24,5 @@ export interface ChartDataPoint {
   reading?: number;
   grammar?: number;
   listening?: number;
-  vocabulary?: number;
+  mixed?: number;
 }

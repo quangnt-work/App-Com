@@ -25,8 +25,8 @@ export function ProgressChart({ data }: ProgressChartProps) {
             {/* Các đường biểu đồ tương ứng với từng loại kỹ năng */}
             <Line type="monotone" name="Đọc hiểu" dataKey="reading" stroke="#f97316" strokeWidth={3} dot={{ r: 4 }} activeDot={{ r: 6 }} connectNulls />
             <Line type="monotone" name="Ngữ pháp" dataKey="grammar" stroke="#7c3aed" strokeWidth={3} dot={{ r: 4 }} activeDot={{ r: 6 }} connectNulls />
-            <Line type="monotone" name="Nghe" dataKey="listening" stroke="#22c55e" strokeWidth={3} dot={{ r: 4 }} activeDot={{ r: 6 }} connectNulls />
-            <Line type="monotone" name="Từ vựng" dataKey="vocabulary" stroke="#3b82f6" strokeWidth={3} dot={{ r: 4 }} activeDot={{ r: 6 }} connectNulls />
+            <Line type="monotone" name="Nghe hiểu" dataKey="listening" stroke="#22c55e" strokeWidth={3} dot={{ r: 4 }} activeDot={{ r: 6 }} connectNulls />
+            <Line type="monotone" name="Tổng hợp" dataKey="mixed" stroke="#3b82f6" strokeWidth={3} dot={{ r: 4 }} activeDot={{ r: 6 }} connectNulls />
           </LineChart>
         </ResponsiveContainer>
       </div>

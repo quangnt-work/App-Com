@@ -1,3 +1,15 @@
+export interface StudentWithStats {
+  id: string;
+  full_name: string | null;
+  username: string | null;
+  email: string;
+  avatar_url: string | null;
+  created_at: string | null;
+  level: string | null;
+  examCount: number;
+  highestScore: number | null;
+}
+
 export interface DashboardStatsType {
   totalStudents: number;
   totalGrammars: number;

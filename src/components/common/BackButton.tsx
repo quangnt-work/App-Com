@@ -20,9 +20,10 @@ export function BackButton() {
 
     // Điều hướng thẳng về dashboard từ các danh sách chính
     if (
-      pathname === '/admin/exams' || 
-      pathname === '/admin/lessons' || 
+      pathname === '/admin/exams' ||
+      pathname === '/admin/lessons' ||
       pathname === '/admin/users' ||
+      pathname === '/admin/students' ||
       pathname === '/admin/materials'
     ) {
       router.push('/admin/dashboard')
@@ -32,7 +33,7 @@ export function BackButton() {
   }
 
   return (
-    <button 
+    <button
       onClick={handleBack}
       className="inline-flex items-center gap-2 text-blue-600 hover:text-blue-700 transition-all font-bold text-sm group bg-transparent border-none p-0 focus:ring-0"
     >

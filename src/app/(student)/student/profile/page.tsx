@@ -31,40 +31,57 @@ export default async function ProfilePage() {
       id,
       created_at,
       score,
+      total_score,
+      exam_id,
       exams (
         title,
         exam_type,
-        level
+        level,
+        duration
       )
     `)
     .eq('user_id', user.id)
     .order('created_at', { ascending: false });
 
-  // Map to TestRecord and find highest score
-  let maxScore = -1;
+  // Map to TestRecord and find highest passed level
+  const LEVEL_ORDER: Record<string, number> = { A1: 1, A2: 2, B1: 3, B2: 4, C1: 5, C2: 6, all: 0 };
+  let highestLevelRank = -1;
   let highestLevel = '-';
 
   const history: TestRecord[] = (submissions || []).map((sub: any) => {
     const examType = sub.exams?.exam_type;
     const examLevel = sub.exams?.level || '-';
+    const examDuration = sub.exams?.duration || 60;
     let typeLabel: TestCategory = 'Tổng hợp';
     if (examType === 'grammar') typeLabel = 'Ngữ pháp';
     if (examType === 'reading') typeLabel = 'Đọc hiểu';
     if (examType === 'listening') typeLabel = 'Nghe hiểu';
 
-    if (sub.score && sub.score > maxScore) {
-      maxScore = sub.score;
-      highestLevel = examLevel;
+    // Only assign level from passed submissions (>= 70% of total_score)
+    const totalScore = sub.total_score || 10;
+    const isPassed = sub.score && (sub.score / totalScore) >= 0.7;
+    if (isPassed && examLevel in LEVEL_ORDER) {
+      const rank = LEVEL_ORDER[examLevel];
+      if (rank > highestLevelRank) {
+        highestLevelRank = rank;
+        highestLevel = examLevel;
+      }
     }
 
     return {
       id: sub.id,
+      submissionId: sub.id,
+      examId: sub.exam_id,
       date: new Date(sub.created_at).toLocaleDateString('vi-VN', {
         day: '2-digit', month: '2-digit', year: 'numeric'
       }),
       name: sub.exams?.title || 'Bài kiểm tra',
       type: typeLabel,
       score: sub.score || 0,
+      totalScore: totalScore,
+      passed: !!isPassed,
+      examLevel,
+      examDuration,
     };
   });
 
@@ -72,25 +89,41 @@ export default async function ProfilePage() {
     id: user.id,
     name: profileData?.full_name || user.user_metadata?.full_name || 'Học viên',
     username: profileData?.username || user.user_metadata?.username || 'HV',
-    level: highestLevel, 
+    level: highestLevel,
     email: user.email || '',
     joinDate: new Date(profileData?.created_at || user.created_at).toLocaleDateString('vi-VN'),
   };
 
-  // Generate chart data: take up to 10 latest exams in chronological order for the chart
-  const chartData: ChartDataPoint[] = [];
-  const latestSubs = [...history].reverse().slice(-10); // earliest to latest
-  
-  latestSubs.forEach((sub, index) => {
-    const cp: ChartDataPoint = { name: `T${index + 1}` };
-    if (sub.type === 'Ngữ pháp') cp.grammar = sub.score;
-    if (sub.type === 'Đọc hiểu') cp.reading = sub.score;
-    if (sub.type === 'Nghe hiểu') cp.listening = sub.score;
-    if (sub.type === 'Tổng hợp') cp.mixed = sub.score;
-    chartData.push(cp);
+  // Generate chart data: each type has its own sequential x-axis T1, T2... 
+  // We collect scores per type in chronological order (ascending) then build
+  // chart points where each slot has only the relevant type filled in.
+  const subsByType = { grammar: [] as number[], reading: [] as number[], listening: [] as number[], mixed: [] as number[] };
+  const chronoHistory = [...history].reverse(); // earliest first
+
+  chronoHistory.forEach((sub) => {
+    if (sub.type === 'Ngữ pháp') subsByType.grammar.push(sub.score);
+    if (sub.type === 'Đọc hiểu') subsByType.reading.push(sub.score);
+    if (sub.type === 'Nghe hiểu') subsByType.listening.push(sub.score);
+    if (sub.type === 'Tổng hợp') subsByType.mixed.push(sub.score);
   });
 
-  // Luôn đảm bảo có 10 cột mốc (T1-T10) kể cả khi chưa có data
+  // Max number of attempts across types (up to 10)
+  const maxLen = Math.min(10, Math.max(
+    subsByType.grammar.length, subsByType.reading.length,
+    subsByType.listening.length, subsByType.mixed.length, 0
+  ));
+
+  const chartData: ChartDataPoint[] = [];
+  for (let i = 0; i < Math.max(maxLen, 1); i++) {
+    const cp: ChartDataPoint = { name: `T${i + 1}` };
+    if (subsByType.grammar[i] !== undefined) cp.grammar = subsByType.grammar[i];
+    if (subsByType.reading[i] !== undefined) cp.reading = subsByType.reading[i];
+    if (subsByType.listening[i] !== undefined) cp.listening = subsByType.listening[i];
+    if (subsByType.mixed[i] !== undefined) cp.mixed = subsByType.mixed[i];
+    chartData.push(cp);
+  }
+
+  // Always have at least 5 slots
   for (let i = chartData.length; i < 10; i++) {
     chartData.push({ name: `T${i + 1}` });
   }

@@ -13,10 +13,16 @@ export interface UserProfile {
 
 export interface TestRecord {
   id: string;
+  submissionId?: string;
+  examId?: string;
   date: string;
   name: string;
   type: TestCategory;
-  score: number; // Thang điểm 10
+  score: number;
+  totalScore: number;
+  passed: boolean;
+  examLevel?: string;
+  examDuration?: number;
 }
 
 export interface ChartDataPoint {
@@ -25,4 +31,18 @@ export interface ChartDataPoint {
   grammar?: number;
   listening?: number;
   mixed?: number;
+}
+
+// Types for the exam result modal
+export interface ExamResultDetail {
+  submissionId: string;
+  examId: string;
+  examTitle: string;
+  examType: TestCategory;
+  examLevel: string;
+  examDuration: number;
+  date: string;
+  score: number;
+  totalScore: number;
+  passed: boolean;
 }

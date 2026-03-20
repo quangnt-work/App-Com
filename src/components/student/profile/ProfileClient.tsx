@@ -1,6 +1,6 @@
 // src/components/student/profile/ProfileClient.tsx
 'use client';
-import { useState } from 'react';
+import { useEffect } from 'react';
 import { UserProfileCard } from '@/components/student/profile/UserProfileCard';
 import { ProgressChart } from '@/components/student/profile/ProgressChart';
 import { HistoryTable } from '@/components/student/profile/HistoryTable';
@@ -14,13 +14,27 @@ interface ProfileClientProps {
 
 export function ProfileClient({ profile, history, chartData }: ProfileClientProps) {
 
+  useEffect(() => {
+    // Push a dummy state so the current entry has something to intercept
+    window.history.pushState({ profilePage: true }, '');
+
+    const handlePopState = () => {
+      // Always go home when pressing back from profile
+      window.location.replace('/');
+    };
+
+    window.addEventListener('popstate', handlePopState);
+    return () => window.removeEventListener('popstate', handlePopState);
+  }, []);
+
+
   return (
     <div className="min-h-screen bg-[#f8f9fc] p-4 md:p-8 font-sans">
       <div className="max-w-[1200px] mx-auto">
 
         {/* Layout Grid: 1 cột cho Mobile, 3 cột cho Desktop */}
         <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
-          
+
           {/* Cột Trái: Profile Card */}
           <div className="lg:col-span-1">
             <UserProfileCard profile={profile} />
@@ -28,7 +42,7 @@ export function ProfileClient({ profile, history, chartData }: ProfileClientProp
 
           {/* Cột Phải: Thống kê & Lịch sử */}
           <div className="lg:col-span-2 space-y-6">
-            
+
             {/* Header Thống kê & Bộ lọc */}
             <div className="bg-white p-4 rounded-2xl shadow-sm border border-gray-100 flex items-center justify-between">
               <h2 className="text-xl font-bold text-gray-800">Thống kê học tập</h2>

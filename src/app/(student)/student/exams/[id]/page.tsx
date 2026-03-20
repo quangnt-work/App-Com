@@ -47,8 +47,9 @@ export default async function ExamAttemptPage({ params }: { params: Promise<{ id
   // We need to unwrap it so ExamAttemptClient receives the expected format.
   const questions = (rawQuestions || []).map((q) => {
     const qData = q.options as any;
-    if (qData && typeof qData === 'object') {
+    if (qData && typeof qData === 'object' && !Array.isArray(qData)) {
       return {
+        ...q,
         ...qData,
         id: q.id, // Preserve the database ID for form mapping
       };

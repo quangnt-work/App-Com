@@ -310,9 +310,11 @@ export default function AIChatInterfacePage({ params }: { params: Promise<{ topi
           </div>
         ) : (
           <div className="space-y-2">
-            {messages.map((m, i) => (
-              <ChatMessage key={i} message={m} />
-            ))}
+            {messages.map((m, i) => {
+              // Auto-play audio chỉ cho tin nhắn AI cuối cùng (mới nhất)
+              const isLastModelMsg = m.role === 'model' && i === messages.map(msg => msg.role).lastIndexOf('model');
+              return <ChatMessage key={i} message={m} autoPlay={isLastModelMsg} />;
+            })}
             {(isTyping || isTranscribing) && (
               <div className="flex justify-start mb-6">
                 <div className="p-4 bg-white rounded-2xl rounded-bl-sm border border-gray-100 shadow-sm flex items-center gap-2">

@@ -1,14 +1,13 @@
 // src/app/api/assess-chat/route.ts
-// Đánh giá cuối buổi chat: dùng Gemini 2.5 Flash nghe audio thật để đánh giá ngữ điệu
-// Nếu không có audio (chat bằng text) → fallback về Groq LLaMA (text-only)
+// Đánh giá cuối buổi chat: thống nhất dùng Gemini 2.0 Flash cho cả 2 case
+// Case A: Có audio → Gemini 2.0 Flash nghe audio thật để đánh giá ngữ điệu
+// Case B: Không có audio → Gemini 2.0 Flash đánh giá text-only (thay Groq LLaMA)
 
 import { NextResponse } from "next/server";
 import { GoogleGenAI } from "@google/genai";
-import Groq from "groq-sdk";
 import { ChatMessageType } from "@/types/ai-chat";
 
 const gemini = new GoogleGenAI({ apiKey: process.env.GEMINI_API_KEY });
-const groq = new Groq({ apiKey: process.env.GROQ_API_KEY });
 
 interface AssessChatBody {
     messages: ChatMessageType[];
@@ -35,7 +34,7 @@ export async function POST(request: Request) {
             .join("\n");
 
         // ============================================================
-        // CASE A: Có audio → dùng Gemini 2.5 Flash (đánh giá ngữ điệu)
+        // CASE A: Có audio → Gemini 2.0 Flash (đánh giá ngữ điệu + audio)
         // ============================================================
         if (audioSamples && audioSamples.length > 0) {
             const assessmentPrompt = `Bạn là chuyên gia ngôn ngữ tiếng Nga. Hãy đánh giá toàn diện học viên dựa trên:
@@ -82,25 +81,27 @@ Trả về kết quả bằng tiếng Việt. BẮT BUỘC theo đúng JSON sau:
         }
 
         // ============================================================
-        // CASE B: Không có audio → fallback Groq LLaMA (text-only)
+        // CASE B: Không có audio → Gemini 2.0 Flash (text-only)
+        // Trước đây dùng Groq LLaMA → nay thống nhất Gemini để giảm phụ thuộc Groq
         // ============================================================
-        const completion = await groq.chat.completions.create({
-            model: "llama-3.3-70b-versatile",
-            messages: [
-                {
-                    role: "system",
-                    content: `Bạn là chuyên gia khảo thí tiếng Nga. Đánh giá học viên qua hội thoại sau về chủ đề "${topic}". 
+        const textPrompt = `Bạn là chuyên gia khảo thí tiếng Nga. Đánh giá học viên qua hội thoại sau về chủ đề "${topic}". 
 Trả về JSON với đúng các trường: vocabulary, intonation, overall_level, general_feedback. Bằng tiếng Việt.
-Lưu ý: intonation chỉ dựa trên văn bản (không có audio), hãy đánh giá về ngữ pháp và hành văn.`,
-                },
-                { role: "user", content: `Lịch sử hội thoại:\n${conversationText}` },
-            ],
-            response_format: { type: "json_object" },
-            temperature: 0.2,
+Lưu ý: intonation chỉ dựa trên văn bản (không có audio), hãy đánh giá về ngữ pháp và hành văn.
+
+Lịch sử hội thoại:
+${conversationText}`;
+
+        const response = await gemini.models.generateContent({
+            model: "gemini-2.5-flash",
+            contents: [{ role: "user", parts: [{ text: textPrompt }] }],
+            config: {
+                responseMimeType: "application/json",
+                temperature: 0.2,
+            },
         });
 
-        const responseText = completion.choices[0]?.message?.content?.trim();
-        if (!responseText) throw new Error("Groq không trả về nội dung.");
+        const responseText = response.text?.trim();
+        if (!responseText) throw new Error("Gemini không trả về nội dung.");
 
         const assessmentData = JSON.parse(responseText);
         return NextResponse.json({ success: true, data: assessmentData, mode: "text" });

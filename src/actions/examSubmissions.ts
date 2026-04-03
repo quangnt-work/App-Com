@@ -380,7 +380,8 @@ export async function submitExam(payload: SubmitExamPayload) {
         if (isCorrect) qEarned = weight;
 
       } else if (qType === 'essay' || qType === 'reading_open' || qType === 'listening_open') {
-        const apiKey = process.env.GROQ_API_KEY;
+        // Chấm bài tự luận bằng Gemini 2.5 Flash với cơ chế Retry
+        const apiKey = process.env.GEMINI_SECONDARY_API_KEY || process.env.GEMINI_API_KEY;
         let aiScoreRatio = 0.5;
         const sampleAnswer = parsedQ.sample_answer || parsedQ.correct_answer || 'Không có';
         const contextText = parsedQ.passage ? `\nĐoạn văn tham khảo:\n${parsedQ.passage}` : '';
@@ -389,6 +390,9 @@ export async function submitExam(payload: SubmitExamPayload) {
 
         if (apiKey) {
           try {
+            const { GoogleGenAI } = await import('@google/genai');
+            const gemini = new GoogleGenAI({ apiKey });
+            
             const prompt = `Bạn là giáo viên ngoại ngữ. Hãy chấm câu trả lời tự luận của học sinh.
 Hướng dẫn:
 - So khớp các từ khoá và ý chính trong câu trả lời với đáp án gợi ý.
@@ -396,40 +400,51 @@ Hướng dẫn:
 - Nếu câu trả lời đúng ý nghĩa nhưng diễn đạt khác thì vẫn cho điểm cao.
 - Nếu thiếu từ khoá quan trọng hoặc sai nghĩa thì trừ điểm.
 - Thang điểm: 0-10.
-- Trả về JSON thuần tuý: {"score": <điểm_số>, "feedback": "<nhận xét ngắn gọn tiếng Việt>"}
+- Trả về JSON thuần tuý duy nhất: {"score": <điểm_số_từ_0_đến_10>, "feedback": "<nhận xét ngắn gọn tiếng Việt>"}
 
 Câu hỏi: ${questionText}${contextText}
 Đáp án gợi ý: ${sampleAnswer}
 Bài làm của học sinh: ${userAnswer}`;
 
-            const response = await fetch("https://api.groq.com/openai/v1/chat/completions", {
-              method: "POST",
-              headers: {
-                "Authorization": `Bearer ${apiKey}`,
-                "Content-Type": "application/json"
-              },
-              body: JSON.stringify({
-                model: "llama3-8b-8192",
-                messages: [{ role: "user", content: prompt }],
-                response_format: { type: "json_object" },
-                temperature: 0.1
-              })
-            });
+            // Thử gọi tối đa 2 lần để tránh 429 nếu trùng giờ cao điểm tải server
+            let retries = 0;
+            const maxRetries = 2;
+            let responseText = null;
 
-            if (response.ok) {
-              const data = await response.json();
-              const content = data.choices?.[0]?.message?.content;
-              if (content) {
-                const parsed = JSON.parse(content);
-                const score10 = Number(parsed.score) || 0;
-                aiScoreRatio = Math.max(0, Math.min(10, score10)) / 10;
-                qAiFeedback = parsed.feedback || 'Đã chấm điểm.';
+            while (retries < maxRetries) {
+              try {
+                const response = await gemini.models.generateContent({
+                  model: "gemini-2.5-flash",
+                  contents: [{ role: "user", parts: [{ text: prompt }] }],
+                  config: {
+                    responseMimeType: "application/json",
+                    temperature: 0.1,
+                  },
+                });
+
+                responseText = response.text?.trim();
+                if (responseText) break;
+              } catch (e: any) {
+                retries++;
+                if (retries >= maxRetries) {
+                  console.error("Gemini AI grading exhaust retries:", e);
+                  break;
+                }
+                const delayMs = retries * 3000;
+                await new Promise(r => setTimeout(r, delayMs));
               }
+            }
+
+            if (responseText) {
+              const parsed = JSON.parse(responseText);
+              const score10 = Number(parsed.score) || 0;
+              aiScoreRatio = Math.max(0, Math.min(10, score10)) / 10;
+              qAiFeedback = parsed.feedback || 'Đã chấm điểm.';
             } else {
-              console.error("Groq AI Error:", await response.text());
+              console.error("Gemini AI Error: Không có kết quả sau retry.");
             }
           } catch (e) {
-            console.error("Groq AI Ex:", e);
+            console.error("Cerebras AI Ex:", e);
           }
         }
 

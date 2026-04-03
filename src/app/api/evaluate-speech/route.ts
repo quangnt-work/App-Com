@@ -1,8 +1,15 @@
+// src/app/api/evaluate-speech/route.ts
+// Giai đoạn 1: Groq Whisper (Speech-to-Text) — giữ nguyên, không có free alternative tốt hơn
+// Giai đoạn 2: Gemini 2.0 Flash (đánh giá phát âm) — chuyển từ Groq LLaMA để giảm tải
+
 import { NextResponse } from "next/server";
 import Groq from "groq-sdk";
+import { GoogleGenAI } from "@google/genai";
 
-// Khởi tạo Groq client
+// Groq chỉ dùng cho Whisper STT
 const groq = new Groq({ apiKey: process.env.GROQ_API_KEY });
+// Gemini dùng cho LLM đánh giá
+const gemini = new GoogleGenAI({ apiKey: process.env.GEMINI_API_KEY });
 
 export async function POST(request: Request) {
   try {
@@ -20,7 +27,7 @@ export async function POST(request: Request) {
     }
 
     // ==========================================
-    // GIAI ĐOẠN 1: SPEECH-TO-TEXT VỚI WHISPER
+    // GIAI ĐOẠN 1: SPEECH-TO-TEXT VỚI WHISPER (Groq)
     // ==========================================
     const transcription = await groq.audio.transcriptions.create({
       file: audioFile,
@@ -42,10 +49,10 @@ export async function POST(request: Request) {
     }
 
     // ==========================================
-    // GIAI ĐOẠN 2: ĐÁNH GIÁ BẰNG LLAMA 3
-    // So sánh trực tiếp studentText với targetText
+    // GIAI ĐOẠN 2: ĐÁNH GIÁ BẰNG GEMINI 2.0 FLASH
+    // Chuyển từ Groq LLaMA → Gemini để giảm tải Groq
     // ==========================================
-    const systemPrompt = `
+    const evaluationPrompt = `
       Bạn là một chuyên gia ngôn ngữ học tiếng Nga. Nhiệm vụ của bạn là đánh giá độ chính xác phát âm và nội dung của sinh viên so với câu mẫu.
 
       - Câu mẫu (câu đúng): "${targetText}"
@@ -67,21 +74,21 @@ export async function POST(request: Request) {
       }
     `;
 
-    const evaluation = await groq.chat.completions.create({
-      messages: [
-        { role: "system", content: systemPrompt }
-      ],
-      model: "llama-3.3-70b-versatile",
-      response_format: { type: "json_object" },
-      temperature: 0.2,
+    const response = await gemini.models.generateContent({
+      model: "gemini-2.0-flash",
+      contents: [{ role: "user", parts: [{ text: evaluationPrompt }] }],
+      config: {
+        responseMimeType: "application/json",
+        temperature: 0.2,
+      },
     });
 
-    const resultJson = JSON.parse(evaluation.choices[0]?.message?.content || "{}");
+    const resultJson = JSON.parse(response.text?.trim() || "{}");
 
     return NextResponse.json(resultJson, { status: 200 });
 
   } catch (error) {
-    console.error("Lỗi xử lý đánh giá Groq:", error);
+    console.error("Lỗi xử lý đánh giá:", error);
     return NextResponse.json({ error: "Đã có lỗi xảy ra khi gọi AI" }, { status: 500 });
   }
 }

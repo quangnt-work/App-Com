@@ -1,14 +1,20 @@
 // src/components/student/ai/chat/ChatMessage.tsx
 'use client';
 
-import React from 'react';
+import React, { useEffect, useRef } from 'react';
 import { ChatMessageType } from "@/types/ai-chat";
 import { Volume2 } from 'lucide-react';
 
-export function ChatMessage({ message }: { message: ChatMessageType }) {
-  const isModel = message.role === 'model';
+interface ChatMessageProps {
+  message: ChatMessageType;
+  autoPlay?: boolean; // Tự động phát âm thanh khi render
+}
 
-  // Tích hợp luôn hàm đọc âm thanh vào trong Component này
+export function ChatMessage({ message, autoPlay = false }: ChatMessageProps) {
+  const isModel = message.role === 'model';
+  const hasAutoPlayed = useRef(false);
+
+  // Hàm đọc âm thanh
   const playAudio = (text: string) => {
     window.speechSynthesis.cancel();
     const utterance = new SpeechSynthesisUtterance(text);
@@ -16,6 +22,18 @@ export function ChatMessage({ message }: { message: ChatMessageType }) {
     utterance.rate = 0.9;     // Tốc độ vừa phải
     window.speechSynthesis.speak(utterance);
   };
+
+  // Auto-play audio khi tin nhắn AI mới được render
+  useEffect(() => {
+    if (isModel && autoPlay && !hasAutoPlayed.current) {
+      hasAutoPlayed.current = true;
+      // Delay nhỏ để đảm bảo UI đã render xong rồi mới phát
+      const timer = setTimeout(() => {
+        playAudio(message.content);
+      }, 300);
+      return () => clearTimeout(timer);
+    }
+  }, [isModel, autoPlay, message.content]);
 
   return (
     <div className={`flex ${isModel ? 'justify-start' : 'justify-end'} mb-6 animate-in slide-in-from-bottom-2`}>

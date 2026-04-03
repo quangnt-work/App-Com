@@ -2,18 +2,18 @@
 
 import React from 'react';
 import Link from 'next/link';
-import { 
-  ArrowLeft, 
-  List, 
-  MessageSquare, 
-  Users, 
-  Heart, 
-  Clock, 
-  Home, 
-  Utensils, 
-  Sun, 
-  Shirt, 
-  Car, 
+import {
+  ArrowLeft,
+  List,
+  MessageSquare,
+  Users,
+  Heart,
+  Clock,
+  Home,
+  Utensils,
+  Sun,
+  Shirt,
+  Car,
   ChevronRight,
   LucideIcon // Import thêm type LucideIcon
 } from 'lucide-react';
@@ -36,10 +36,10 @@ const topicConfig: Record<string, TopicInfo> = {
   'transport': { title: "Phương tiện & Đi lại", icon: Car },
 };
 
-export default async function PracticeSelectionPage({ 
-  params 
-}: { 
-  params: Promise<{ topicSlug: string }> 
+export default async function PracticeSelectionPage({
+  params
+}: {
+  params: Promise<{ topicSlug: string }>
 }) {
   const resolvedParams = await params;
   const topicSlug = resolvedParams.topicSlug;
@@ -79,7 +79,7 @@ export default async function PracticeSelectionPage({
 
         {/* Các Card Lựa chọn */}
         <div className="space-y-5 max-w-[550px] mx-auto">
-          
+
           {/* Luyện Từ Vựng */}
           <Link href={`/student/ai/speaking/${topicSlug}/vocabulary`} className="block">
             <div className="group flex items-center p-4 bg-white border border-[#3b82f6] rounded-[24px] hover:shadow-md transition-all cursor-pointer">
@@ -88,7 +88,6 @@ export default async function PracticeSelectionPage({
               </div>
               <div className="flex-1">
                 <h3 className="text-[19px] font-bold text-slate-900 mb-0.5">Luyện Từ Vựng</h3>
-                <p className="text-slate-400 text-[15px]">20+ từ đơn lẻ theo chủ đề</p>
               </div>
               <ChevronRight size={26} className="text-slate-300 group-hover:text-[#3b82f6] transition-colors mr-2" />
             </div>
@@ -102,7 +101,6 @@ export default async function PracticeSelectionPage({
               </div>
               <div className="flex-1">
                 <h3 className="text-[19px] font-bold text-slate-900 mb-0.5">Luyện Mẫu Câu</h3>
-                <p className="text-slate-500 text-[15px]">20+ hội thoại ngắn & câu thông dụng</p>
               </div>
               <ChevronRight size={26} className="text-slate-300 group-hover:text-[#22c55e] transition-colors mr-2" />
             </div>

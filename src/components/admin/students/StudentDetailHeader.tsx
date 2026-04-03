@@ -14,7 +14,7 @@ interface StudentDetailHeaderProps {
 
 export function StudentDetailHeader({ profile }: StudentDetailHeaderProps) {
   const displayName = profile.full_name ?? profile.username ?? "Học viên";
-  
+
   const initials = (profile.full_name ?? profile.username ?? "?")
     .split(" ")
     .map((w) => w[0])
@@ -24,17 +24,14 @@ export function StudentDetailHeader({ profile }: StudentDetailHeaderProps) {
 
   const joinedDate = profile.created_at
     ? new Date(profile.created_at).toLocaleDateString("vi-VN", {
-        day: "2-digit",
-        month: "2-digit",
-        year: "numeric",
-      })
+      day: "2-digit",
+      month: "2-digit",
+      year: "numeric",
+    })
     : "—";
 
   return (
     <div className="bg-white rounded-2xl shadow-sm border border-gray-100 p-8 mb-8">
-      <div className="mb-6">
-        <BackButton />
-      </div>
 
       <div className="flex flex-col md:flex-row items-center md:items-start gap-6">
         {/* Avatar */}

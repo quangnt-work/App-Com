@@ -50,7 +50,15 @@ export const GrammarRepository = {
 
   async delete(id: string) {
     const supabase = await createClient();
-    return supabase.from('grammars').delete().eq('id', id);
+    
+    // Xóa các dữ liệu rác liên quan đính kèm (vd tài liệu của bài học)
+    await supabase.from("documents").delete().eq("lesson_id", id);
+    
+    const { data, error } = await supabase.from('grammars').delete().eq('id', id).select('id');
+    if (error) return { error };
+    if (!data || data.length === 0) return { error: { message: "Bản ghi không tồn tại hoặc bạn không có quyền xóa" } };
+    
+    return { data, error: null };
   },
 
   async getById(id: string) {

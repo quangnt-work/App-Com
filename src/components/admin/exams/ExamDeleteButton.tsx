@@ -42,18 +42,18 @@ export default function ExamDeleteButton({ id, title }: ExamDeleteButtonProps) {
           onClick={() => setConfirmOpen(false)}
         >
           <div
-            className="bg-white rounded-2xl shadow-xl p-6 w-full max-w-sm mx-4"
+            className="bg-white rounded-2xl shadow-xl p-6 w-full max-w-sm mx-4 whitespace-normal break-words text-left"
             onClick={(e) => e.stopPropagation()}
           >
             <h3 className="text-lg font-bold text-gray-800 mb-2">Xác nhận xóa</h3>
-            <p className="text-sm text-gray-500 mb-6">
+            <p className="text-sm text-gray-500 mb-6 leading-relaxed">
               Bạn có chắc muốn xóa đề thi{" "}
               <span className="font-semibold text-gray-700">"{title}"</span>? Hành động này không thể hoàn tác.
             </p>
-            <div className="flex gap-3 justify-end">
+            <div className="flex gap-3 justify-end mt-2">
               <Button
                 variant="outline"
-                className="rounded-lg"
+                className="rounded-lg font-medium"
                 onClick={() => setConfirmOpen(false)}
                 disabled={isPending}
               >

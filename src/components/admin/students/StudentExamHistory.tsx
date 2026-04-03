@@ -1,8 +1,9 @@
 // src/components/admin/students/StudentExamHistory.tsx
 "use client";
-import React from 'react';
+import React, { useState } from 'react';
 import { Eye } from 'lucide-react';
 import { Database } from '@/types/database.type';
+import { ExamResultModal } from '@/components/student/profile/ExamResultModal';
 
 type SubmissionStatus = Database['public']['Enums']['submission_status'];
 
@@ -16,6 +17,7 @@ export interface ExamHistoryRecord {
     title: string;
     exam_type: string;
     pass_score: number | null;
+    level: string;
   } | null;
 }
 
@@ -31,14 +33,25 @@ function TypeBadge({ type }: { type: string }) {
   return <span className="px-3 py-1 rounded-full text-xs font-bold bg-blue-100 text-blue-600">{type}</span>;
 }
 
-function StatusBadge({ status, score, passScore }: { status: SubmissionStatus | null, score: number | null, passScore: number | null }) {
+function LevelBadge({ level }: { level: string | null | undefined }) {
+  const display = level && level !== '-' ? level.toUpperCase() : 'ALL';
+  return (
+    <span className="inline-flex items-center justify-center px-2 py-1.5 min-w-[36px] rounded-lg text-xs font-bold bg-slate-100/80 text-slate-600 border border-slate-200 uppercase tracking-wider">
+      {display}
+    </span>
+  );
+}
+
+function StatusBadge({ status, score, totalScore }: { status: SubmissionStatus | null, score: number | null, totalScore: number | null }) {
+  // Bài đang làm dở
   if (status === 'pending' || status === 'in_progress') {
     return <span className="inline-flex items-center gap-1 px-2.5 py-1 rounded-full text-xs font-bold bg-gray-100 text-gray-600">Đang làm</span>;
   }
-  
-  // Logic đạt/chưa đạt dựa vào passScore
-  const isPassed = (score ?? 0) >= (passScore ?? 0);
-  
+
+  // Logic đạt/chưa đạt: dùng tỉ lệ phần trăm >= 70% (đồng bộ với student profile và submitExam action)
+  const total = totalScore || 10;
+  const isPassed = score !== null && score !== undefined && (score / total) >= 0.7;
+
   return isPassed ? (
     <span className="inline-flex items-center gap-1 px-2.5 py-1 rounded-full text-xs font-bold bg-green-100 text-green-600">
       ✓ Đạt
@@ -51,9 +64,8 @@ function StatusBadge({ status, score, passScore }: { status: SubmissionStatus | 
 }
 
 export function StudentExamHistory({ submissions }: StudentExamHistoryProps) {
-  // Nhóm theo exam_id nếu cần đếm số lần làm, nhưng user muốn từng dòng chi tiết
-  // Cho nên ở đây sẽ render từng submission
-  
+  const [selectedSubmissionId, setSelectedSubmissionId] = useState<string | null>(null);
+
   return (
     <div className="bg-white rounded-2xl shadow-sm border border-gray-100 overflow-hidden">
       <div className="p-6 border-b border-gray-100 flex justify-between items-center bg-gray-50/50">
@@ -70,6 +82,7 @@ export function StudentExamHistory({ submissions }: StudentExamHistoryProps) {
               <th className="px-6 py-4">Ngày làm</th>
               <th className="px-6 py-4">Tên bài kiểm tra</th>
               <th className="px-6 py-4 text-center">Loại bài</th>
+              <th className="px-6 py-4 text-center">Cấp độ</th>
               <th className="px-6 py-4 text-center">Trạng thái</th>
               <th className="px-6 py-4 text-center">Kết quả</th>
               <th className="px-6 py-4 text-center">Thao tác</th>
@@ -77,7 +90,7 @@ export function StudentExamHistory({ submissions }: StudentExamHistoryProps) {
           </thead>
           <tbody className="divide-y divide-gray-50">
             {submissions.length > 0 ? (
-              submissions.map((sub, index) => (
+              submissions.map((sub) => (
                 <tr key={sub.id} className="hover:bg-orange-50/30 transition-colors">
                   <td className="px-6 py-4 text-gray-500 font-medium whitespace-nowrap">
                     {sub.created_at ? new Date(sub.created_at).toLocaleDateString('vi-VN', {
@@ -92,7 +105,10 @@ export function StudentExamHistory({ submissions }: StudentExamHistoryProps) {
                     <TypeBadge type={sub.exams?.exam_type ?? 'Tổng hợp'} />
                   </td>
                   <td className="px-6 py-4 text-center">
-                    <StatusBadge status={sub.status} score={sub.score} passScore={sub.exams?.pass_score ?? 0} />
+                    <LevelBadge level={sub.exams?.level} />
+                  </td>
+                  <td className="px-6 py-4 text-center">
+                    <StatusBadge status={sub.status} score={sub.score} totalScore={sub.total_score} />
                   </td>
                   <td className="px-6 py-4 text-center font-bold text-orange-600">
                     {sub.score !== null ? (
@@ -103,7 +119,7 @@ export function StudentExamHistory({ submissions }: StudentExamHistoryProps) {
                   </td>
                   <td className="px-6 py-4 text-center">
                     <button
-                      onClick={() => alert(`Tính năng xem chi tiết bài làm ${sub.id} đang phát triển`)}
+                      onClick={() => setSelectedSubmissionId(sub.id)}
                       className="inline-flex items-center gap-1.5 text-xs font-bold text-orange-600 bg-orange-50 hover:bg-orange-100 border border-orange-100 px-3 py-2 rounded-lg transition-colors"
                     >
                       <Eye size={14} />
@@ -114,7 +130,7 @@ export function StudentExamHistory({ submissions }: StudentExamHistoryProps) {
               ))
             ) : (
               <tr>
-                <td colSpan={6} className="px-6 py-12 text-center text-gray-400 italic">
+                <td colSpan={7} className="px-6 py-12 text-center text-gray-400 italic">
                   Học viên này chưa thực hiện bài kiểm tra nào.
                 </td>
               </tr>
@@ -122,6 +138,13 @@ export function StudentExamHistory({ submissions }: StudentExamHistoryProps) {
           </tbody>
         </table>
       </div>
+
+      {selectedSubmissionId && (
+        <ExamResultModal
+          record={{ id: selectedSubmissionId } as any}
+          onClose={() => setSelectedSubmissionId(null)}
+        />
+      )}
     </div>
   );
 }

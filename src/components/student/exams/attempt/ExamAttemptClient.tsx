@@ -1,6 +1,6 @@
 // src/components/student/exams/attempt/ExamAttemptClient.tsx
 'use client';
-import { useState, useEffect, useRef } from 'react';
+import { useState, useEffect, useRef, useMemo } from 'react';
 import { useRouter } from 'next/navigation';
 import { Clock, HelpCircle, AlertCircle, Loader2, Send, CheckCircle2, XCircle, Trophy, BookOpen, RotateCcw } from 'lucide-react';
 import { submitExam } from '@/actions/examSubmissions';
@@ -125,25 +125,98 @@ export function ExamAttemptClient({ exam, questions, user }: any) {
   };
 
   const isAnswerFilled = (val: string) => {
-     if (!val) return false;
-     try {
-       const parsed = JSON.parse(val);
-       if (Array.isArray(parsed)) {
-          if (parsed.length === 0) return false;
-          // check if it's error correction array [{wrong: '', correct: ''}]
-          if (typeof parsed[0] === 'object' && parsed[0] !== null) {
-             return parsed.some((p: any) => p.wrong?.trim() || p.correct?.trim());
-          }
-          return true; // Array of indexes or strings > 0
-       }
-       return true;
-     } catch {
-       return val.trim() !== "";
-     }
+    if (!val) return false;
+    try {
+      const parsed = JSON.parse(val);
+      if (Array.isArray(parsed)) {
+        if (parsed.length === 0) return false;
+        // check if it's error correction array [{wrong: '', correct: ''}]
+        if (typeof parsed[0] === 'object' && parsed[0] !== null) {
+          return parsed.some((p: any) => p.wrong?.trim() || p.correct?.trim());
+        }
+        return true; // Array of indexes or strings > 0
+      }
+      return true;
+    } catch {
+      return val.trim() !== "";
+    }
   };
 
   const answeredCount = Object.keys(answers).filter(k => isAnswerFilled(answers[k])).length;
   const progressPercent = questions?.length ? Math.round((answeredCount / questions.length) * 100) : 0;
+
+  const groupedQuestions = useMemo(() => {
+    if (!questions) return [];
+    
+    const pass1: any[] = [];
+    let currentReadingGroup: any = null;
+
+    questions.forEach((q: any, index: number) => {
+      const type = q.question_type || q.type;
+      const qWithIndex = { ...q, original_index: index };
+      
+      if (type === 'reading_mcq' && q.passage) {
+         if (currentReadingGroup && currentReadingGroup.passage === q.passage) {
+            currentReadingGroup.sub_questions.push(qWithIndex);
+         } else {
+            if (currentReadingGroup) pass1.push(currentReadingGroup);
+            currentReadingGroup = {
+              is_group: true,
+              question_type: 'reading_group',
+              passage: q.passage,
+              instruction: q.instruction,
+              sub_questions: [qWithIndex],
+            };
+         }
+      } else {
+         if (currentReadingGroup) {
+            pass1.push(currentReadingGroup);
+            currentReadingGroup = null;
+         }
+         pass1.push(qWithIndex);
+      }
+    });
+    if (currentReadingGroup) pass1.push(currentReadingGroup);
+
+    const pass2: any[] = [];
+    let currentListeningGroup: any = null;
+    pass1.forEach((q: any) => {
+      if (q.is_group) {
+        if (currentListeningGroup) {
+           pass2.push(currentListeningGroup);
+           currentListeningGroup = null;
+        }
+        pass2.push(q);
+        return;
+      }
+
+      const type = q.question_type || q.type;
+      const audioUrl = q.audio_url || q.media_url;
+      if (type === 'listening_mcq' && audioUrl) {
+        if (currentListeningGroup && currentListeningGroup.audio_url === audioUrl) {
+          currentListeningGroup.sub_questions.push(q);
+        } else {
+           if (currentListeningGroup) pass2.push(currentListeningGroup);
+           currentListeningGroup = {
+             is_group: true,
+             question_type: 'listening_group',
+             audio_url: audioUrl,
+             instruction: q.instruction,
+             sub_questions: [q],
+           };
+        }
+      } else {
+        if (currentListeningGroup) {
+           pass2.push(currentListeningGroup);
+           currentListeningGroup = null;
+        }
+        pass2.push(q);
+      }
+    });
+    if (currentListeningGroup) pass2.push(currentListeningGroup);
+
+    return pass2;
+  }, [questions]);
 
   return (
     <div className="min-h-screen bg-[#f8f9fc] pb-24 font-sans relative">
@@ -184,52 +257,43 @@ export function ExamAttemptClient({ exam, questions, user }: any) {
 
         {/* Questions List */}
         <div className="space-y-6">
-          {questions?.map((q: any, i: number) => {
-            // q is the unwrapped object from Admin (ExamQuestionSchema)
-            // It uses q.question_type ("reading_mcq", "reading_open", etc.), and q.question, q.passage
-            
-            // Support backward compatibility if it's an old scheme
-            const type = q.question_type || q.type;
-            
-            let content = q.question || '';
-            // If no explicit question but we have q.content, check if it's a JSON string
-            if (!content && typeof q.content === 'string') {
-              try {
-                JSON.parse(q.content);
-                // It's JSON from DB fallback, ignore it so it doesn't display on screen
-              } catch (e) {
-                content = q.content; // Normal legacy text
+          {groupedQuestions.map((g: any, gIndex: number) => {
+            const isGroup = g.is_group;
+
+            const renderQuestionNode = (q: any, i: number, isSubQ: boolean) => {
+              const type = q.question_type || q.type;
+              let content = q.question || '';
+              if (!content && typeof q.content === 'string') {
+                try { JSON.parse(q.content); } catch (e) { content = q.content; }
               }
-            }
 
-            // Build custom content for specific structured types that don't use 'question' field
-            if (type === 'listening_fill') {
-               content = q.transcript_template || content;
-            } else if (type === 'word_arrangement') {
-               const contextText = q.context ? `<p class="mb-2 text-gray-700">${q.context}</p>` : `<p class="mb-2 text-gray-700">Sắp xếp các gợi ý sau thành câu hoàn chỉnh:</p>`;
-               const wordsHtml = Array.isArray(q.words) ? `<div class="mt-4 p-4 bg-orange-50/50 border border-orange-100 rounded-xl text-left font-medium text-lg text-orange-800 tracking-widest shadow-inner">${q.words.join(' &nbsp;|&nbsp; ')}</div>` : '';
-               content = contextText + wordsHtml;
-            } else if (type === 'error_correction') {
-               const sentenceHtml = q.sentence ? `<div class="mt-4 text-xl text-center font-medium p-4 bg-gray-50 text-gray-800 rounded-xl leading-relaxed border border-gray-200">"${q.sentence}"</div>` : '';
-               content = `<p class="mb-2 text-gray-700">Tìm và sửa lỗi sai trong câu sau:</p>` + sentenceHtml;
-            }
+              if (type === 'listening_fill') {
+                content = q.transcript_template || content;
+              } else if (type === 'word_arrangement') {
+                const contextText = q.context ? `<p class="mb-2 text-gray-700">${q.context}</p>` : `<p class="mb-2 text-gray-700">Sắp xếp các gợi ý sau thành câu hoàn chỉnh:</p>`;
+                const wordsHtml = Array.isArray(q.words) ? `<div class="mt-4 p-4 bg-orange-50/50 border border-orange-100 rounded-xl text-left font-medium text-lg text-orange-800 tracking-widest shadow-inner">${q.words.join(' &nbsp;|&nbsp; ')}</div>` : '';
+                content = contextText + wordsHtml;
+              } else if (type === 'error_correction') {
+                const sentenceHtml = q.sentence ? `<div class="mt-4 text-xl text-center font-medium p-4 bg-gray-50 text-gray-800 rounded-xl leading-relaxed border border-gray-200">"${q.sentence}"</div>` : '';
+                content = `<p class="mb-2 text-gray-700">Tìm và sửa lỗi sai trong câu sau:</p>` + sentenceHtml;
+              }
 
-            const passage = q.passage || '';
-            const audioUrl = q.audio_url || q.media_url || '';
-            
-            // For MCQs, Admin saves options array directly in q.options
-            const parsedArrayOpts = parseOptions(q.options);
-            
-            return (
-              <div key={q.id || i} className="bg-white p-6 md:p-8 rounded-2xl border border-gray-100 shadow-sm">
-                <div className="flex flex-col md:flex-row gap-4 md:gap-6">
-                  {/* Question Number */}
+              const passage = !isSubQ ? (q.passage || '') : '';
+              const audioUrl = !isSubQ ? (q.audio_url || q.media_url || '') : '';
+              const parsedArrayOpts = parseOptions(q.options);
+              const displayIndex = q.original_index !== undefined ? q.original_index + 1 : i + 1;
+
+              return (
+                <div key={q.id || i} className={`flex flex-col md:flex-row gap-4 md:gap-6 ${isSubQ ? 'pt-6 border-t border-gray-100 first:border-0 first:pt-0' : ''}`}>
                   <div className="shrink-0 w-10 h-10 rounded-xl bg-orange-50 flex items-center justify-center font-bold text-[#ea580c] text-lg">
-                    {i + 1}
+                    {displayIndex}
                   </div>
-                  
-                  {/* Question Content */}
                   <div className="flex-1 pt-1">
+                    {!isSubQ && q.instruction && (
+                      <div className="mb-6 bg-blue-50/50 rounded-xl p-4 border border-blue-100 text-blue-800 text-sm font-medium">
+                        {q.instruction}
+                      </div>
+                    )}
                     {audioUrl && (
                       <div className="mb-6 bg-gray-50 rounded-xl p-4 border border-gray-100 flex justify-center shadow-sm">
                         <audio controls className="w-full outline-none" controlsList="nodownload">
@@ -238,49 +302,33 @@ export function ExamAttemptClient({ exam, questions, user }: any) {
                         </audio>
                       </div>
                     )}
-                    
                     {passage && (
-                      <div className="mb-6 p-4 bg-gray-50 rounded-xl border border-gray-100 text-gray-700 leading-relaxed italic" dangerouslySetInnerHTML={{ __html: passage }} />
+                      <div 
+                         className="mb-6 p-4 md:p-6 bg-gray-50 rounded-xl border border-gray-100 text-gray-800 leading-relaxed whitespace-pre-wrap [&>ul]:list-disc [&>ul]:ml-6 [&>ol]:list-decimal [&>ol]:ml-6 [&>p]:mb-3 [&_strong]:font-bold [&_em]:italic [&_u]:underline" 
+                         dangerouslySetInnerHTML={{ __html: passage }} 
+                      />
                     )}
-                    
                     {content && (
                       <div className="font-bold text-gray-800 text-lg mb-6 leading-relaxed" dangerouslySetInnerHTML={{ __html: content }} />
                     )}
 
-                    {/* Multiple Choice (supports reading_mcq, listening_mcq, multiple_choice) */}
                     {(type === 'multiple_choice' || type === 'reading_mcq' || type === 'listening_mcq') && parsedArrayOpts.length > 0 && (
                       <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                         {parsedArrayOpts.map((opt: string, optIdx: number) => {
                           const isMulti = q.selection_mode === 'multi';
-                          
                           let currentSelection: number[] = [];
                           if (answers[q.id]) {
-                             try {
-                               const parsed = JSON.parse(answers[q.id]);
-                               if (Array.isArray(parsed)) {
-                                  // if it's an array of strings (legacy attempt state?), convert to numeric index
-                                  currentSelection = parsed.map(v => typeof v === 'number' ? v : parsedArrayOpts.indexOf(v));
-                               }
-                             } catch {
-                               currentSelection = [parsedArrayOpts.indexOf(answers[q.id])];
-                             }
+                            try {
+                              const parsed = JSON.parse(answers[q.id]);
+                              if (Array.isArray(parsed)) currentSelection = parsed.map(v => typeof v === 'number' ? v : parsedArrayOpts.indexOf(v));
+                            } catch { currentSelection = [parsedArrayOpts.indexOf(answers[q.id])]; }
                           }
-                          
                           const isChecked = currentSelection.includes(optIdx);
 
                           return (
-                            <label 
-                              key={optIdx} 
-                              className={`flex items-center gap-3 p-4 rounded-xl border-2 cursor-pointer transition-all ${
-                                isChecked 
-                                  ? 'border-[#ea580c] bg-orange-50/50' 
-                                  : 'border-gray-100 hover:border-gray-200 hover:bg-gray-50'
-                              }`}
-                            >
-                              <div className={`shrink-0 w-5 h-5 border-2 flex items-center justify-center ${
-                                isChecked ? 'border-[#ea580c] bg-[#ea580c]' : 'border-gray-300 bg-white'
-                              } ${!isMulti ? 'rounded-full' : 'rounded-md'}`}>
-                                {isChecked && <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="white" strokeWidth="4" strokeLinecap="round" strokeLinejoin="round"><path d="M20 6 9 17l-5-5"/></svg>}
+                            <label key={optIdx} className={`flex items-center gap-3 p-4 rounded-xl border-2 cursor-pointer transition-all ${isChecked ? 'border-[#ea580c] bg-orange-50/50' : 'border-gray-100 hover:border-gray-200 hover:bg-gray-50'}`}>
+                              <div className={`shrink-0 w-5 h-5 border-2 flex items-center justify-center ${isChecked ? 'border-[#ea580c] bg-[#ea580c]' : 'border-gray-300 bg-white'} ${!isMulti ? 'rounded-full' : 'rounded-md'}`}>
+                                {isChecked && <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="white" strokeWidth="4" strokeLinecap="round" strokeLinejoin="round"><path d="M20 6 9 17l-5-5" /></svg>}
                               </div>
                               <input
                                 type={isMulti ? "checkbox" : "radio"}
@@ -290,117 +338,109 @@ export function ExamAttemptClient({ exam, questions, user }: any) {
                                 onChange={(e) => {
                                   if (isMulti) {
                                     if (e.target.checked) handleAnswerChange(q.id, JSON.stringify([...currentSelection, optIdx]));
-                                    else handleAnswerChange(q.id, JSON.stringify(currentSelection.filter(i => i !== optIdx)));
+                                    else handleAnswerChange(q.id, JSON.stringify(currentSelection.filter(x => x !== optIdx)));
                                   } else {
                                     handleAnswerChange(q.id, JSON.stringify([optIdx]));
                                   }
                                 }}
                                 className="hidden"
                               />
-                              <span className={`leading-relaxed ${isChecked ? 'text-[#ea580c] font-medium' : 'text-gray-700'}`}>
-                                {opt}
-                              </span>
+                              <span className={`leading-relaxed ${isChecked ? 'text-[#ea580c] font-medium' : 'text-gray-700'}`}>{opt}</span>
                             </label>
                           );
                         })}
                       </div>
                     )}
 
-                    {/* Word Arrangement / Fill Blank */}
                     {(type === 'word_arrangement' || type === 'listening_fill') && (
-                       <div className="mt-4">
-                         {type === 'listening_fill' && (
-                            <p className="text-sm text-gray-500 mb-3 italic">* Nếu câu hỏi có nhiều chỗ trống, vui lòng nhập theo thứ tự cách nhau bởi dấu phẩy.</p>
-                         )}
-                         <input
-                           type="text"
-                           className="w-full p-4 border-2 border-gray-100 rounded-xl focus:border-[#ea580c] focus:ring-4 focus:ring-orange-50/50 outline-none text-gray-800 transition-all font-medium placeholder:text-gray-400 placeholder:font-normal"
-                           placeholder="Nhập câu trả lời..."
-                           value={answers[q.id] || ''}
-                           onChange={(e) => handleAnswerChange(q.id, e.target.value)}
-                         />
-                       </div>
-                    )}
-
-                    {/* Error Correction Special Input */}
-                    {type === 'error_correction' && (
                       <div className="mt-4">
-                         <p className="text-sm text-gray-500 mb-3 italic">* Vui lòng chỉ ra phần sai và cách sửa lại đúng.</p>
-                         <div className="flex flex-col gap-4">
-                           {(() => {
-                             let pairs: {wrong: string, correct: string}[] = [];
-                             try {
-                               pairs = JSON.parse(answers[q.id]);
-                               if (!Array.isArray(pairs)) throw new Error('not array');
-                             } catch(e) {
-                               const parts = (answers[q.id] || '').split('||');
-                               pairs = [{"wrong": parts[0] || "", "correct": parts[1] || ""}];
-                             }
-                             
-                             return (
-                               <>
-                                 {pairs.map((pair, idx) => (
-                                   <div key={idx} className="flex flex-col md:flex-row gap-4 items-center relative bg-white p-2 rounded-2xl border border-gray-50 shadow-sm group">
-                                     <input
-                                       type="text"
-                                       className="w-full p-4 border-2 border-red-100 rounded-xl focus:border-red-400 focus:ring-4 focus:ring-red-50/50 outline-none text-red-800 transition-all font-medium placeholder:text-red-400 placeholder:font-normal bg-red-50/20"
-                                       placeholder="Từ/cụm từ sai..."
-                                       value={pair.wrong}
-                                       onChange={(e) => {
-                                         const newPairs = [...pairs];
-                                         newPairs[idx].wrong = e.target.value;
-                                         handleAnswerChange(q.id, JSON.stringify(newPairs));
-                                       }}
-                                     />
-                                     <div className="hidden md:flex shrink-0 w-8 h-8 rounded-full bg-gray-100 items-center justify-center text-gray-400">
-                                       <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="m9 18 6-6-6-6"/></svg>
-                                     </div>
-                                     <input
-                                       type="text"
-                                       className="w-full p-4 border-2 border-green-100 rounded-xl focus:border-green-400 focus:ring-4 focus:ring-green-50/50 outline-none text-green-800 transition-all font-medium placeholder:text-green-400 placeholder:font-normal bg-green-50/20"
-                                       placeholder="Sửa lại thành..."
-                                       value={pair.correct}
-                                       onChange={(e) => {
-                                         const newPairs = [...pairs];
-                                         newPairs[idx].correct = e.target.value;
-                                         handleAnswerChange(q.id, JSON.stringify(newPairs));
-                                       }}
-                                     />
-                                     
-                                     {pairs.length > 1 && (
-                                       <button 
-                                         onClick={() => {
-                                           const newPairs = pairs.filter((_, i) => i !== idx);
-                                           handleAnswerChange(q.id, JSON.stringify(newPairs));
-                                         }}
-                                         className="p-3 text-red-300 hover:text-red-600 hover:bg-red-50 rounded-xl md:static absolute right-0 top-0 transition-colors"
-                                         title="Xóa nhóm này"
-                                       >
-                                         <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M18 6 6 18"/><path d="m6 6 12 12"/></svg>
-                                       </button>
-                                     )}
-                                   </div>
-                                 ))}
-                                 
-                                 <button 
-                                   onClick={() => {
-                                     const newPairs = [...pairs, {"wrong": "", "correct": ""}];
-                                     handleAnswerChange(q.id, JSON.stringify(newPairs));
-                                   }}
-                                   className="self-start flex items-center gap-2 mt-2 px-5 py-3 text-sm font-bold text-[#ea580c] bg-orange-50 hover:bg-orange-100 rounded-xl transition-colors border border-orange-100 shadow-sm"
-                                 >
-                                   <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><circle cx="12" cy="12" r="10"/><path d="M8 12h8"/><path d="M12 8v8"/></svg>
-                                   Thêm cụm từ lỗi khác
-                                 </button>
-                               </>
-                             );
-                           })()}
-                         </div>
+                        {type === 'listening_fill' && (
+                          <p className="text-sm text-gray-500 mb-3 italic">* Nếu câu hỏi có nhiều chỗ trống, vui lòng nhập theo thứ tự cách nhau bởi dấu phẩy.</p>
+                        )}
+                        <input
+                          type="text"
+                          className="w-full p-4 border-2 border-gray-100 rounded-xl focus:border-[#ea580c] focus:ring-4 focus:ring-orange-50/50 outline-none text-gray-800 transition-all font-medium placeholder:text-gray-400 placeholder:font-normal"
+                          placeholder="Nhập câu trả lời..."
+                          value={answers[q.id] || ''}
+                          onChange={(e) => handleAnswerChange(q.id, e.target.value)}
+                        />
                       </div>
                     )}
 
-                    {/* Open Ended / Essay (supports reading_open, listening_open, essay, fill_in_blank) */}
-                    {(type === 'fill_in_blank' || type === 'essay' || type === 'reading_open' || type === 'listening_open') && (
+                    {type === 'error_correction' && (
+                      <div className="mt-4">
+                        <p className="text-sm text-gray-500 mb-3 italic">* Vui lòng chỉ ra phần sai và cách sửa lại đúng.</p>
+                        <div className="flex flex-col gap-4">
+                          {(() => {
+                            let pairs: { wrong: string, correct: string }[] = [];
+                            try {
+                              pairs = JSON.parse(answers[q.id]);
+                              if (!Array.isArray(pairs)) throw new Error('not array');
+                            } catch (e) {
+                              const parts = (answers[q.id] || '').split('||');
+                              pairs = [{ "wrong": parts[0] || "", "correct": parts[1] || "" }];
+                            }
+                            return (
+                              <>
+                                {pairs.map((pair, idx) => (
+                                  <div key={idx} className="flex flex-col md:flex-row gap-4 items-center relative bg-white p-2 rounded-2xl border border-gray-50 shadow-sm group">
+                                    <input
+                                      type="text"
+                                      className="w-full p-4 border-2 border-red-100 rounded-xl focus:border-red-400 focus:ring-4 focus:ring-red-50/50 outline-none text-red-800 transition-all font-medium placeholder:text-red-400 placeholder:font-normal bg-red-50/20"
+                                      placeholder="Từ/cụm từ sai..."
+                                      value={pair.wrong}
+                                      onChange={(e) => {
+                                        const newPairs = [...pairs];
+                                        newPairs[idx].wrong = e.target.value;
+                                        handleAnswerChange(q.id, JSON.stringify(newPairs));
+                                      }}
+                                    />
+                                    <div className="hidden md:flex shrink-0 w-8 h-8 rounded-full bg-gray-100 items-center justify-center text-gray-400">
+                                      <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="m9 18 6-6-6-6" /></svg>
+                                    </div>
+                                    <input
+                                      type="text"
+                                      className="w-full p-4 border-2 border-green-100 rounded-xl focus:border-green-400 focus:ring-4 focus:ring-green-50/50 outline-none text-green-800 transition-all font-medium placeholder:text-green-400 placeholder:font-normal bg-green-50/20"
+                                      placeholder="Sửa lại thành..."
+                                      value={pair.correct}
+                                      onChange={(e) => {
+                                        const newPairs = [...pairs];
+                                        newPairs[idx].correct = e.target.value;
+                                        handleAnswerChange(q.id, JSON.stringify(newPairs));
+                                      }}
+                                    />
+                                    {pairs.length > 1 && (
+                                      <button
+                                        onClick={() => {
+                                          const newPairs = pairs.filter((_, i) => i !== idx);
+                                          handleAnswerChange(q.id, JSON.stringify(newPairs));
+                                        }}
+                                        className="p-3 text-red-300 hover:text-red-600 hover:bg-red-50 rounded-xl md:static absolute right-0 top-0 transition-colors"
+                                        title="Xóa nhóm này"
+                                      >
+                                        <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M18 6 6 18" /><path d="m6 6 12 12" /></svg>
+                                      </button>
+                                    )}
+                                  </div>
+                                ))}
+                                <button
+                                  onClick={() => {
+                                    const newPairs = [...pairs, { "wrong": "", "correct": "" }];
+                                    handleAnswerChange(q.id, JSON.stringify(newPairs));
+                                  }}
+                                  className="self-start flex items-center gap-2 mt-2 px-5 py-3 text-sm font-bold text-[#ea580c] bg-orange-50 hover:bg-orange-100 rounded-xl transition-colors border border-orange-100 shadow-sm"
+                                >
+                                  <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><circle cx="12" cy="12" r="10" /><path d="M8 12h8" /><path d="M12 8v8" /></svg>
+                                  Thêm cụm từ lỗi khác
+                                </button>
+                              </>
+                            );
+                          })()}
+                        </div>
+                      </div>
+                    )}
+
+                    {['fill_in_blank', 'essay', 'reading_open', 'listening_open'].includes(type) && (
                       <div className="mt-4">
                         <textarea
                           className="w-full p-4 border-2 border-gray-100 rounded-xl focus:border-[#ea580c] focus:ring-4 focus:ring-orange-50/50 outline-none resize-y min-h-[120px] text-gray-800 transition-all font-medium placeholder:text-gray-400 placeholder:font-normal"
@@ -412,6 +452,41 @@ export function ExamAttemptClient({ exam, questions, user }: any) {
                     )}
                   </div>
                 </div>
+              );
+            };
+
+            if (isGroup) {
+              return (
+                <div key={gIndex} className="bg-white p-6 md:p-8 rounded-2xl border border-gray-100 shadow-sm">
+                  {g.instruction && (
+                    <div className="mb-6 bg-blue-50/50 rounded-xl p-4 border border-blue-100 text-blue-800 text-sm font-medium">
+                      {g.instruction}
+                    </div>
+                  )}
+                  {g.audio_url && (
+                    <div className="mb-6 bg-gray-50 rounded-xl p-4 border border-gray-100 flex justify-center shadow-sm">
+                      <audio controls className="w-full outline-none" controlsList="nodownload">
+                        <source src={g.audio_url} />
+                        Trình duyệt của bạn không hỗ trợ thẻ audio.
+                      </audio>
+                    </div>
+                  )}
+                  {g.passage && (
+                    <div 
+                       className="mb-6 p-4 md:p-6 bg-gray-50 rounded-xl border border-gray-100 text-gray-800 leading-relaxed whitespace-pre-wrap [&>ul]:list-disc [&>ul]:ml-6 [&>ol]:list-decimal [&>ol]:ml-6 [&>p]:mb-3 [&_strong]:font-bold [&_em]:italic [&_u]:underline" 
+                       dangerouslySetInnerHTML={{ __html: g.passage }} 
+                    />
+                  )}
+                  <div className="space-y-6">
+                    {g.sub_questions.map((subQ: any, subIdx: number) => renderQuestionNode(subQ, subIdx, true))}
+                  </div>
+                </div>
+              );
+            }
+
+            return (
+              <div key={gIndex} className="bg-white p-6 md:p-8 rounded-2xl border border-gray-100 shadow-sm">
+                {renderQuestionNode(g, gIndex, false)}
               </div>
             );
           })}
@@ -492,11 +567,10 @@ export function ExamAttemptClient({ exam, questions, user }: any) {
         <div className="fixed inset-0 z-[100] flex items-center justify-center bg-black/60 backdrop-blur-sm p-4">
           <div className="bg-white rounded-3xl max-w-lg w-full shadow-2xl overflow-hidden animate-in fade-in zoom-in duration-300">
             {/* Header */}
-            <div className={`p-8 flex flex-col items-center text-center ${
-              examResult.passed 
-                ? 'bg-gradient-to-br from-green-50 to-emerald-100' 
+            <div className={`p-8 flex flex-col items-center text-center ${examResult.passed
+                ? 'bg-gradient-to-br from-green-50 to-emerald-100'
                 : 'bg-gradient-to-br from-red-50 to-orange-100'
-            }`}>
+              }`}>
               {examResult.passed ? (
                 <div className="w-24 h-24 rounded-full bg-green-500 flex items-center justify-center mb-4 shadow-lg shadow-green-500/40">
                   <Trophy size={44} className="text-white" />
@@ -506,16 +580,14 @@ export function ExamAttemptClient({ exam, questions, user }: any) {
                   <BookOpen size={44} className="text-white" />
                 </div>
               )}
-              <div className={`text-6xl font-black mb-1 ${
-                examResult.passed ? 'text-green-600' : 'text-red-500'
-              }`}>
+              <div className={`text-6xl font-black mb-1 ${examResult.passed ? 'text-green-600' : 'text-red-500'
+                }`}>
                 {examResult.score.toFixed(1)}<span className="text-3xl font-bold opacity-60">/10</span>
               </div>
-              <span className={`text-lg font-bold px-6 py-2 rounded-full mt-2 ${
-                examResult.passed 
-                  ? 'bg-green-500 text-white' 
+              <span className={`text-lg font-bold px-6 py-2 rounded-full mt-2 ${examResult.passed
+                  ? 'bg-green-500 text-white'
                   : 'bg-red-400 text-white'
-              }`}>
+                }`}>
                 {examResult.passed ? '🎉 ĐẠT' : '❌ CHƯA ĐẠT'}
               </span>
             </div>
@@ -548,9 +620,8 @@ export function ExamAttemptClient({ exam, questions, user }: any) {
 
               <div className="w-full h-3 bg-gray-100 rounded-full overflow-hidden mb-6">
                 <div
-                  className={`h-full rounded-full transition-all duration-1000 ease-out ${
-                    examResult.passed ? 'bg-green-500' : 'bg-red-400'
-                  }`}
+                  className={`h-full rounded-full transition-all duration-1000 ease-out ${examResult.passed ? 'bg-green-500' : 'bg-red-400'
+                    }`}
                   style={{ width: `${(examResult.score / 10) * 100}%` }}
                 />
               </div>

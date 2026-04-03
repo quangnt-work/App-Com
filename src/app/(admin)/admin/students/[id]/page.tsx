@@ -42,7 +42,8 @@ export default async function StudentDetailPage({ params }: StudentDetailPagePro
       exams!inner (
         title,
         exam_type,
-        pass_score
+        pass_score,
+        level
       )
     `)
     .eq("user_id", studentId)
@@ -65,8 +66,26 @@ export default async function StudentDetailPage({ params }: StudentDetailPagePro
   });
 
   const averageScore = gradedCount > 0 ? totalScore / gradedCount : 0;
-  // Currently level is not in the db profile table
-  const level = null; 
+  
+  // Compute highest passed level from submissions (>= 70% score ratio)
+  const LEVEL_ORDER: Record<string, number> = { A1: 1, A2: 2, B1: 3, B2: 4, C1: 5, C2: 6, all: 0 };
+  let highestLevelRank = -1;
+  let level: string | null = null;
+
+  submissions.forEach((sub) => {
+    if (sub.status === "completed" || sub.status === "graded") {
+      const total = sub.total_score || 10;
+      const isPassed = sub.score !== null && (sub.score / total) >= 0.7;
+      const examLevel = sub.exams?.level || '';
+      if (isPassed && examLevel in LEVEL_ORDER) {
+        const rank = LEVEL_ORDER[examLevel];
+        if (rank > highestLevelRank) {
+          highestLevelRank = rank;
+          level = examLevel;
+        }
+      }
+    }
+  });
 
   return (
     <div className="min-h-screen bg-[#f8f9fc] p-6 lg:p-10 font-sans">

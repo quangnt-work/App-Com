@@ -29,8 +29,10 @@ import {
   ListChecks,
 } from "lucide-react";
 import { cn } from "@/lib/utils";
+import ReadingGroup from "../question-types/ReadingGroup";
 import ReadingMCQ from "../question-types/ReadingMCQ";
 import ReadingOpenEnded from "../question-types/ReadingOpenEnded";
+import ListeningGroup from "../question-types/ListeningGroup";
 import ListeningMCQ from "../question-types/ListeningMCQ";
 import ListeningOpenEnded from "../question-types/ListeningOpenEnded";
 import ListeningFillBlank from "../question-types/ListeningFillBlank";
@@ -41,9 +43,24 @@ import ErrorCorrection from "../question-types/ErrorCorrection";
 
 function createDefaultQuestion(type: ExamQuestionType) {
   switch (type) {
+    case "reading_group":
+      return {
+        question_type: "reading_group" as const,
+        instruction: "",
+        passage: "",
+        sub_questions: [
+          {
+            question: "",
+            selection_mode: "single" as const,
+            options: ["", ""],
+            correct_indexes: [],
+          }
+        ]
+      };
     case "reading_mcq":
       return {
         question_type: "reading_mcq" as const,
+        instruction: "",
         passage: "",
         question: "",
         selection_mode: "single" as const,
@@ -53,13 +70,29 @@ function createDefaultQuestion(type: ExamQuestionType) {
     case "reading_open":
       return {
         question_type: "reading_open" as const,
+        instruction: "",
         passage: "",
         question: "",
         sample_answer: "",
       };
+    case "listening_group":
+      return {
+        question_type: "listening_group" as const,
+        instruction: "",
+        audio_url: "",
+        sub_questions: [
+          {
+            question: "",
+            selection_mode: "single" as const,
+            options: ["", ""],
+            correct_indexes: [],
+          }
+        ]
+      };
     case "listening_mcq":
       return {
         question_type: "listening_mcq" as const,
+        instruction: "",
         audio_url: "",
         question: "",
         selection_mode: "single" as const,
@@ -69,6 +102,7 @@ function createDefaultQuestion(type: ExamQuestionType) {
     case "listening_open":
       return {
         question_type: "listening_open" as const,
+        instruction: "",
         audio_url: "",
         question: "",
         sample_answer: "",
@@ -76,6 +110,7 @@ function createDefaultQuestion(type: ExamQuestionType) {
     case "listening_fill":
       return {
         question_type: "listening_fill" as const,
+        instruction: "",
         audio_url: "",
         transcript_template: "",
         correct_answers: [],
@@ -83,6 +118,7 @@ function createDefaultQuestion(type: ExamQuestionType) {
     case "word_arrangement":
       return {
         question_type: "word_arrangement" as const,
+        instruction: "",
         context: "",
         words: [],
         correct_sentence: "",
@@ -90,6 +126,7 @@ function createDefaultQuestion(type: ExamQuestionType) {
     case "error_correction":
       return {
         question_type: "error_correction" as const,
+        instruction: "",
         sentence: "",
         wrong_part: "",
         correct_part: "",
@@ -101,8 +138,10 @@ function createDefaultQuestion(type: ExamQuestionType) {
 // ─── Icon per type ────────────────────────────────────────────────────────────
 
 const TYPE_ICONS: Record<ExamQuestionType, React.ReactNode> = {
+  reading_group: <BookOpen className="w-3.5 h-3.5" />,
   reading_mcq: <BookOpen className="w-3.5 h-3.5" />,
   reading_open: <BookOpen className="w-3.5 h-3.5" />,
+  listening_group: <Volume2 className="w-3.5 h-3.5" />,
   listening_mcq: <Volume2 className="w-3.5 h-3.5" />,
   listening_open: <Volume2 className="w-3.5 h-3.5" />,
   listening_fill: <Volume2 className="w-3.5 h-3.5" />,
@@ -111,8 +150,10 @@ const TYPE_ICONS: Record<ExamQuestionType, React.ReactNode> = {
 };
 
 const TYPE_COLORS: Record<ExamQuestionType, string> = {
+  reading_group: "bg-blue-100 text-blue-600",
   reading_mcq: "bg-blue-100 text-blue-600",
   reading_open: "bg-blue-100 text-blue-600",
+  listening_group: "bg-purple-100 text-purple-600",
   listening_mcq: "bg-purple-100 text-purple-600",
   listening_open: "bg-purple-100 text-purple-600",
   listening_fill: "bg-purple-100 text-purple-600",
@@ -124,10 +165,14 @@ const TYPE_COLORS: Record<ExamQuestionType, string> = {
 
 function QuestionForm({ type, index }: { type: ExamQuestionType; index: number }) {
   switch (type) {
+    case "reading_group":
+      return <ReadingGroup index={index} />;
     case "reading_mcq":
       return <ReadingMCQ index={index} />;
     case "reading_open":
       return <ReadingOpenEnded index={index} />;
+    case "listening_group":
+      return <ListeningGroup index={index} />;
     case "listening_mcq":
       return <ListeningMCQ index={index} />;
     case "listening_open":
@@ -145,7 +190,7 @@ function QuestionForm({ type, index }: { type: ExamQuestionType; index: number }
 
 export default function QuestionBuilder() {
   const form = useFormContext<ExamInput>();
-  const [selectedType, setSelectedType] = useState<ExamQuestionType>("reading_mcq");
+  const [selectedType, setSelectedType] = useState<ExamQuestionType>("reading_group");
   const [expandedIndexes, setExpandedIndexes] = useState<Set<number>>(new Set());
 
   const { fields, append, remove } = useFieldArray({
@@ -299,7 +344,17 @@ export default function QuestionBuilder() {
 
                   {/* Card body */}
                   {isExpanded && (
-                    <div className="p-5 border-t border-gray-100 bg-white">
+                    <div className="p-5 border-t border-gray-100 bg-white space-y-6">
+                      <div className="space-y-2">
+                        <label className="text-sm font-semibold text-gray-700">
+                          Yêu cầu <span className="text-gray-400 font-normal"></span>
+                        </label>
+                        <textarea
+                          {...form.register(`questions.${i}.instruction`)}
+                          className="flex min-h-[60px] w-full rounded-md border border-gray-200 bg-transparent px-3 py-2 text-sm shadow-sm placeholder:text-gray-400 focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-orange-500 disabled:cursor-not-allowed disabled:opacity-50 resize-y"
+                          placeholder="Nhập yêu cầu cho học sinh"
+                        />
+                      </div>
                       <QuestionForm type={qType} index={i} />
                     </div>
                   )}

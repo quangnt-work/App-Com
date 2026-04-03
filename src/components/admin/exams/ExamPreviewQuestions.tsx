@@ -38,32 +38,40 @@ export function ExamPreviewQuestions({ questions }: Props) {
           </div>
 
           <div className="space-y-4 pl-1">
+            {/* Hướng dẫn / Mô tả */}
+            {"instruction" in q && q.instruction && (
+              <div className="bg-blue-50/50 rounded-xl p-4 border border-blue-100 text-blue-800 text-sm font-medium">
+                {q.instruction as React.ReactNode}
+              </div>
+            )}
+
             {/* Audio */}
-            {"audio_url" in q && q.audio_url && (
+            {["listening_group", "listening_mcq", "listening_open", "listening_fill"].includes(q.question_type) && "audio_url" in q && q.audio_url && (
               <div className="w-full max-w-sm mb-4">
                 <audio controls src={q.audio_url} className="w-full h-10" />
               </div>
             )}
 
             {/* Đoạn văn */}
-            {"passage" in q && q.passage && (
-              <div className="p-4 bg-gray-50 rounded-[10px] border border-gray-100 text-gray-700 text-sm font-medium whitespace-pre-wrap leading-relaxed">
-                {q.passage}
-              </div>
+            {["reading_group", "reading_mcq", "reading_open"].includes(q.question_type) && "passage" in q && q.passage && (
+              <div 
+                className="p-4 bg-gray-50 rounded-[10px] border border-gray-100 text-gray-700 text-sm font-medium whitespace-pre-wrap leading-relaxed [&>ul]:list-disc [&>ul]:ml-5 [&>ol]:list-decimal [&>ol]:ml-5 [&>p]:mb-2 [&_strong]:font-bold [&_em]:italic [&_u]:underline"
+                dangerouslySetInnerHTML={{ __html: q.passage as string }}
+              />
             )}
 
             {/* Câu hỏi */}
-            {"question" in q && q.question && (
+            {["reading_mcq", "reading_open", "listening_mcq", "listening_open"].includes(q.question_type) && "question" in q && q.question && (
               <p className="font-semibold text-gray-800 text-base">{q.question}</p>
             )}
 
             {/* Câu bị lỗi (Error Correction) */}
-            {"sentence" in q && q.sentence && (
+            {q.question_type === "error_correction" && "sentence" in q && q.sentence && (
               <p className="font-semibold text-gray-800 text-base">{q.sentence}</p>
             )}
 
             {/* Trắc nghiệm (MCQ) */}
-            {"options" in q && Array.isArray(q.options) && (
+            {["reading_mcq", "listening_mcq"].includes(q.question_type) && "options" in q && Array.isArray(q.options) && (
               <div className="space-y-2 mt-4">
                 {q.options.map((opt, optIdx) => {
                   const isCorrect = q.correct_indexes?.includes(optIdx);
@@ -110,7 +118,7 @@ export function ExamPreviewQuestions({ questions }: Props) {
             )}
 
             {/* Đáp án mẫu (Open ended) */}
-            {"sample_answer" in q && q.sample_answer && (
+            {["reading_open", "listening_open"].includes(q.question_type) && "sample_answer" in q && q.sample_answer && (
               <div className="mt-4">
                 <div className="text-sm font-medium text-gray-500 mb-1.5">
                   Đáp án mẫu:
@@ -208,7 +216,7 @@ export function ExamPreviewQuestions({ questions }: Props) {
             )}
 
             {/* Giải thích (Explanation) */}
-            {"explanation" in q && q.explanation && (
+            {["reading_mcq", "listening_mcq", "word_arrangement", "error_correction"].includes(q.question_type) && "explanation" in q && q.explanation && (
               <div className="mt-5 p-3.5 bg-blue-50 border border-blue-100 rounded-[10px]">
                 <p className="text-[11px] font-bold text-blue-600 uppercase tracking-wider mb-1.5">
                   Giải thích đáp án
@@ -216,6 +224,81 @@ export function ExamPreviewQuestions({ questions }: Props) {
                 <p className="text-sm text-blue-800 whitespace-pre-wrap leading-relaxed">
                   {q.explanation}
                 </p>
+              </div>
+            )}
+
+            {/* Câu hỏi con (Nhóm bài Đọc/Nghe hiểu) */}
+            {["reading_group", "listening_group"].includes(q.question_type) && "sub_questions" in q && Array.isArray(q.sub_questions) && q.sub_questions.length > 0 && (
+              <div className="mt-6 space-y-4 border-t border-gray-100 pt-5">
+                <h4 className="font-semibold text-gray-800 text-sm uppercase tracking-wide">Các câu hỏi con:</h4>
+                {q.sub_questions.map((subQ, subIdx) => {
+                  const isMulti = subQ.selection_mode === "multi";
+                  return (
+                    <div key={subIdx} className="bg-gray-50/80 p-4 md:p-5 rounded-xl border border-gray-100 shadow-sm relative overflow-hidden">
+                      <div className="absolute top-0 left-0 w-1 h-full bg-purple-400"></div>
+                      <div className="flex items-start gap-3 mb-4">
+                        <span className="w-6 h-6 rounded-full bg-purple-100 text-purple-700 text-xs font-bold flex items-center justify-center shrink-0 mt-0.5 shadow-sm">
+                          {subIdx + 1}
+                        </span>
+                        <p className="font-semibold text-gray-800 text-base flex-1 pt-0.5">{subQ.question}</p>
+                      </div>
+                      
+                      <div className="space-y-2.5 pl-9">
+                        {subQ.options.map((opt: string, optIdx: number) => {
+                          const isCorrect = subQ.correct_indexes?.includes(optIdx);
+                          return (
+                            <div
+                              key={optIdx}
+                              className={cn(
+                                "flex items-center gap-3 p-3 rounded-xl border transition-all duration-200",
+                                isCorrect
+                                  ? "border-green-300 bg-green-50 shadow-[inset_0_0_0_1px_rgba(74,222,128,0.2)]"
+                                  : "border-gray-200 bg-white hover:border-gray-300 hover:bg-gray-50/50"
+                              )}
+                            >
+                              <div
+                                className={cn(
+                                  "shrink-0 transition-colors",
+                                  isCorrect ? "text-green-500" : "text-gray-300"
+                                )}
+                              >
+                                {isMulti ? (
+                                  isCorrect ? <CheckSquare2 size={18} /> : <Square size={18} />
+                                ) : isCorrect ? (
+                                  <CheckCircle2 size={18} />
+                                ) : (
+                                  <Circle size={18} />
+                                )}
+                              </div>
+                              <span className="font-medium text-[13px] text-gray-400 w-5 font-mono">
+                                {String.fromCharCode(65 + optIdx)}.
+                              </span>
+                              <span
+                                className={cn(
+                                  "text-sm flex-1 leading-snug",
+                                  isCorrect ? "text-green-800 font-medium" : "text-gray-700"
+                                )}
+                              >
+                                {opt}
+                              </span>
+                            </div>
+                          );
+                        })}
+                      </div>
+
+                      {subQ.explanation && (
+                        <div className="mt-4 ml-9 p-3.5 bg-blue-50/80 border border-blue-100 rounded-xl relative">
+                          <p className="text-[11px] font-bold text-blue-600 uppercase tracking-wider mb-1.5 flex items-center gap-1.5">
+                            Giải thích
+                          </p>
+                          <p className="text-[13px] text-blue-900 leading-relaxed font-medium">
+                            {subQ.explanation}
+                          </p>
+                        </div>
+                      )}
+                    </div>
+                  );
+                })}
               </div>
             )}
           </div>

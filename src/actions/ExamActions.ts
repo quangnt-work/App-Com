@@ -31,7 +31,95 @@ export async function getExamQuestions(examId: string) {
     if (error) throw error;
     // Map db options JSON string back to actual questions
     const questions = data?.map((q) => q.options) || [];
-    return { data: questions, error: null };
+
+    const groupedQuestions: any[] = [];
+    let currentReadingGroup: any = null;
+
+    for (const q of questions) {
+      if ((q as any).question_type === 'reading_mcq') {
+         if (currentReadingGroup && currentReadingGroup.passage === (q as any).passage) {
+            // Add to existing group
+            currentReadingGroup.sub_questions.push({
+              question: (q as any).question,
+              selection_mode: (q as any).selection_mode,
+              options: (q as any).options,
+              correct_indexes: (q as any).correct_indexes,
+              explanation: (q as any).explanation,
+            });
+         } else {
+            // Finish previous group if exists
+            if (currentReadingGroup) {
+              groupedQuestions.push(currentReadingGroup);
+            }
+            // Start new group
+            currentReadingGroup = {
+              question_type: 'reading_group',
+              passage: (q as any).passage,
+              instruction: (q as any).instruction,
+              sub_questions: [{
+                question: (q as any).question,
+                selection_mode: (q as any).selection_mode,
+                options: (q as any).options,
+                correct_indexes: (q as any).correct_indexes,
+                explanation: (q as any).explanation,
+              }],
+            };
+         }
+      } else {
+         if (currentReadingGroup) {
+            groupedQuestions.push(currentReadingGroup);
+            currentReadingGroup = null;
+         }
+         groupedQuestions.push(q);
+      }
+    }
+    if (currentReadingGroup) {
+      groupedQuestions.push(currentReadingGroup);
+    }
+
+    // Pass 2: Group consecutive listening_mcq into listening_group
+    const finalGroupedQuestions: any[] = [];
+    let currentListeningGroup: any = null;
+
+    for (const q of groupedQuestions) {
+      if (q.question_type === 'listening_mcq' && q.audio_url) {
+        if (currentListeningGroup && currentListeningGroup.audio_url === q.audio_url) {
+          // Add to existing group
+          currentListeningGroup.sub_questions.push({
+            question: q.question,
+            selection_mode: q.selection_mode,
+            options: q.options,
+            correct_indexes: q.correct_indexes,
+            explanation: q.explanation,
+          });
+        } else {
+          if (currentListeningGroup) finalGroupedQuestions.push(currentListeningGroup);
+          currentListeningGroup = {
+            question_type: 'listening_group',
+            audio_url: q.audio_url,
+            instruction: q.instruction,
+            sub_questions: [{
+              question: q.question,
+              selection_mode: q.selection_mode,
+              options: q.options,
+              correct_indexes: q.correct_indexes,
+              explanation: q.explanation,
+            }]
+          };
+        }
+      } else {
+        if (currentListeningGroup) {
+          finalGroupedQuestions.push(currentListeningGroup);
+          currentListeningGroup = null;
+        }
+        finalGroupedQuestions.push(q);
+      }
+    }
+    if (currentListeningGroup) {
+      finalGroupedQuestions.push(currentListeningGroup);
+    }
+
+    return { data: finalGroupedQuestions, error: null };
   } catch (e: unknown) {
     const error = e as Error;
     return { data: [], error: error.message };
@@ -40,6 +128,41 @@ export async function getExamQuestions(examId: string) {
 
 export async function upsertExam(payload: ExamInput, id?: string) {
   try {
+    const flatQuestions: any[] = [];
+    if (payload.questions) {
+      for (const q of payload.questions) {
+        if (q.question_type === 'reading_group') {
+          for (const sub of (q as any).sub_questions) {
+             flatQuestions.push({
+               question_type: 'reading_mcq',
+               passage: (q as any).passage,
+               instruction: (q as any).instruction,
+               question: sub.question,
+               selection_mode: sub.selection_mode,
+               options: sub.options,
+               correct_indexes: sub.correct_indexes,
+               explanation: sub.explanation
+             });
+          }
+        } else if (q.question_type === 'listening_group') {
+          for (const sub of (q as any).sub_questions) {
+             flatQuestions.push({
+               question_type: 'listening_mcq',
+               audio_url: (q as any).audio_url,
+               instruction: (q as any).instruction,
+               question: sub.question,
+               selection_mode: sub.selection_mode,
+               options: sub.options,
+               correct_indexes: sub.correct_indexes,
+               explanation: sub.explanation
+             });
+          }
+        } else {
+          flatQuestions.push(q);
+        }
+      }
+    }
+
     const dbPayload = {
       title: payload.title,
       description: payload.description ?? null,
@@ -47,7 +170,7 @@ export async function upsertExam(payload: ExamInput, id?: string) {
       level: payload.level,
       exam_type: payload.exam_type,
       status: payload.status ? "published" : "draft",
-      question_count: payload.questions?.length || 0,
+      question_count: flatQuestions.length,
     };
 
     let examId = id;
@@ -70,8 +193,8 @@ export async function upsertExam(payload: ExamInput, id?: string) {
     if (error) throw error;
 
     // Save questions separately if examId is available
-    if (examId && payload.questions) {
-      const { error: qError } = await ExamRepository.saveQuestions(examId, payload.questions);
+    if (examId) {
+      const { error: qError } = await ExamRepository.saveQuestions(examId, flatQuestions);
       if (qError) throw qError;
     }
 

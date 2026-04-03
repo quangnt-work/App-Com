@@ -67,7 +67,7 @@ export function ExamPreviewModal({
 
   return (
     <Dialog open={isOpen} onOpenChange={onClose}>
-      <DialogContent className="sm:max-w-4xl max-h-[90vh] h-full w-full flex flex-col p-0 gap-0 overflow-hidden bg-slate-50 sm:rounded-2xl">
+      <DialogContent className="sm:max-w-[1200px] max-h-[92vh] h-full w-full flex flex-col p-0 gap-0 overflow-hidden bg-slate-50 sm:rounded-2xl">
         {/* Header */}
         <DialogHeader className="p-6 pb-4 shrink-0 bg-white border-b border-gray-100 shadow-sm z-10 relative flex flex-row items-center justify-between">
           <div>
@@ -101,7 +101,7 @@ export function ExamPreviewModal({
 
         {/* Body */}
         <div className="flex-1 w-full overflow-y-auto relative bg-slate-50">
-          <div className="p-6 md:p-8 space-y-8 max-w-4xl mx-auto">
+          <div className="p-6 md:p-8 space-y-8 max-w-[1000px] mx-auto">
             {/* Cảnh báo người dùng nếu đề có mô tả */}
             {exam.description && (
               <div className="p-4 bg-blue-50/50 border border-blue-100 rounded-xl">
@@ -150,7 +150,16 @@ export function ExamPreviewModal({
                   <AlignLeft size={14} className="text-emerald-500" /> Tổng số câu
                 </p>
                 <p className="text-sm font-semibold text-gray-800">
-                  {isLoading ? "..." : `${questions.length || exam.question_count} câu`}
+                  {isLoading ? "..." : (
+                    `${questions.length > 0
+                      ? questions.reduce((total, q: any) => {
+                          if (q.question_type === 'reading_group' || q.question_type === 'listening_group') {
+                            return total + (q.sub_questions?.length || 0);
+                          }
+                          return total + 1;
+                        }, 0)
+                      : exam.question_count || 0} câu`
+                  )}
                 </p>
               </div>
             </div>

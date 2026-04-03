@@ -1,7 +1,7 @@
 // src/components/student/profile/ExamResultModal.tsx
 'use client';
 
-import { useEffect, useState } from 'react';
+import { useEffect, useState, useMemo } from 'react';
 import { TestRecord } from '@/types/profile';
 import { getSubmissionDetail, QuestionResult, SubmissionDetail } from '@/actions/examSubmissions';
 import {
@@ -193,8 +193,8 @@ function TextAnswerDisplay({ q }: { q: QuestionResult }) {
 
 // ─── Question Item (accordion) ────────────────────────────────────────────────
 
-function QuestionItem({ q, index }: { q: QuestionResult; index: number }) {
-  const [open, setOpen] = useState(false);
+function QuestionItem({ q, index, hideContext = false, isSubQ = false }: { q: any; index: number; hideContext?: boolean; isSubQ?: boolean }) {
+  const [open, setOpen] = useState(true);
   const opts = q.rawOptions || {};
 
   const borderColor = q.isCorrect === true ? 'border-green-200' : q.isCorrect === false ? 'border-red-200' : 'border-blue-200';
@@ -225,7 +225,9 @@ function QuestionItem({ q, index }: { q: QuestionResult; index: number }) {
   const typeLabel = TYPE_LABELS[q.type] || q.type;
 
   return (
-    <div className={`rounded-2xl border-2 ${borderColor} ${bgColor} overflow-hidden`}>
+    <div className={`rounded-2xl border-2 ${borderColor} ${bgColor} overflow-hidden relative`}>
+      {isSubQ && <div className="absolute top-0 left-0 w-1 h-full bg-purple-400"></div>}
+      
       {/* Collapsed header */}
       <button
         className="w-full flex items-start justify-between gap-3 p-4 text-left"
@@ -252,7 +254,7 @@ function QuestionItem({ q, index }: { q: QuestionResult; index: number }) {
         <div className="px-4 pb-4 space-y-3 border-t border-white/60 pt-3">
 
           {/* Audio player */}
-          {audioUrl && (
+          {!hideContext && audioUrl && (
             <div className="rounded-xl bg-gray-50 border border-gray-200 p-3">
               <div className="flex items-center gap-2 mb-2">
                 <Volume2 size={14} className="text-gray-500" />
@@ -265,13 +267,13 @@ function QuestionItem({ q, index }: { q: QuestionResult; index: number }) {
           )}
 
           {/* Reading passage */}
-          {passage && (
+          {!hideContext && passage && (
             <div className="rounded-xl bg-gray-50 border border-gray-200 p-3">
               <div className="flex items-center gap-2 mb-2">
                 <AlignLeft size={14} className="text-gray-500" />
                 <span className="text-xs font-bold text-gray-500 uppercase tracking-wide">Đoạn văn</span>
               </div>
-              <div className="text-sm text-gray-700 leading-relaxed italic"
+              <div className="text-sm text-gray-700 leading-relaxed whitespace-pre-wrap [&>ul]:list-disc [&>ul]:ml-6 [&>ol]:list-decimal [&>ol]:ml-6 [&>p]:mb-3 [&_strong]:font-bold [&_em]:italic [&_u]:underline"
                    dangerouslySetInnerHTML={{ __html: passage }} />
             </div>
           )}
@@ -369,12 +371,90 @@ export function ExamResultModal({ record, onClose }: ExamResultModalProps) {
     });
   }, [record.submissionId, record.id]);
 
+  const groupedQuestions = useMemo(() => {
+    if (!detail?.questions) return [];
+    
+    const pass1: any[] = [];
+    let currentReadingGroup: any = null;
+
+    detail.questions.forEach((q: any, index: number) => {
+      const type = q.type;
+      const opts = q.rawOptions || {};
+      const passage = opts.passage;
+      const qWithIndex = { ...q, displayIndex: index + 1 };
+      
+      if (type === 'reading_mcq' && passage) {
+         if (currentReadingGroup && currentReadingGroup.passage === passage) {
+            currentReadingGroup.sub_questions.push(qWithIndex);
+         } else {
+            if (currentReadingGroup) pass1.push(currentReadingGroup);
+            currentReadingGroup = {
+              is_group: true,
+              type: 'reading_group',
+              passage: passage,
+              instruction: opts.instruction,
+              sub_questions: [qWithIndex],
+            };
+         }
+      } else {
+         if (currentReadingGroup) {
+            pass1.push(currentReadingGroup);
+            currentReadingGroup = null;
+         }
+         pass1.push(qWithIndex);
+      }
+    });
+    if (currentReadingGroup) pass1.push(currentReadingGroup);
+
+    const pass2: any[] = [];
+    let currentListeningGroup: any = null;
+
+    pass1.forEach((q: any) => {
+      if (q.is_group) {
+        if (currentListeningGroup) {
+          pass2.push(currentListeningGroup);
+          currentListeningGroup = null;
+        }
+        pass2.push(q);
+        return;
+      }
+      
+      const type = q.type;
+      const opts = q.rawOptions || {};
+      const audioUrl = opts.audio_url || opts.media_url;
+      
+      if (type === 'listening_mcq' && audioUrl) {
+         if (currentListeningGroup && currentListeningGroup.audio_url === audioUrl) {
+            currentListeningGroup.sub_questions.push(q);
+         } else {
+            if (currentListeningGroup) pass2.push(currentListeningGroup);
+            currentListeningGroup = {
+              is_group: true,
+              type: 'listening_group',
+              audio_url: audioUrl,
+              instruction: opts.instruction,
+              sub_questions: [q],
+            };
+         }
+      } else {
+         if (currentListeningGroup) {
+            pass2.push(currentListeningGroup);
+            currentListeningGroup = null;
+         }
+         pass2.push(q);
+      }
+    });
+    if (currentListeningGroup) pass2.push(currentListeningGroup);
+
+    return pass2;
+  }, [detail?.questions]);
+
   return (
     <div
       className="fixed inset-0 z-[200] flex items-center justify-center bg-black/60 backdrop-blur-sm p-4"
       onClick={e => e.target === e.currentTarget && onClose()}
     >
-      <div className="bg-white rounded-3xl w-full max-w-2xl shadow-2xl overflow-hidden flex flex-col max-h-[92vh] relative">
+      <div className="bg-white rounded-3xl w-full max-w-5xl shadow-2xl overflow-hidden flex flex-col max-h-[94vh] relative">
 
         {/* Close */}
         <button
@@ -411,7 +491,61 @@ export function ExamResultModal({ record, onClose }: ExamResultModalProps) {
                   <h4 className="text-sm font-bold text-gray-700">Chi tiết từng câu ({detail.questions.length} câu)</h4>
                   <span className="text-xs text-gray-400">Nhấn vào câu để xem chi tiết</span>
                 </div>
-                {detail.questions.map((q, i) => <QuestionItem key={q.id || i} q={q} index={i} />)}
+                {groupedQuestions.map((g: any, i: number) => {
+                  if (g.is_group) {
+                    return (
+                      <div key={`group-${i}`} className="bg-white p-5 md:p-6 rounded-2xl border border-gray-200 shadow-sm relative overflow-hidden mb-6">
+                        <div className="absolute top-0 left-0 w-1.5 h-full bg-[#f97316]"></div>
+                        
+                        <div className="flex items-center gap-3 mb-5 pl-1">
+                          <span className="font-bold text-gray-900 text-lg">Nhóm câu hỏi</span>
+                          <span className="px-2 py-0.5 rounded-full text-xs bg-orange-50 text-orange-600 border border-orange-200 font-bold tracking-wide">
+                            {g.type === 'reading_group' ? 'Đọc hiểu' : 'Nghe hiểu'}
+                          </span>
+                        </div>
+
+                        <div className="space-y-4 pl-1">
+                          {g.instruction && (
+                            <div className="bg-blue-50/50 rounded-xl p-4 border border-blue-100 text-blue-800 text-[13px] font-medium">
+                              {g.instruction}
+                            </div>
+                          )}
+                          {g.audio_url && (
+                            <div className="rounded-xl bg-slate-50 border border-slate-100 p-3">
+                              <div className="flex items-center gap-2 mb-2">
+                                <Volume2 size={14} className="text-gray-500" />
+                                <span className="text-xs font-bold text-gray-500 uppercase tracking-wide">Audio</span>
+                              </div>
+                              <audio controls className="w-full outline-none" controlsList="nodownload">
+                                <source src={g.audio_url} />
+                              </audio>
+                            </div>
+                          )}
+                          {g.passage && (
+                            <div className="rounded-xl bg-slate-50 border border-slate-100 p-3">
+                              <div className="flex items-center gap-2 mb-2">
+                                <AlignLeft size={14} className="text-gray-500" />
+                                <span className="text-xs font-bold text-gray-500 uppercase tracking-wide">Đoạn văn chung</span>
+                              </div>
+                              <div 
+                                className="text-sm text-slate-700 leading-relaxed whitespace-pre-wrap [&>ul]:list-disc [&>ul]:ml-6 [&>ol]:list-decimal [&>ol]:ml-6 [&>p]:mb-3 [&_strong]:font-bold [&_em]:italic [&_u]:underline" 
+                                dangerouslySetInnerHTML={{ __html: g.passage }} 
+                              />
+                            </div>
+                          )}
+                        </div>
+                        
+                        <div className="mt-6 space-y-3 border-t border-gray-100 pt-5">
+                           <h4 className="font-semibold text-gray-800 text-sm uppercase tracking-wide px-1">Các câu hỏi con:</h4>
+                           {g.sub_questions.map((subQ: any) => (
+                             <QuestionItem key={subQ.id} q={subQ} index={subQ.displayIndex - 1} hideContext={true} isSubQ={true} />
+                           ))}
+                        </div>
+                      </div>
+                    );
+                  }
+                  return <QuestionItem key={g.id || i} q={g} index={g.displayIndex ? g.displayIndex - 1 : i} />;
+                })}
                 {detail.questions.length === 0 && (
                   <p className="text-center text-gray-400 italic py-8 text-sm">Không có dữ liệu câu hỏi.</p>
                 )}

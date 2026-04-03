@@ -30,18 +30,18 @@ export function ProfileClient({ profile, history, chartData }: ProfileClientProp
 
   return (
     <div className="min-h-screen bg-[#f8f9fc] p-4 md:p-8 font-sans">
-      <div className="max-w-[1200px] mx-auto">
+      <div className="max-w-[1400px] mx-auto">
 
-        {/* Layout Grid: 1 cột cho Mobile, 3 cột cho Desktop */}
-        <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
+        {/* Layout Grid: 1 cột cho Mobile, 4 cột cho Desktop */}
+        <div className="grid grid-cols-1 xl:grid-cols-4 gap-6 md:gap-8">
 
           {/* Cột Trái: Profile Card */}
-          <div className="lg:col-span-1">
+          <div className="xl:col-span-1 min-w-[300px]">
             <UserProfileCard profile={profile} />
           </div>
 
           {/* Cột Phải: Thống kê & Lịch sử */}
-          <div className="lg:col-span-2 space-y-6">
+          <div className="xl:col-span-3 space-y-6 w-full overflow-hidden">
 
             {/* Header Thống kê & Bộ lọc */}
             <div className="bg-white p-4 rounded-2xl shadow-sm border border-gray-100 flex items-center justify-between">

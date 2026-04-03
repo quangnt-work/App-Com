@@ -51,12 +51,22 @@ export async function getSubmissionDetail(
     if (!user) return { success: false, error: 'Unauthorized' };
 
     // 1. Fetch submission header
-    const { data: sub, error: subErr } = await supabase
+    const { data: profile } = await supabase
+      .from('profiles')
+      .select('role')
+      .eq('id', user.id)
+      .single();
+
+    let query = supabase
       .from('exam_submissions')
       .select('id, score, total_score, answers, teacher_feedback, exam_id, exams(title)')
-      .eq('id', submissionId)
-      .eq('user_id', user.id)
-      .single();
+      .eq('id', submissionId);
+
+    if (profile?.role !== 'admin') {
+      query = query.eq('user_id', user.id);
+    }
+
+    const { data: sub, error: subErr } = await query.single();
 
     if (subErr || !sub) return { success: false, error: 'Không tìm thấy bài làm.' };
 

@@ -69,6 +69,7 @@ export function HistoryTable({ records }: HistoryTableProps) {
                 <th className="px-5 py-3.5">Ngày</th>
                 <th className="px-5 py-3.5">Tên bài kiểm tra</th>
                 <th className="px-5 py-3.5">Loại</th>
+                <th className="px-5 py-3.5 text-center">Cấp độ</th>
                 <th className="px-5 py-3.5">Trạng thái</th>
                 <th className="px-5 py-3.5 text-right">Điểm</th>
                 <th className="px-5 py-3.5 text-center">Chi tiết</th>
@@ -90,6 +91,11 @@ export function HistoryTable({ records }: HistoryTableProps) {
                     <td className="px-5 py-4">
                       <TypeBadge type={record.type} />
                     </td>
+                    <td className="px-5 py-4 text-center">
+                      <span className="inline-flex items-center justify-center px-2 py-1.5 min-w-[36px] rounded-lg text-xs font-bold bg-slate-100/80 text-slate-600 border border-slate-200 uppercase tracking-wider">
+                        {record.examLevel && record.examLevel !== '-' ? record.examLevel : 'ALL'}
+                      </span>
+                    </td>
                     <td className="px-5 py-4">
                       <PassBadge passed={record.passed} />
                     </td>
@@ -109,7 +115,7 @@ export function HistoryTable({ records }: HistoryTableProps) {
                 ))
               ) : (
                 <tr>
-                  <td colSpan={6} className="px-5 py-10 text-center text-gray-400 italic text-sm">
+                  <td colSpan={7} className="px-5 py-10 text-center text-gray-400 italic text-sm">
                     Bạn chưa có bài kiểm tra nào. Hãy bắt đầu luyện tập!
                   </td>
                 </tr>

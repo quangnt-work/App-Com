@@ -63,26 +63,40 @@ export default async function StudentsPage({ searchParams }: StudentsPageProps) 
   if (profiles && profiles.length > 0) {
     const profileIds = profiles.map((p) => p.id);
 
-    // 2. Fetch exam stats
+    // 2. Fetch exam stats with level info for computing student level
     const { data: submissions } = await supabase
       .from("exam_submissions")
-      .select("user_id, score")
+      .select("user_id, score, total_score, exams(level)")
       .in("user_id", profileIds)
       .in("status", ["completed", "graded"]);
 
-    const statsMap = new Map<string, { examCount: number; highestScore: number | null }>();
+    const LEVEL_ORDER: Record<string, number> = { A1: 1, A2: 2, B1: 3, B2: 4, C1: 5, C2: 6, all: 0 };
+    const statsMap = new Map<string, { examCount: number; highestScore: number | null; highestLevel: string | null }>();
 
-    for (const sub of submissions ?? []) {
+    for (const sub of (submissions ?? []) as any[]) {
       if (!sub.user_id) continue;
       const current = statsMap.get(sub.user_id) ?? {
         examCount: 0,
         highestScore: null,
+        highestLevel: null,
       };
 
       current.examCount += 1;
       if (sub.score !== null) {
         current.highestScore =
           current.highestScore === null ? sub.score : Math.max(current.highestScore, sub.score);
+      }
+
+      // Compute highest passed level (>= 70% score ratio)
+      const totalScore = sub.total_score || 10;
+      const isPassed = sub.score !== null && (sub.score / totalScore) >= 0.7;
+      const examLevel = sub.exams?.level || '';
+      if (isPassed && examLevel in LEVEL_ORDER) {
+        const rank = LEVEL_ORDER[examLevel];
+        const currentRank = current.highestLevel ? (LEVEL_ORDER[current.highestLevel] ?? -1) : -1;
+        if (rank > currentRank) {
+          current.highestLevel = examLevel;
+        }
       }
 
       statsMap.set(sub.user_id, current);
@@ -92,6 +106,7 @@ export default async function StudentsPage({ searchParams }: StudentsPageProps) 
       const stats = statsMap.get(profile.id) ?? {
         examCount: 0,
         highestScore: null,
+        highestLevel: null,
       };
 
       return {
@@ -101,7 +116,7 @@ export default async function StudentsPage({ searchParams }: StudentsPageProps) 
         email: "", // User requested removing email field, and we don't display it anymore
         avatar_url: profile.avatar_url,
         created_at: profile.created_at,
-        level: null,
+        level: stats.highestLevel,
         examCount: stats.examCount,
         highestScore: stats.highestScore,
       };

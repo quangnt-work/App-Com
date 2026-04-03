@@ -11,6 +11,7 @@ import {
 } from "@/components/ui/form";
 import { Input } from "@/components/ui/input";
 import { Textarea } from "@/components/ui/textarea";
+import RichTextEditor from "@/components/ui/rich-text-editor";
 import { ExamInput } from "@/lib/schemas/exam";
 import { BookOpen, MessageSquare } from "lucide-react";
 
@@ -34,11 +35,10 @@ export default function ReadingOpenEnded({ index }: ReadingOpenEndedProps) {
               Đoạn văn bản <span className="text-red-500">*</span>
             </FormLabel>
             <FormControl>
-              <Textarea
+              <RichTextEditor
                 placeholder="Nhập đoạn văn cần đọc..."
-                rows={5}
-                className="resize-y font-mono text-sm"
-                {...(field as object)}
+                value={(field as any).value || ""}
+                onChange={(field as any).onChange}
               />
             </FormControl>
             <FormMessage />

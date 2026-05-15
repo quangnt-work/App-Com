@@ -2,7 +2,7 @@
 "use client";
 
 import { useRef } from "react";
-import { Maximize, Download } from "lucide-react";
+import { Maximize } from "lucide-react";
 import { Grammar } from "@/types/grammar";
 
 interface GrammarViewerProps {
@@ -43,14 +43,6 @@ export function GrammarViewer({ grammar }: GrammarViewerProps) {
          >
             <Maximize size={18} />
          </button>
-         <a 
-            href={grammar.file_url}
-            target="_blank"
-            rel="noreferrer"
-            className="w-10 h-10 bg-white rounded-xl border border-gray-200 flex items-center justify-center text-gray-700 hover:bg-gray-50 hover:text-blue-600 transition-colors shadow-sm"
-         >
-            <Download size={18} />
-         </a>
       </div>
 
       {/* Khung iframe */}
@@ -69,7 +61,7 @@ export function GrammarViewer({ grammar }: GrammarViewerProps) {
         
         {isPdf && (
           <iframe 
-            src={`${grammar.file_url}#view=FitH`} 
+            src={`/api/pdf/${encodeURIComponent(grammar.title + '.pdf')}?url=${encodeURIComponent(grammar.file_url)}#zoom=100`} 
             className="w-full h-full" 
             frameBorder="0" 
             allowFullScreen 

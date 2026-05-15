@@ -22,19 +22,11 @@ export const metadata: Metadata = {
   manifest: "/manifest.json",
 };
 
-export default async function RootLayout({ children }: { children: React.ReactNode }) {
-  const supabase = await createClient();
-  const { data: { user } } = await supabase.auth.getUser();
-
-  const userData = user ? { 
-    name: String(user.user_metadata?.full_name || user.email), 
-    role: String(user.user_metadata?.role || 'student') 
-  } : null;
-
+export default function RootLayout({ children }: { children: React.ReactNode }) {
   return (
     <html lang="vi">
       <body suppressHydrationWarning>
-        <Header user={userData} />
+        <Header />
         {children}
         <Toaster position="top-center" richColors /> {/* <-- Thêm dòng này */}
         <Footer/>

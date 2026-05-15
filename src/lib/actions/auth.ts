@@ -149,3 +149,22 @@ export async function logout() {
   revalidatePath('/', 'layout')
   return { success: true }
 }
+
+// ==========================================
+// 5. SERVER ACTION: GET CURRENT USER
+// ==========================================
+export async function getAuthUser() {
+  try {
+    const supabase = await createClient()
+    const { data: { user } } = await supabase.auth.getUser()
+    
+    if (!user) return null
+    
+    return {
+      name: String(user.user_metadata?.full_name || user.email),
+      role: String(user.user_metadata?.role || 'student')
+    }
+  } catch (error) {
+    return null
+  }
+}

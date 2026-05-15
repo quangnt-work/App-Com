@@ -1,29 +1,56 @@
 // src/components/layout/header.tsx
+
 "use client";
 
-import React, { useTransition } from 'react';
+import React, { useTransition, useEffect, useState } from 'react';
 import Link from 'next/link';
-import { LogOut, User, Loader2, Home } from 'lucide-react'; // Thêm import Home
-import { logout } from '@/lib/actions/auth'; 
+import Image from 'next/image';
+import { useRouter, usePathname } from 'next/navigation';
+import { LogOut, User, Loader2, Home } from 'lucide-react';
+import { logout, getAuthUser } from '@/lib/actions/auth'; 
 import { toast } from 'sonner';
 
-interface HeaderProps {
-  user?: { 
-    name?: string; 
-    role?: string 
-  } | null; // Cập nhật type cho linh hoạt
+interface UserData {
+  name: string;
+  role: string;
 }
 
-export const Header = ({ user }: HeaderProps) => {
-  const isLoggedIn = !!user;
+export const Header = () => {
+  const [user, setUser] = useState<UserData | null>(null);
+  const [loading, setLoading] = useState(true);
+  const router = useRouter();
+  const pathname = usePathname();
   const [isPending, startTransition] = useTransition(); 
+
+  useEffect(() => {
+    let isMounted = true;
+    const fetchUser = async () => {
+      try {
+        const userData = await getAuthUser();
+        if (isMounted) {
+          setUser(userData);
+          setLoading(false);
+        }
+      } catch (error) {
+        if (isMounted) setLoading(false);
+      }
+    };
+
+    fetchUser();
+    
+    return () => { isMounted = false; };
+  }, [pathname]); // Fetch lại khi route thay đổi (sau khi login/logout)
+
+  const isLoggedIn = !!user;
 
   const handleLogout = () => {
     startTransition(async () => {
       try {
         await logout(); 
         toast.success("Đã đăng xuất thành công!");
-        window.location.href = '/';
+        setUser(null);
+        router.push('/');
+        router.refresh();
       } catch (error) {
         toast.error("Đã xảy ra lỗi khi đăng xuất.");
       }
@@ -36,10 +63,10 @@ export const Header = ({ user }: HeaderProps) => {
         {/* Left: Quốc kỳ */}
         <div className="flex items-center gap-2">
           <div className="relative w-8 h-5 shadow-sm border">
-            <img src="https://flagpedia.net/data/flags/h80/vn.png" alt="VN" className="object-cover w-full h-full" />
+            <Image src="https://flagpedia.net/data/flags/h80/vn.png" alt="VN" fill className="object-cover" unoptimized />
           </div>
           <div className="relative w-8 h-5 shadow-sm border">
-            <img src="https://flagpedia.net/data/flags/h80/ru.png" alt="RU" className="object-cover w-full h-full" />
+            <Image src="https://flagpedia.net/data/flags/h80/ru.png" alt="RU" fill className="object-cover" unoptimized />
           </div>
         </div>
 
@@ -50,7 +77,11 @@ export const Header = ({ user }: HeaderProps) => {
 
         {/* Right: Auth Actions */}
         <div className="flex items-center gap-3">
-          {!isLoggedIn ? (
+          {loading ? (
+            <div className="flex items-center justify-center p-2 text-slate-400">
+               <Loader2 size={20} className="animate-spin" />
+            </div>
+          ) : !isLoggedIn ? (
             <div className="flex items-center gap-2">
               <Link 
                 href="/login" 

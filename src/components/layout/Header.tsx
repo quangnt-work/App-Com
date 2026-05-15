@@ -7,7 +7,7 @@ import Link from 'next/link';
 import Image from 'next/image';
 import { useRouter, usePathname } from 'next/navigation';
 import { LogOut, User, Loader2, Home } from 'lucide-react';
-import { logout, getAuthUser } from '@/lib/actions/auth'; 
+import { logout, getAuthUser } from '@/lib/actions/auth';
 import { toast } from 'sonner';
 
 interface UserData {
@@ -20,7 +20,7 @@ export const Header = () => {
   const [loading, setLoading] = useState(true);
   const router = useRouter();
   const pathname = usePathname();
-  const [isPending, startTransition] = useTransition(); 
+  const [isPending, startTransition] = useTransition();
 
   useEffect(() => {
     let isMounted = true;
@@ -37,7 +37,7 @@ export const Header = () => {
     };
 
     fetchUser();
-    
+
     return () => { isMounted = false; };
   }, [pathname]); // Fetch lại khi route thay đổi (sau khi login/logout)
 
@@ -46,7 +46,7 @@ export const Header = () => {
   const handleLogout = () => {
     startTransition(async () => {
       try {
-        await logout(); 
+        await logout();
         toast.success("Đã đăng xuất thành công!");
         setUser(null);
         router.push('/');
@@ -72,25 +72,25 @@ export const Header = () => {
 
         {/* Center: Title (Ẩn trên mobile nhỏ) */}
         <h1 className="hidden md:block font-bold text-blue-900 uppercase text-center flex-1 px-4 leading-tight text-sm lg:text-base">
-          Website hỗ trợ giảng dạy và tự học tiếng Nga
+          Phần mềm hỗ trợ giảng dạy và tự học tiếng Nga
         </h1>
 
         {/* Right: Auth Actions */}
         <div className="flex items-center gap-3">
           {loading ? (
             <div className="flex items-center justify-center p-2 text-slate-400">
-               <Loader2 size={20} className="animate-spin" />
+              <Loader2 size={20} className="animate-spin" />
             </div>
           ) : !isLoggedIn ? (
             <div className="flex items-center gap-2">
-              <Link 
-                href="/login" 
+              <Link
+                href="/login"
                 className="text-sm font-medium text-slate-600 hover:text-blue-700 px-3 py-2 transition-colors"
               >
                 Đăng nhập
               </Link>
-              <Link 
-                href="/register" 
+              <Link
+                href="/register"
                 className="text-sm font-bold bg-blue-700 text-white px-4 py-2 rounded-full hover:bg-blue-800 transition-all shadow-md"
               >
                 Đăng ký
@@ -99,8 +99,8 @@ export const Header = () => {
           ) : (
             <div className="flex items-center gap-4">
               {/* === NÚT HOME === */}
-              <Link 
-                href={user?.role === 'admin' ? '/admin/dashboard' : '/'} 
+              <Link
+                href={user?.role === 'admin' ? '/admin/dashboard' : '/'}
                 className="text-slate-500 hover:text-blue-600 hover:bg-blue-50 p-2 rounded-full transition-colors flex items-center justify-center"
                 title={user?.role === 'admin' ? "Admin Dashboard" : "Trang chủ"}
               >
@@ -109,8 +109,8 @@ export const Header = () => {
 
               {/* === NÚT PROFILE (CHỈ CHO HỌC VIÊN) === */}
               {user?.role !== 'admin' && (
-                <Link 
-                  href="/student/profile" 
+                <Link
+                  href="/student/profile"
                   className="text-slate-500 hover:text-blue-600 hover:bg-blue-50 p-2 rounded-full transition-colors flex items-center justify-center"
                   title="Hồ sơ cá nhân"
                 >
@@ -124,9 +124,9 @@ export const Header = () => {
                   {user?.role === 'admin' ? 'Quản trị' : (user?.name || 'Học viên')}
                 </span>
               </div>
-              
+
               {/* === NÚT LOGOUT === */}
-              <button 
+              <button
                 onClick={handleLogout}
                 disabled={isPending}
                 className="text-red-500 hover:bg-red-50 p-2 rounded-full transition-colors disabled:opacity-50 flex items-center justify-center"
@@ -134,7 +134,7 @@ export const Header = () => {
               >
                 {isPending ? <Loader2 size={20} className="animate-spin" /> : <LogOut size={20} />}
               </button>
-              
+
             </div>
           )}
         </div>

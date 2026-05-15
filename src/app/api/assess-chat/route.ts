@@ -60,7 +60,7 @@ Trả về kết quả bằng tiếng Việt. BẮT BUỘC theo đúng JSON sau:
             }));
 
             const response = await gemini.models.generateContent({
-                model: "gemini-2.5-flash",
+                model: "gemini-3.1-flash-lite",
                 contents: [
                     {
                         role: "user",
@@ -92,7 +92,7 @@ Lịch sử hội thoại:
 ${conversationText}`;
 
         const response = await gemini.models.generateContent({
-            model: "gemini-2.5-flash",
+            model: "gemini-3.1-flash-lite",
             contents: [{ role: "user", parts: [{ text: textPrompt }] }],
             config: {
                 responseMimeType: "application/json",

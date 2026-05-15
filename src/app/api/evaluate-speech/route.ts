@@ -13,32 +13,35 @@ const gemini = new GoogleGenAI({ apiKey: process.env.GEMINI_API_KEY });
 
 export async function POST(request: Request) {
   try {
-    // 1. Lấy file audio và targetText từ FormData do client gửi lên
+    // 1. Lấy dữ liệu từ FormData
     const formData = await request.formData();
-    const audioFile = formData.get("audio") as File;
     const targetText = (formData.get("targetText") as string) || "";
-
-    if (!audioFile) {
-      return NextResponse.json({ error: "Không tìm thấy file audio" }, { status: 400 });
-    }
+    let studentText = (formData.get("studentText") as string) || "";
 
     if (!targetText.trim()) {
       return NextResponse.json({ error: "Không tìm thấy văn bản mẫu để đánh giá" }, { status: 400 });
     }
 
     // ==========================================
-    // GIAI ĐOẠN 1: SPEECH-TO-TEXT VỚI WHISPER (Groq)
+    // GIAI ĐOẠN 1: SPEECH-TO-TEXT VỚI WHISPER (Groq) HOẶC SỬ DỤNG TEXT TỪ CLIENT
     // ==========================================
-    const transcription = await groq.audio.transcriptions.create({
-      file: audioFile,
-      model: "whisper-large-v3",
-      response_format: "json",
-      language: "ru",
-    });
+    if (!studentText) {
+      // Nếu client gửi audio thực sự (chưa bóc băng)
+      const audioFile = formData.get("audio") as File;
+      if (!audioFile || audioFile.size <= 0 || audioFile.type === 'application/octet-stream') {
+         return NextResponse.json({ error: "Không có file ghi âm hợp lệ và không có văn bản" }, { status: 400 });
+      }
 
-    const studentText = transcription.text?.trim();
+      const transcription = await groq.audio.transcriptions.create({
+        file: audioFile,
+        model: "whisper-large-v3",
+        response_format: "json",
+        language: "ru",
+      });
+      studentText = transcription.text?.trim() || "";
+    }
 
-    // Nếu Whisper không nhận diện được gì (audio im lặng / quá ngắn)
+    // Nếu không nhận diện được gì
     if (!studentText) {
       return NextResponse.json({
         score: 0,
@@ -75,7 +78,7 @@ export async function POST(request: Request) {
     `;
 
     const response = await gemini.models.generateContent({
-      model: "gemini-2.0-flash",
+      model: "gemini-3.1-flash-lite",
       contents: [{ role: "user", parts: [{ text: evaluationPrompt }] }],
       config: {
         responseMimeType: "application/json",

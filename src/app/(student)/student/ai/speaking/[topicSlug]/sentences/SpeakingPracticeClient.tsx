@@ -1,11 +1,13 @@
 'use client';
 
-import React, { useState, useRef } from 'react';
+import React, { useState, useEffect } from 'react';
 import { useRouter } from 'next/navigation';
+import stringSimilarity from 'string-similarity';
 import { Sentence, EvaluationResult } from '@/types/ai-practice';
 import { SentenceDisplay } from '@/components/student/ai/speaking/SentenceDisplay';
 import { EvaluationFeedback } from '@/components/student/ai/speaking/EvaluationFeedback';
 import { PracticeControls } from '@/components/student/ai/speaking/PracticeControls';
+import { useSpeechRecognition } from '@/hooks/useSpeechRecognition';
 import { toast } from 'sonner';
 
 interface Props {
@@ -16,65 +18,90 @@ interface Props {
 export default function SpeakingPracticeClient({ sentences, topicName }: Props) {
   const router = useRouter();
   const [currentIndex, setCurrentIndex] = useState(0);
-  const [isRecording, setIsRecording] = useState(false);
   const [isEvaluating, setIsEvaluating] = useState(false);
   const [evaluation, setEvaluation] = useState<EvaluationResult | null>(null);
   
-  const mediaRecorderRef = useRef<MediaRecorder | null>(null);
-  const audioChunksRef = useRef<Blob[]>([]);
+  const { isRecording, transcript, startRecording, stopRecording, resetTranscript, isSupported } = useSpeechRecognition('ru-RU');
 
   const currentSentence = sentences[currentIndex];
   const isLastSentence = currentIndex === sentences.length - 1;
 
-  const toggleRecording = async () => {
-    if (isRecording) {
-      mediaRecorderRef.current?.stop();
-      setIsRecording(false);
+  // Khi transcript có nội dung và kết thúc ghi âm, tự động chấm điểm
+  useEffect(() => {
+    if (!isRecording && transcript) {
+      evaluateSpeechLocally(transcript, currentSentence.russian_text);
+    }
+  }, [isRecording, transcript, currentSentence.russian_text]);
+
+  const evaluateSpeechLocally = (studentText: string, targetText: string) => {
+    if (!studentText.trim()) return;
+
+    setIsEvaluating(true);
+    
+    // Chuẩn hoá chuỗi: xoá dấu câu và đưa về chữ thường
+    const normalize = (str: string) => str.toLowerCase().replace(/[.,!?;:"']/g, '').trim();
+    
+    const normalizedTarget = normalize(targetText);
+    const normalizedStudent = normalize(studentText);
+
+    // Tính độ tương đồng
+    const similarity = stringSimilarity.compareTwoStrings(normalizedTarget, normalizedStudent);
+    const score = Math.round(similarity * 10); // Thang điểm 10
+
+    let tip = '';
+    if (score >= 8) {
+      tip = `Rất tốt! Hệ thống nghe thấy: "${studentText}"`;
+    } else if (score >= 5) {
+      tip = `Khá tốt, nhưng chưa hoàn hảo. Hệ thống nghe thấy: "${studentText}"`;
     } else {
-      try {
-        const stream = await navigator.mediaDevices.getUserMedia({ audio: true });
-        mediaRecorderRef.current = new MediaRecorder(stream);
-        audioChunksRef.current = [];
+      tip = `Hãy thử lại. Hệ thống nghe thấy: "${studentText}"`;
+    }
 
-        mediaRecorderRef.current.ondataavailable = (e) => {
-          if (e.data.size > 0) audioChunksRef.current.push(e.data);
-        };
+    setEvaluation({
+      score,
+      tip,
+    });
+    
+    setIsEvaluating(false);
+  };
 
-        mediaRecorderRef.current.onstop = async () => {
-          const audioBlob = new Blob(audioChunksRef.current, { type: 'audio/webm' });
-          await evaluateAudio(audioBlob);
-          stream.getTracks().forEach(track => track.stop());
-        };
+  const toggleRecording = () => {
+    if (!isSupported) {
+      toast.error("Trình duyệt của bạn không hỗ trợ nhận diện giọng nói. Vui lòng dùng Chrome/Edge.");
+      return;
+    }
 
-        mediaRecorderRef.current.start();
-        setIsRecording(true);
-        setEvaluation(null); 
-      } catch (err) {
-        toast.error("Vui lòng cấp quyền sử dụng Micro để luyện nói.");
-      }
+    if (isRecording) {
+      stopRecording();
+    } else {
+      resetTranscript();
+      setEvaluation(null);
+      startRecording();
     }
   };
 
-  const evaluateAudio = async (audioBlob: Blob) => {
-    setIsEvaluating(true); 
-    
+  const requestAiAnalysis = async () => {
+    if (!transcript) return;
+    setIsEvaluating(true);
     try {
-      const file = new File([audioBlob], "recording.webm", {
-        type: audioBlob.type,
-      });
-
       const formData = new FormData();
-      formData.append("audio", file);
-      formData.append("targetText", currentSentence.russian_text); 
+      // Dummy audio file to satisfy the current API (since the API expects an audio file)
+      // Note: Ideally, you should update the API to accept text directly for AI analysis.
+      // But for now, we'll construct a blob or we can just send the text.
+      // Let's assume we modify the API or we just use text.
+      // Actually, since we only need the API for AI fallback, let's just pass a dummy blob 
+      // but append the transcript so the server can use it directly!
+      const dummyBlob = new Blob(['dummy audio'], { type: 'audio/webm' });
+      formData.append("audio", dummyBlob);
+      formData.append("targetText", currentSentence.russian_text);
+      formData.append("studentText", transcript); // Add transcript to bypass Whisper
 
       const response = await fetch("/api/evaluate-speech", {
         method: "POST",
         body: formData,
       });
 
-      if (!response.ok) {
-        throw new Error("Lỗi API đánh giá");
-      }
+      if (!response.ok) throw new Error("Lỗi API đánh giá");
 
       const data = await response.json();
       
@@ -83,18 +110,16 @@ export default function SpeakingPracticeClient({ sentences, topicName }: Props) 
         combinedTip += ` Lỗi phát âm: ${data.errors.join(", ")}.`;
       }
 
-      const formattedResult: EvaluationResult = {
+      setEvaluation({
         score: data.score,
         tip: combinedTip || "Phát âm tốt!", 
-      };
-
-      setEvaluation(formattedResult);
+      });
 
     } catch (error) {
       console.error(error);
-      toast.error("Có lỗi xảy ra khi phân tích giọng nói.");
+      toast.error("Có lỗi xảy ra khi gọi AI phân tích.");
     } finally {
-      setIsEvaluating(false); 
+      setIsEvaluating(false);
     }
   };
 
@@ -104,6 +129,7 @@ export default function SpeakingPracticeClient({ sentences, topicName }: Props) 
     } else {
       setCurrentIndex(prev => prev + 1);
       setEvaluation(null); 
+      resetTranscript();
     }
   };
 
@@ -119,12 +145,21 @@ export default function SpeakingPracticeClient({ sentences, topicName }: Props) 
         
         <SentenceDisplay sentence={currentSentence} onPlayExample={playExample} />
         
-        {/* Chỉ gọi EvaluationFeedback, trạng thái loading đã được đẩy xuống PracticeControls */}
         <EvaluationFeedback evaluation={evaluation} />
+        
+        {evaluation && evaluation.score < 8 && (
+           <button 
+             onClick={requestAiAnalysis} 
+             disabled={isEvaluating}
+             className="mb-6 text-sm text-blue-600 underline hover:text-blue-800 disabled:opacity-50"
+           >
+             Hỏi AI chi tiết lỗi sai
+           </button>
+        )}
 
         <PracticeControls 
           isRecording={isRecording}
-          isEvaluating={isEvaluating} // Biến này sẽ giúp đổi text ở nút thu âm
+          isEvaluating={isEvaluating} 
           isLastSentence={isLastSentence}
           evaluation={evaluation}
           onToggleRecording={toggleRecording}

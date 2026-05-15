@@ -5,6 +5,7 @@ import { Mic, Send, Users, Plane, ShoppingBag, HeartPulse, Briefcase, Loader2, S
 import { useRouter } from 'next/navigation';
 import { ChatMessageType, ChatAssessment } from '@/types/ai-chat';
 import { ChatMessage } from '@/components/student/ai/chat/ChatMessage';
+import { useSpeechRecognition } from '@/hooks/useSpeechRecognition';
 import { toast } from 'sonner';
 
 const TOPICS_DATA = [
@@ -43,13 +44,14 @@ export default function AIChatInterfacePage({ params }: { params: Promise<{ topi
   const [assessmentMode, setAssessmentMode] = useState<'audio' | 'text' | null>(null);
 
   // === GHI ÂM STATE ===
-  const [isRecording, setIsRecording] = useState(false);
   const [isTranscribing, setIsTranscribing] = useState(false);
   const mediaRecorderRef = useRef<MediaRecorder | null>(null);
   const audioChunksRef = useRef<Blob[]>([]);
 
   // Lưu tối đa 3 audio blobs gần nhất để đánh giá ngữ điệu
   const audioSamplesRef = useRef<Blob[]>([]);
+
+  const { isRecording, transcript, startRecording, stopRecording, resetTranscript, isSupported } = useSpeechRecognition('ru-RU');
 
   const messagesEndRef = useRef<HTMLDivElement>(null);
   useEffect(() => {
@@ -159,13 +161,45 @@ export default function AIChatInterfacePage({ params }: { params: Promise<{ topi
     }
   };
 
+  // Lắng nghe khi kết thúc ghi âm từ Web Speech API
+  // Để tránh duplicate, ta dùng một ref để lưu transcript cuối cùng
+  const transcriptRef = useRef('');
+  useEffect(() => {
+    transcriptRef.current = transcript;
+  }, [transcript]);
+
+  const handleStopRecording = async () => {
+    stopRecording();
+    mediaRecorderRef.current?.stop();
+    
+    // Đợi một chút để state cập nhật transcript cuối cùng
+    setTimeout(async () => {
+      const finalTranscript = transcriptRef.current.trim();
+      if (!finalTranscript) {
+        toast.error('Không nhận diện được giọng nói. Vui lòng thử lại.');
+        audioSamplesRef.current.pop(); // Xoá blob vừa lưu vì vô dụng
+        return;
+      }
+      await handleSend(finalTranscript);
+      resetTranscript();
+    }, 500);
+  };
+
   // === GHI ÂM: TOGGLE MIC ===
   const toggleRecording = async () => {
+    if (!isSupported) {
+      toast.error("Trình duyệt không hỗ trợ nhận diện giọng nói. Hãy dùng Chrome.");
+      return;
+    }
+
     if (isRecording) {
-      mediaRecorderRef.current?.stop();
-      setIsRecording(false);
+      handleStopRecording();
     } else {
       try {
+        resetTranscript();
+        transcriptRef.current = '';
+        
+        // Ghi âm Blob song song để dùng cho lúc kết thúc (đánh giá ngữ điệu)
         const stream = await navigator.mediaDevices.getUserMedia({ audio: true });
         const recorder = new MediaRecorder(stream);
         mediaRecorderRef.current = recorder;
@@ -175,54 +209,20 @@ export default function AIChatInterfacePage({ params }: { params: Promise<{ topi
           if (e.data.size > 0) audioChunksRef.current.push(e.data);
         };
 
-        recorder.onstop = async () => {
+        recorder.onstop = () => {
           stream.getTracks().forEach(t => t.stop());
           const audioBlob = new Blob(audioChunksRef.current, { type: 'audio/webm' });
-          // Lưu blob để đánh giá ngữ điệu sau
           audioSamplesRef.current.push(audioBlob);
-          await transcribeAndSend(audioBlob);
         };
 
         recorder.start();
-        setIsRecording(true);
+        
+        // Bắt đầu Web Speech API để nhận text
+        startRecording();
         toast.info('Đang ghi âm... Bấm nút đỏ để dừng.');
       } catch {
         toast.error('Vui lòng cấp quyền sử dụng Micro.');
       }
-    }
-  };
-
-  // === TRANSCRIBE AUDIO → GỬI VÀO CHAT ===
-  const transcribeAndSend = async (blob: Blob) => {
-    setIsTranscribing(true);
-    try {
-      const file = new File([blob], 'voice-message.webm', { type: blob.type });
-      const formData = new FormData();
-      formData.append('audio', file);
-      formData.append('targetText', ' '); // khoảng trắng để pass validation
-
-      const res = await fetch('/api/evaluate-speech', {
-        method: 'POST',
-        body: formData,
-      });
-
-      const data = await res.json();
-      const transcript = data.transcript?.trim();
-
-      if (!transcript) {
-        toast.error('Không nhận diện được giọng nói. Vui lòng thử lại.');
-        // Xóa blob vừa thêm vì không dùng được
-        audioSamplesRef.current.pop();
-        return;
-      }
-
-      await handleSend(transcript);
-    } catch (error) {
-      console.error(error);
-      toast.error('Lỗi khi xử lý giọng nói.');
-      audioSamplesRef.current.pop();
-    } finally {
-      setIsTranscribing(false);
     }
   };
 

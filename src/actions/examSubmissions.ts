@@ -414,7 +414,7 @@ Bài làm của học sinh: ${userAnswer}`;
             while (retries < maxRetries) {
               try {
                 const response = await gemini.models.generateContent({
-                  model: "gemini-2.5-flash",
+                  model: "gemini-3.1-flash-lite",
                   contents: [{ role: "user", parts: [{ text: prompt }] }],
                   config: {
                     responseMimeType: "application/json",

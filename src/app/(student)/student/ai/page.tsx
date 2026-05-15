@@ -1,6 +1,6 @@
 // src/app/(student)/student/ai/page.tsx
 import React from 'react';
-import { Bot, Mic, BookOpenCheck, MessageSquare, Book, BookOpen } from 'lucide-react';
+import { Bot, Mic, BookOpenCheck, MessageSquare, Book, Drama } from 'lucide-react';
 import { CategoryCard } from '@/components/student/features/CategoryCard';
 import { createClient } from '@/lib/supabase/server';
 import { HeroBanner } from '@/components/common/HeroBanner';
@@ -34,12 +34,18 @@ export default async function AIPracticePage() {
       description: "Tra cứu từ vựng thông minh với ngữ cảnh và ví dụ minh họa sinh động.",
       icon: <Book size={28} strokeWidth={2} />,
       href: "/student/ai/dictionary"
+    },
+    {
+      title: "Nhập vai & Phản xạ",
+      description: "Trải nghiệm giả lập tình huống thực tế và luyện nhại giọng tốc độ cao.",
+      icon: <Drama size={28} strokeWidth={2} />,
+      href: "/student/ai/immersive"
     }
   ];
 
   return (
     <div className="min-h-screen bg-[#f8f9fc] flex flex-col font-sans">
-      <main className="flex-1 container mx-auto px-4 py-8 max-w-[1200px]">
+      <main className="flex-1 container mx-auto px-4 py-8 max-w-[1400px]">
         
         {/* Banner "LUYỆN TẬP CÙNG AI" */}
         <HeroBanner 
@@ -48,8 +54,8 @@ export default async function AIPracticePage() {
           icon={Bot}
         />
 
-        {/* Grid tính năng AI (4 cột) */}
-        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6">
+        {/* Grid tính năng AI */}
+        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-5 gap-6">
           {features.map((feature, index) => (
             <CategoryCard 
               key={index}

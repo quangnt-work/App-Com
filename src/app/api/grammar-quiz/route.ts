@@ -3,9 +3,7 @@
 // Mỗi lần gọi sẽ gen câu khác nhau nhờ temperature + prompt "random"
 
 import { NextResponse } from "next/server";
-import { GoogleGenAI } from "@google/genai";
-
-const gemini = new GoogleGenAI({ apiKey: process.env.GEMINI_API_KEY });
+import { generateContentWithFallback } from "@/lib/gemini";
 
 interface GrammarQuizRequest {
   topic: string;
@@ -49,14 +47,13 @@ BẮT BUỘC trả về JSON array với đúng format sau:
   }
 ]`;
 
-    const response = await gemini.models.generateContent({
-      model: "gemini-3.1-flash-lite",
+    const response = await generateContentWithFallback({
       contents: [{ role: "user", parts: [{ text: prompt }] }],
       config: {
         responseMimeType: "application/json",
         temperature: 0.9, // Cao để đảm bảo câu hỏi khác nhau mỗi lần
       },
-    });
+    }, "gemini-3.1-flash-lite");
 
     const responseText = response.text?.trim();
     if (!responseText) {

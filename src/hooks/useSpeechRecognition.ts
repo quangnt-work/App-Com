@@ -73,6 +73,14 @@ export function useSpeechRecognition(lang: string = 'ru-RU'): SpeechRecognitionH
 
       recognitionRef.current = recognition;
     }
+
+    return () => {
+      if (recognitionRef.current) {
+        try {
+          recognitionRef.current.stop();
+        } catch (e) {}
+      }
+    };
   }, [lang]);
 
   const startRecording = useCallback(() => {

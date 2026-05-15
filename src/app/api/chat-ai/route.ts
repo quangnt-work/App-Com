@@ -3,10 +3,8 @@
 // Free tier Gemini: RPD cao (~1,500/ngày), chất lượng tiếng Nga tốt hơn LLaMA
 
 import { NextResponse } from "next/server";
-import { GoogleGenAI } from "@google/genai";
 import { ChatRequestBody } from "@/types/ai-chat";
-
-const gemini = new GoogleGenAI({ apiKey: process.env.GEMINI_API_KEY });
+import { generateContentWithFallback } from "@/lib/gemini";
 
 export async function POST(request: Request) {
   try {
@@ -39,15 +37,14 @@ Trả về kết quả bằng tiếng Việt. BẮT BUỘC trả về JSON với
           parts: [{ text: msg.content }],
         }));
 
-    const response = await gemini.models.generateContent({
-      model: "gemini-3.1-flash-lite",
+    const response = await generateContentWithFallback({
       contents: geminiContents,
       config: {
         systemInstruction,
         temperature: isAssessment ? 0.2 : 0.7,
         ...(isAssessment && { responseMimeType: "application/json" }),
       },
-    });
+    }, "gemini-3.1-flash-lite");
 
     const responseText = response.text?.trim();
 

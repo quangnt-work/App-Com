@@ -4,12 +4,10 @@
 
 import { NextResponse } from "next/server";
 import Groq from "groq-sdk";
-import { GoogleGenAI } from "@google/genai";
+import { generateContentWithFallback } from "@/lib/gemini";
 
 // Groq chỉ dùng cho Whisper STT
 const groq = new Groq({ apiKey: process.env.GROQ_API_KEY });
-// Gemini dùng cho LLM đánh giá
-const gemini = new GoogleGenAI({ apiKey: process.env.GEMINI_API_KEY });
 
 export async function POST(request: Request) {
   try {
@@ -77,14 +75,13 @@ export async function POST(request: Request) {
       }
     `;
 
-    const response = await gemini.models.generateContent({
-      model: "gemini-3.1-flash-lite",
+    const response = await generateContentWithFallback({
       contents: [{ role: "user", parts: [{ text: evaluationPrompt }] }],
       config: {
         responseMimeType: "application/json",
         temperature: 0.2,
       },
-    });
+    }, "gemini-3.1-flash-lite");
 
     const resultJson = JSON.parse(response.text?.trim() || "{}");
 

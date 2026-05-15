@@ -1,0 +1,129 @@
+[
+  {
+    "id": "roleplay-1",
+    "title": "Quán cà phê",
+    "level": 1,
+    "context": "Bạn đang ở một quán cà phê tại Moscow. Hãy hoàn thành các mục tiêu sau:",
+    "ai_role": "Nhân viên quán cà phê",
+    "first_message": "Здравствуйте! Добро пожаловать. Что будете заказывать?",
+    "objectives": [
+      { "id": "obj1", "description": "Chào hỏi nhân viên" },
+      { "id": "obj2", "description": "Gọi một ly cà phê đen" },
+      { "id": "obj3", "description": "Gọi thêm một chiếc bánh ngọt" },
+      { "id": "obj4", "description": "Hỏi tổng tiền" },
+      { "id": "obj5", "description": "Thanh toán và cảm ơn" }
+    ]
+  },
+  {
+    "id": "roleplay-2",
+    "title": "Siêu thị",
+    "level": 1,
+    "context": "Bạn đang mua sắm tại một siêu thị lớn ở Nga. Hoàn thành các mục tiêu:",
+    "ai_role": "Nhân viên siêu thị / Thu ngân",
+    "first_message": "Здравствуйте! Чем могу вам помочь?",
+    "objectives": [
+      { "id": "obj1", "description": "Hỏi vị trí quầy sữa" },
+      { "id": "obj2", "description": "Nhờ lấy giúp đồ trên kệ cao" },
+      { "id": "obj3", "description": "Hỏi giá 1kg táo" },
+      { "id": "obj4", "description": "Thông báo thanh toán bằng thẻ" },
+      { "id": "obj5", "description": "Nhận biên lai" }
+    ]
+  },
+  {
+    "id": "roleplay-3",
+    "title": "Ga tàu điện ngầm",
+    "level": 2,
+    "context": "Bạn cần đi lại bằng tàu điện ngầm (Metro) ở Moscow.",
+    "ai_role": "Nhân viên bán vé nhà ga",
+    "first_message": "Здравствуйте! Вам нужен билет или пополнить карту?",
+    "objectives": [
+      { "id": "obj1", "description": "Mua thẻ Troika" },
+      { "id": "obj2", "description": "Nạp 500 Rub vào thẻ" },
+      { "id": "obj3", "description": "Hỏi chuyến tàu đi Quảng trường Đỏ" },
+      { "id": "obj4", "description": "Hỏi thời gian tàu đến" },
+      { "id": "obj5", "description": "Hỏi cách qua cửa soát vé" }
+    ]
+  },
+  {
+    "id": "roleplay-4",
+    "title": "Cửa hàng quần áo",
+    "level": 2,
+    "context": "Bạn đang mua sắm tại một trung tâm thương mại. Bạn muốn mua một chiếc áo khoác.",
+    "ai_role": "Nhân viên bán hàng",
+    "first_message": "Здравствуйте! Ищете что-то конкретное?",
+    "objectives": [
+      { "id": "obj1", "description": "Yêu cầu xem mẫu áo khoác" },
+      { "id": "obj2", "description": "Hỏi size lớn hơn" },
+      { "id": "obj3", "description": "Hỏi vị trí phòng thử đồ" },
+      { "id": "obj4", "description": "Nhận xét màu không hợp" },
+      { "id": "obj5", "description": "Yêu cầu mẫu màu đen" },
+      { "id": "obj6", "description": "Hỏi về chương trình giảm giá" }
+    ]
+  },
+  {
+    "id": "roleplay-5",
+    "title": "Nhà hàng truyền thống Nga",
+    "level": 3,
+    "context": "Bạn đến ăn tối tại một nhà hàng sang trọng. Có một số vấn đề xảy ra.",
+    "ai_role": "Bồi bàn",
+    "first_message": "Добрый вечер! У вас забронирован столик?",
+    "objectives": [
+      { "id": "obj1", "description": "Đọc tên đặt bàn của bạn" },
+      { "id": "obj2", "description": "Yêu cầu thực đơn món Nga" },
+      { "id": "obj3", "description": "Hỏi thành phần súp Borsch" },
+      { "id": "obj4", "description": "Phàn nàn món chính ra chậm" },
+      { "id": "obj5", "description": "Xin gọi thêm nước" },
+      { "id": "obj6", "description": "Yêu cầu hóa đơn" }
+    ]
+  },
+  {
+    "id": "roleplay-6",
+    "title": "Lễ tân Khách sạn",
+    "level": 3,
+    "context": "Bạn vừa đến khách sạn nhưng phòng của bạn gặp sự cố.",
+    "ai_role": "Nhân viên lễ tân",
+    "first_message": "Здравствуйте! Добро пожаловать в наш отель. Могу я увидеть ваш паспорт, пожалуйста?",
+    "objectives": [
+      { "id": "obj1", "description": "Check-in bằng Passport" },
+      { "id": "obj2", "description": "Hỏi mật khẩu WiFi" },
+      { "id": "obj3", "description": "Phàn nàn phòng có mùi thuốc lá" },
+      { "id": "obj4", "description": "Yêu cầu đổi phòng khác" },
+      { "id": "obj5", "description": "Hỏi giờ ăn sáng" },
+      { "id": "obj6", "description": "Yêu cầu dịch vụ báo thức" }
+    ]
+  },
+  {
+    "id": "roleplay-7",
+    "title": "Hải quan & Sân bay",
+    "level": 4,
+    "context": "Bạn đang làm thủ tục nhập cảnh và lên máy bay tại sân bay Sheremetyevo.",
+    "ai_role": "Nhân viên an ninh / Hải quan",
+    "first_message": "Здравствуйте. Ваш паспорт и билет, пожалуйста. Какова цель вашего визита?",
+    "objectives": [
+      { "id": "obj1", "description": "Trình hộ chiếu và Visa" },
+      { "id": "obj2", "description": "Trả lời mục đích chuyến đi là du lịch" },
+      { "id": "obj3", "description": "Xác nhận số ngày lưu trú" },
+      { "id": "obj4", "description": "Khai báo không mang đồ cấm" },
+      { "id": "obj5", "description": "Gửi hành lý ký gửi" },
+      { "id": "obj6", "description": "Hỏi cổng ra máy bay" },
+      { "id": "obj7", "description": "Cảm ơn và chào tạm biệt" }
+    ]
+  },
+  {
+    "id": "roleplay-8",
+    "title": "Khám bệnh",
+    "level": 4,
+    "context": "Bạn bị ốm và đến gặp bác sĩ để khám bệnh.",
+    "ai_role": "Bác sĩ",
+    "first_message": "Здравствуйте! Проходите, садитесь. На что жалуетесь?",
+    "objectives": [
+      { "id": "obj1", "description": "Khai báo họ tên tại quầy" },
+      { "id": "obj2", "description": "Miêu tả triệu chứng (đau đầu, sốt)" },
+      { "id": "obj3", "description": "Trả lời câu hỏi bệnh từ bao giờ" },
+      { "id": "obj4", "description": "Xin bác sĩ kê đơn thuốc" },
+      { "id": "obj5", "description": "Hỏi cách sử dụng thuốc" },
+      { "id": "obj6", "description": "Hỏi nơi lấy thuốc" },
+      { "id": "obj7", "description": "Cảm ơn bác sĩ" }
+    ]
+  }
+]

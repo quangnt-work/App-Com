@@ -388,10 +388,8 @@ export async function submitExam(payload: SubmitExamPayload) {
         qCorrectAnswer = sampleAnswer;
         qIsCorrect = null;
 
-        if (apiKey) {
           try {
-            const { GoogleGenAI } = await import('@google/genai');
-            const gemini = new GoogleGenAI({ apiKey });
+            const { generateContentWithFallback } = await import('@/lib/gemini');
             
             const prompt = `Bạn là giáo viên ngoại ngữ. Hãy chấm câu trả lời tự luận của học sinh.
 Hướng dẫn:
@@ -406,34 +404,16 @@ Câu hỏi: ${questionText}${contextText}
 Đáp án gợi ý: ${sampleAnswer}
 Bài làm của học sinh: ${userAnswer}`;
 
-            // Thử gọi tối đa 2 lần để tránh 429 nếu trùng giờ cao điểm tải server
-            let retries = 0;
-            const maxRetries = 2;
-            let responseText = null;
+            // generateContentWithFallback tự động retry và rotate key
+            const response = await generateContentWithFallback({
+              contents: [{ role: "user", parts: [{ text: prompt }] }],
+              config: {
+                responseMimeType: "application/json",
+                temperature: 0.1,
+              },
+            }, "gemini-3.1-flash-lite");
 
-            while (retries < maxRetries) {
-              try {
-                const response = await gemini.models.generateContent({
-                  model: "gemini-3.1-flash-lite",
-                  contents: [{ role: "user", parts: [{ text: prompt }] }],
-                  config: {
-                    responseMimeType: "application/json",
-                    temperature: 0.1,
-                  },
-                });
-
-                responseText = response.text?.trim();
-                if (responseText) break;
-              } catch (e: any) {
-                retries++;
-                if (retries >= maxRetries) {
-                  console.error("Gemini AI grading exhaust retries:", e);
-                  break;
-                }
-                const delayMs = retries * 3000;
-                await new Promise(r => setTimeout(r, delayMs));
-              }
-            }
+            const responseText = response.text?.trim();
 
             if (responseText) {
               const parsed = JSON.parse(responseText);
@@ -446,7 +426,6 @@ Bài làm của học sinh: ${userAnswer}`;
           } catch (e) {
             console.error("Cerebras AI Ex:", e);
           }
-        }
 
         qEarned = weight * aiScoreRatio;
       }

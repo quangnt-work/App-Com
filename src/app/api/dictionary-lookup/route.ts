@@ -4,9 +4,7 @@
 // Chịu tải bằng GEMINI_SECONDARY_API_KEY và cơ chế Retry Exponential Backoff
 
 import { NextResponse } from "next/server";
-import { GoogleGenAI } from "@google/genai";
-
-const delay = (ms: number) => new Promise(resolve => setTimeout(resolve, ms));
+import { generateContentWithFallback } from "@/lib/gemini";
 
 export async function POST(request: Request) {
   try {
@@ -18,14 +16,6 @@ export async function POST(request: Request) {
     }
 
     const trimmedWord = word.trim();
-
-    // Ưu tiên key phụ, nếu trống thì dùng key chính
-    const apiKey = process.env.GEMINI_SECONDARY_API_KEY || process.env.GEMINI_API_KEY;
-    if (!apiKey) {
-      return NextResponse.json({ error: "Thiếu API key cho chức năng AI." }, { status: 500 });
-    }
-
-    const gemini = new GoogleGenAI({ apiKey });
 
     const prompt = `Bạn là từ điển Nga-Việt chuyên nghiệp, chính xác tuyệt đối. Hệ thống của bạn hoạt động như một cỗ máy tạo JSON. Tra cứu từ/cụm từ tiếng Nga: "${trimmedWord}"
 
@@ -95,38 +85,16 @@ BẮT BUỘC TRẢ VỀ DUY NHẤT 1 ĐỐI TƯỢNG JSON CHUẨN XÁC, KHÔNG G
   ]
 }`;
 
-    // Retry Logic (Exponential Backoff) vòng lặp 3 lần xử lý lỗi Too Many Requests
-    let retries = 0;
-    const maxRetries = 3;
-    let responseText = null;
+    // generateContentWithFallback đã bao gồm logic Exponential Backoff & Key Rotation
+    const response = await generateContentWithFallback({
+      contents: [{ role: "user", parts: [{ text: prompt }] }],
+      config: {
+        responseMimeType: "application/json",
+        temperature: 0.1,
+      },
+    }, "gemini-3.1-flash-lite");
 
-    while (retries < maxRetries) {
-      try {
-        const response = await gemini.models.generateContent({
-          model: "gemini-3.1-flash-lite",
-          contents: [{ role: "user", parts: [{ text: prompt }] }],
-          config: {
-            responseMimeType: "application/json",
-            temperature: 0.1,
-          },
-        });
-
-        responseText = response.text?.trim();
-        if (responseText) {
-          break; // Gọi thành công, thoát vòng lặp
-        }
-      } catch (e: any) {
-        retries++;
-        // Thường gặp mã lỗi 429 nếu bị quá tải quota (15 RPM)
-        if (retries >= maxRetries) {
-          throw new Error("Hệ thống quá tải AI. Đã thử lại nhưng không thành công. Vui lòng đợi 1 phút và thử lại.");
-        }
-        console.warn(`[Dictionary-AI] Rate limited or error. Retrying ${retries}/${maxRetries} in ${retries * 2}s...`);
-        // Đợi 2 giây, rồi 4 giây (Exponential Backoff)
-        await delay(retries * 2000);
-      }
-    }
-
+    const responseText = response.text?.trim();
     if (!responseText) {
       return NextResponse.json({ error: "AI không trả về nội dung." }, { status: 500 });
     }

@@ -4,10 +4,8 @@
 // Case B: Không có audio → Gemini 2.0 Flash đánh giá text-only (thay Groq LLaMA)
 
 import { NextResponse } from "next/server";
-import { GoogleGenAI } from "@google/genai";
 import { ChatMessageType } from "@/types/ai-chat";
-
-const gemini = new GoogleGenAI({ apiKey: process.env.GEMINI_API_KEY });
+import { generateContentWithFallback } from "@/lib/gemini";
 
 interface AssessChatBody {
     messages: ChatMessageType[];
@@ -59,8 +57,7 @@ Trả về kết quả bằng tiếng Việt. BẮT BUỘC theo đúng JSON sau:
                 inlineData: { mimeType: sample.mimeType, data: sample.data },
             }));
 
-            const response = await gemini.models.generateContent({
-                model: "gemini-3.1-flash-lite",
+            const response = await generateContentWithFallback({
                 contents: [
                     {
                         role: "user",
@@ -71,7 +68,7 @@ Trả về kết quả bằng tiếng Việt. BẮT BUỘC theo đúng JSON sau:
                     responseMimeType: "application/json",
                     temperature: 0.2,
                 },
-            });
+            }, "gemini-3.1-flash-lite");
 
             const responseText = response.text?.trim();
             if (!responseText) throw new Error("Gemini không trả về nội dung.");
@@ -91,14 +88,13 @@ Lưu ý: intonation chỉ dựa trên văn bản (không có audio), hãy đánh
 Lịch sử hội thoại:
 ${conversationText}`;
 
-        const response = await gemini.models.generateContent({
-            model: "gemini-3.1-flash-lite",
+        const response = await generateContentWithFallback({
             contents: [{ role: "user", parts: [{ text: textPrompt }] }],
             config: {
                 responseMimeType: "application/json",
                 temperature: 0.2,
             },
-        });
+        }, "gemini-3.1-flash-lite");
 
         const responseText = response.text?.trim();
         if (!responseText) throw new Error("Gemini không trả về nội dung.");

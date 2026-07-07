@@ -17,6 +17,7 @@ import {
   QUESTION_TYPE_LABELS,
 } from "@/lib/schemas/exam";
 import {
+  ListChecks,
   BookOpen,
   Volume2,
   Shuffle,
@@ -26,9 +27,10 @@ import {
   Trash2,
   Plus,
   GripVertical,
-  ListChecks,
+  FileDown,
 } from "lucide-react";
 import { cn } from "@/lib/utils";
+import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import ReadingGroup from "../question-types/ReadingGroup";
 import ReadingMCQ from "../question-types/ReadingMCQ";
 import ReadingOpenEnded from "../question-types/ReadingOpenEnded";
@@ -38,6 +40,9 @@ import ListeningOpenEnded from "../question-types/ListeningOpenEnded";
 import ListeningFillBlank from "../question-types/ListeningFillBlank";
 import WordArrangement from "../question-types/WordArrangement";
 import ErrorCorrection from "../question-types/ErrorCorrection";
+import MultipleChoice from "../question-types/MultipleChoice";
+import ExamImportTab from "./ExamImportTab";
+import { ParsedQuestion, convertToExamQuestions } from "@/lib/examImportParser";
 
 // ─── Default values per question type ────────────────────────────────────────
 
@@ -132,6 +137,15 @@ function createDefaultQuestion(type: ExamQuestionType) {
         correct_part: "",
         explanation: "",
       };
+    case "multiple_choice":
+      return {
+        question_type: "multiple_choice" as const,
+        instruction: "",
+        question: "",
+        selection_mode: "single" as const,
+        options: ["", ""],
+        correct_indexes: [],
+      };
   }
 }
 
@@ -147,6 +161,7 @@ const TYPE_ICONS: Record<ExamQuestionType, React.ReactNode> = {
   listening_fill: <Volume2 className="w-3.5 h-3.5" />,
   word_arrangement: <Shuffle className="w-3.5 h-3.5" />,
   error_correction: <AlertTriangle className="w-3.5 h-3.5" />,
+  multiple_choice: <ListChecks className="w-3.5 h-3.5" />,
 };
 
 const TYPE_COLORS: Record<ExamQuestionType, string> = {
@@ -159,6 +174,7 @@ const TYPE_COLORS: Record<ExamQuestionType, string> = {
   listening_fill: "bg-purple-100 text-purple-600",
   word_arrangement: "bg-indigo-100 text-indigo-600",
   error_correction: "bg-amber-100 text-amber-600",
+  multiple_choice: "bg-teal-100 text-teal-600",
 };
 
 // ─── Render question form by type ─────────────────────────────────────────────
@@ -183,6 +199,8 @@ function QuestionForm({ type, index }: { type: ExamQuestionType; index: number }
       return <WordArrangement index={index} />;
     case "error_correction":
       return <ErrorCorrection index={index} />;
+    case "multiple_choice":
+      return <MultipleChoice index={index} />;
   }
 }
 
@@ -215,22 +233,45 @@ export default function QuestionBuilder() {
     });
   };
 
-  return (
-    <div className="bg-white rounded-xl border border-gray-200 overflow-hidden">
-      {/* Section header */}
-      <div className="px-6 py-4 border-b border-gray-100 bg-gray-50/50 flex items-center justify-between">
-        <h2 className="text-sm font-semibold text-gray-700 flex items-center gap-2">
-          <ListChecks className="w-4 h-4 text-orange-500" />
-          Danh sách câu hỏi
-          {fields.length > 0 && (
-            <span className="ml-1 px-2 py-0.5 rounded-full text-xs bg-orange-100 text-orange-600 font-semibold">
-              {fields.length}
-            </span>
-          )}
-        </h2>
-      </div>
+  const handleImportSuccess = (parsedQuestions: ParsedQuestion[]) => {
+    const newQuestions = convertToExamQuestions(parsedQuestions);
+    // @ts-ignore union type append
+    append(newQuestions);
+    
+    // Switch to manual tab implicitly handled outside or just by the user clicking,
+    // but better to force click or state if we had controlled tabs.
+    // We can just keep it simple.
+  };
 
-      <div className="p-6 space-y-4">
+  return (
+    <Tabs defaultValue="manual" className="w-full">
+      <div className="bg-white rounded-xl border border-gray-200 overflow-hidden">
+        {/* Section header */}
+        <div className="px-6 py-4 border-b border-gray-100 bg-gray-50/50 flex flex-col sm:flex-row sm:items-center justify-between gap-4">
+          <h2 className="text-sm font-semibold text-gray-700 flex items-center gap-2">
+            <ListChecks className="w-4 h-4 text-orange-500" />
+            Danh sách câu hỏi
+            {fields.length > 0 && (
+              <span className="ml-1 px-2 py-0.5 rounded-full text-xs bg-orange-100 text-orange-600 font-semibold">
+                {fields.length}
+              </span>
+            )}
+          </h2>
+          
+          <TabsList className="bg-gray-200/50">
+            <TabsTrigger value="manual" className="data-[state=active]:bg-white text-xs gap-1.5">
+              <Plus className="w-3.5 h-3.5" />
+              Thêm thủ công
+            </TabsTrigger>
+            <TabsTrigger value="import" className="data-[state=active]:bg-white text-xs gap-1.5">
+              <FileDown className="w-3.5 h-3.5" />
+              Import từ file
+            </TabsTrigger>
+          </TabsList>
+        </div>
+
+        <TabsContent value="manual" className="m-0 border-none outline-none">
+          <div className="p-6 space-y-4">
         {/* Add question row */}
         <div className="flex items-center gap-3 p-4 bg-gray-50 rounded-xl border border-gray-200 border-dashed">
           <Select
@@ -364,6 +405,13 @@ export default function QuestionBuilder() {
           </div>
         )}
       </div>
+      </TabsContent>
+      
+      <TabsContent value="import" className="m-0 border-none outline-none bg-gray-50/30">
+        <ExamImportTab onImportSuccess={handleImportSuccess} />
+      </TabsContent>
+      
     </div>
+    </Tabs>
   );
 }

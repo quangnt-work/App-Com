@@ -1,4 +1,6 @@
 // src/components/admin/exams/ExamHeader.tsx
+"use client";
+
 import Link from "next/link";
 import { ClipboardList, FileText, Plus } from "lucide-react";
 import { Button } from "@/components/ui/button";
@@ -19,12 +21,14 @@ export default function ExamHeader() {
       </div>
 
       {/* Nút Action */}
-      <Link href="/admin/exams/create">
-        <Button className="bg-[#f97316] hover:bg-[#ea580c] text-white shadow-sm font-medium rounded-lg px-6 h-11">
-          <Plus className="w-5 h-5 mr-2" />
-          Thêm mới đề thi
-        </Button>
-      </Link>
+      <div className="flex items-center gap-3">
+        <Link href="/admin/exams/create">
+          <Button className="bg-[#f97316] hover:bg-[#ea580c] text-white shadow-sm font-medium rounded-lg px-6 h-11">
+            <Plus className="w-5 h-5 mr-2" />
+            Thêm mới đề thi
+          </Button>
+        </Link>
+      </div>
     </div>
   );
 }

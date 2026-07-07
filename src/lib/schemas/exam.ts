@@ -124,6 +124,20 @@ const ErrorCorrectionSchema = z.object({
   explanation: z.string().optional(),
 });
 
+/** 8. Trắc nghiệm đơn (import từ file, không cần passage/audio) */
+const MultipleChoiceSchema = z.object({
+  question_type: z.literal("multiple_choice"),
+  id: z.string().optional(),
+  instruction: z.string().optional(),
+  question: z.string().min(1, "Vui lòng nhập câu hỏi"),
+  selection_mode: z.enum(["single", "multi"]),
+  options: z
+    .array(z.string().min(1, "Không được để trống đáp án"))
+    .min(2, "Cần ít nhất 2 đáp án"),
+  correct_indexes: z.array(z.number()).min(1, "Chọn ít nhất 1 đáp án đúng"),
+  explanation: z.string().optional(),
+});
+
 // ─── Union ──────────────────────────────────────────────────────────────────
 
 export const ExamQuestionSchema = z.discriminatedUnion("question_type", [
@@ -136,6 +150,7 @@ export const ExamQuestionSchema = z.discriminatedUnion("question_type", [
   ErrorCorrectionSchema,
   ReadingGroupSchema,
   ListeningGroupSchema,
+  MultipleChoiceSchema,
 ]);
 
 // ─── Exam Form Schema ────────────────────────────────────────────────────────
@@ -182,6 +197,7 @@ export const EXAM_LEVEL_LABELS: Record<string, string> = {
 };
 
 export const QUESTION_TYPE_LABELS: Record<ExamQuestionType | "reading_group" | "listening_group", string> = {
+  multiple_choice: "Trắc nghiệm đơn",
   reading_group: "Đọc hiểu — Trắc nghiệm (Nhóm bài)",
   reading_mcq: "Đọc hiểu — Trắc nghiệm",
   reading_open: "Đọc hiểu — Câu hỏi mở",

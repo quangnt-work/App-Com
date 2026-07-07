@@ -26,7 +26,8 @@ export interface ExamMetadata {
 // ─── 1. Extract text from .docx ──────────────────────────────────────────────
 
 export async function extractTextFromDocx(buffer: ArrayBuffer): Promise<string> {
-  const result = await mammoth.extractRawText({ arrayBuffer: buffer });
+  // Mammoth Node.js expects options.buffer as a Node Buffer
+  const result = await mammoth.extractRawText({ buffer: Buffer.from(buffer) });
   return result.value;
 }
 

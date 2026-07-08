@@ -130,6 +130,7 @@ export async function importExamFromFiles(
     // 7. Parse answer key
     let answerKey = new Map<number, string>();
     if (answerText.trim()) {
+      // Separate answer file provided
       answerKey = parseAnswerKey(answerText);
       if (answerKey.size === 0) {
         return {
@@ -138,6 +139,9 @@ export async function importExamFromFiles(
             'Không tìm thấy đáp án nào trong file đáp án. Vui lòng kiểm tra format (ví dụ: 1-А, 2-Б, 3-В)',
         };
       }
+    } else {
+      // No separate answer file — try to find answer key embedded in the question file
+      answerKey = parseAnswerKey(questionText);
     }
 
     // 8. Merge

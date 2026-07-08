@@ -63,70 +63,146 @@ const LATIN_LABEL_MAP: Record<string, number> = {
  * Regex pattern to match the start of a question line:
  * "1. Я __ домой вечером."
  * "23) Она работает ..."
+ * "Câu 1: ..."
  */
-const QUESTION_START_RE = /^(\d+)\s*[.)]\s*(.+)/;
+const QUESTION_START_RE = /^\s*(?:Câu|Question|Bài)?\s*(\d+)\s*[.:)]\s*(.+)/i;
 
 /**
  * Regex pattern to match an option line:
  * "А. иду"   "A) go"   "Б. идёшь"   "B. walks"
  */
-const OPTION_LINE_RE = /^([А-ЕA-Ea-eа-е])\s*[.)]\s*(.+)/;
+const OPTION_LINE_RE = /^\s*([А-ЕA-Ea-eа-е])\s*[.:)]\s*(.+)/;
+
+/**
+ * Pre-process raw text to handle cases where mammoth merges
+ * question text and options into a single line, e.g.:
+ * "Вчера я ______ в библиотеку.А. ходилБ. пойдуВ. хожуГ. пойду"
+ * 
+ * We insert newlines before each option label (А., Б., В., etc.)
+ * so the line-based parser can handle them.
+ */
+function preprocessText(text: string): string {
+  // Insert newline before option labels that are stuck to previous text
+  // Match: non-whitespace char followed by a Cyrillic/Latin option label + dot/paren
+  // e.g. "работы.А. ходил" → "работы.\nА. ходил"
+  //       "идёмБ. идёшь" → "идём\nБ. идёшь"
+  let processed = text.replace(
+    /([^\n])([А-ЕA-Eа-е]\s*[.):]\s*)/g,
+    (match, before, optionPart) => {
+      // Don't split if the char before is a space/newline (already separated)
+      if (/\s/.test(before)) return match;
+      return before + "\n" + optionPart;
+    }
+  );
+  
+  // Also handle numbered questions stuck together
+  // e.g. "пойду2. Если завтра" → "пойду\n2. Если завтра"
+  processed = processed.replace(
+    /([^\n\d])(\d+\s*[.):]\s*)/g,
+    (match, before, numPart) => {
+      if (/\s/.test(before)) return match;
+      return before + "\n" + numPart;
+    }
+  );
+
+  return processed;
+}
 
 export function parseQuestionsFromText(text: string): ParsedQuestion[] {
-  const lines = text.split(/\r?\n/);
+  // Pre-process: split merged lines
+  const processedText = preprocessText(text);
+  const lines = processedText.split(/\r?\n/);
   const questions: ParsedQuestion[] = [];
   let current: ParsedQuestion | null = null;
+  let autoQuestionNumber = 1;
+  let pendingText: string[] = [];
 
   for (let i = 0; i < lines.length; i++) {
     const line = lines[i].trim();
     if (!line) continue;
 
-    // Check if this is a new question
+    // Check if this is a new explicitly numbered question
     const qMatch = line.match(QUESTION_START_RE);
     if (qMatch) {
-      // Before starting a new question, check if there's a current question
-      // that might not have options yet. Sometimes the question text continues
-      // on the next line, but we need to check if this looks like a new question.
-      // Only treat as new question if the number is sequential or the first question.
-      const qNum = parseInt(qMatch[1], 10);
-      
-      // If current question has no options and this number doesn't seem sequential,
-      // it might be a continuation line that happens to start with a number.
-      // But in most exam formats, questions are numbered sequentially.
-      if (current && current.options.length >= 2) {
-        // Save previous question
-        questions.push(current);
-      } else if (current && current.options.length > 0) {
-        // Question has some options but less than 2 - still save it
+      if (current && current.options.length > 0) {
         questions.push(current);
       }
-      // If current exists but has 0 options, the previous "question" was probably
-      // part of the title or instructions - discard it.
+      
+      const parsedNum = parseInt(qMatch[1], 10);
+      autoQuestionNumber = parsedNum + 1;
 
       current = {
-        number: qNum,
+        number: parsedNum,
         question: qMatch[2].trim(),
         options: [],
         optionLabels: [],
       };
+      pendingText = [];
       continue;
     }
 
     // Check if this is an option line
     const optMatch = line.match(OPTION_LINE_RE);
-    if (optMatch && current) {
-      current.optionLabels.push(optMatch[1]);
+    if (optMatch) {
+      const label = optMatch[1];
+      const isFirstOption = label.toUpperCase() === 'A' || label === 'А' || label === 'а';
+
+      // If we see the first option (A/А) and current already has options,
+      // it means a new question block has started
+      if (current && current.options.length > 0 && isFirstOption) {
+        questions.push(current);
+        current = null;
+      }
+
+      if (!current) {
+        // If this is the very first question, pendingText might have accumulated document titles.
+        // We filter out common title lines (all caps, or contains specific keywords)
+        if (questions.length === 0 && pendingText.length > 1) {
+          while (pendingText.length > 1) {
+            const firstUpper = pendingText[0].toUpperCase();
+            const isTitle = 
+              firstUpper.includes("NGÂN HÀNG") || 
+              firstUpper.includes("ĐỀ THI") || 
+              firstUpper.includes("BÀI TẬP") || 
+              firstUpper.includes("TEST ") || 
+              firstUpper.includes("PHẦN ") ||
+              firstUpper.includes("TRÌNH ĐỘ") ||
+              firstUpper === pendingText[0]; // all caps
+
+            if (isTitle) {
+              pendingText.shift(); // Remove the title line
+            } else {
+              break;
+            }
+          }
+        }
+
+        // Create new question from pending text
+        const qText = pendingText.length > 0 ? pendingText.join(" ") : "Câu hỏi bị thiếu nội dung";
+        current = {
+          number: autoQuestionNumber++,
+          question: qText,
+          options: [],
+          optionLabels: [],
+        };
+        pendingText = [];
+      }
+      
+      current.optionLabels.push(label);
       current.options.push(optMatch[2].trim());
       continue;
     }
 
-    // Otherwise, if we have a current question, this might be a continuation of the question text
+    // Otherwise, it's just text.
     if (current && current.options.length === 0) {
       current.question += " " + line;
+    } else if (current && current.options.length > 0) {
+      pendingText.push(line);
+    } else {
+      pendingText.push(line);
     }
   }
 
-  // Don't forget the last question
   if (current && current.options.length >= 2) {
     questions.push(current);
   }

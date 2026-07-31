@@ -73,3 +73,36 @@ export async function generateContentWithFallback(
 
   throw new Error(`Gemini API Error after ${maxRetries} attempts: ${lastError?.message || lastError}`);
 }
+
+/**
+ * Utility function to securely parse JSON from AI responses.
+ * Strips markdown code blocks like ```json ... ``` before parsing.
+ */
+export function parseAIResponse<T = any>(text: string | null | undefined, fallbackDefault: T | null = null): T {
+  if (!text) {
+    if (fallbackDefault !== null) return fallbackDefault;
+    throw new Error("AI không trả về nội dung.");
+  }
+  
+  let cleanText = text.trim();
+  
+  // Strip markdown json block
+  if (cleanText.startsWith("```json")) {
+    cleanText = cleanText.substring(7);
+  } else if (cleanText.startsWith("```")) {
+    cleanText = cleanText.substring(3);
+  }
+  
+  if (cleanText.endsWith("```")) {
+    cleanText = cleanText.substring(0, cleanText.length - 3);
+  }
+  
+  cleanText = cleanText.trim();
+  
+  try {
+    return JSON.parse(cleanText) as T;
+  } catch (error) {
+    console.error("Lỗi Parse JSON từ AI:", cleanText);
+    throw new Error("AI trả về dữ liệu không hợp lệ, không thể phân tích.");
+  }
+}

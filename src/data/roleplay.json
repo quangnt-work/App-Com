@@ -7,11 +7,11 @@
     "ai_role": "Nhân viên quán cà phê",
     "first_message": "Здравствуйте! Добро пожаловать. Что будете заказывать?",
     "objectives": [
-      { "id": "obj1", "description": "Chào hỏi nhân viên" },
-      { "id": "obj2", "description": "Gọi một ly cà phê đen" },
-      { "id": "obj3", "description": "Gọi thêm một chiếc bánh ngọt" },
-      { "id": "obj4", "description": "Hỏi tổng tiền" },
-      { "id": "obj5", "description": "Thanh toán và cảm ơn" }
+      { "id": "obj1", "description": "Chào hỏi nhân viên", "hint_vi": "Chào buổi sáng/chiều/tối", "hint_ru": "Здравствуйте! Доброе утро!" },
+      { "id": "obj2", "description": "Gọi một ly cà phê đen", "hint_vi": "Tôi muốn một ly cà phê đen", "hint_ru": "Мне, пожалуйста, чёрный кофе." },
+      { "id": "obj3", "description": "Gọi thêm một chiếc bánh ngọt", "hint_vi": "Cho tôi thêm một chiếc bánh ngọt", "hint_ru": "И ещё один пирожок, пожалуйста." },
+      { "id": "obj4", "description": "Hỏi tổng tiền", "hint_vi": "Tổng cộng bao nhiêu tiền?", "hint_ru": "Сколько всего?" },
+      { "id": "obj5", "description": "Thanh toán và cảm ơn", "hint_vi": "Đây, tôi trả tiền. Cảm ơn!", "hint_ru": "Вот, пожалуйста. Спасибо большое!" }
     ]
   },
   {
@@ -22,11 +22,11 @@
     "ai_role": "Nhân viên siêu thị / Thu ngân",
     "first_message": "Здравствуйте! Чем могу вам помочь?",
     "objectives": [
-      { "id": "obj1", "description": "Hỏi vị trí quầy sữa" },
-      { "id": "obj2", "description": "Nhờ lấy giúp đồ trên kệ cao" },
-      { "id": "obj3", "description": "Hỏi giá 1kg táo" },
-      { "id": "obj4", "description": "Thông báo thanh toán bằng thẻ" },
-      { "id": "obj5", "description": "Nhận biên lai" }
+      { "id": "obj1", "description": "Hỏi vị trí quầy sữa", "hint_vi": "Xin lỗi, quầy sữa ở đâu?", "hint_ru": "Извините, где находится отдел молочных продуктов?" },
+      { "id": "obj2", "description": "Nhờ lấy giúp đồ trên kệ cao", "hint_vi": "Bạn có thể lấy giúp tôi cái đó trên kệ cao không?", "hint_ru": "Вы можете достать мне вон то с верхней полки?" },
+      { "id": "obj3", "description": "Hỏi giá 1kg táo", "hint_vi": "Một ki-lô táo giá bao nhiêu?", "hint_ru": "Сколько стоит один килограмм яблок?" },
+      { "id": "obj4", "description": "Thông báo thanh toán bằng thẻ", "hint_vi": "Tôi sẽ trả bằng thẻ", "hint_ru": "Я буду платить картой." },
+      { "id": "obj5", "description": "Nhận biên lai", "hint_vi": "Cho tôi biên lai nhé", "hint_ru": "Дайте мне чек, пожалуйста." }
     ]
   },
   {
@@ -37,11 +37,11 @@
     "ai_role": "Nhân viên bán vé nhà ga",
     "first_message": "Здравствуйте! Вам нужен билет или пополнить карту?",
     "objectives": [
-      { "id": "obj1", "description": "Mua thẻ Troika" },
-      { "id": "obj2", "description": "Nạp 500 Rub vào thẻ" },
-      { "id": "obj3", "description": "Hỏi chuyến tàu đi Quảng trường Đỏ" },
-      { "id": "obj4", "description": "Hỏi thời gian tàu đến" },
-      { "id": "obj5", "description": "Hỏi cách qua cửa soát vé" }
+      { "id": "obj1", "description": "Mua thẻ Troika", "hint_vi": "Tôi muốn mua một thẻ Troika", "hint_ru": "Я хочу купить карту Тройка." },
+      { "id": "obj2", "description": "Nạp 500 Rub vào thẻ", "hint_vi": "Nạp 500 rúp vào thẻ giúp tôi", "hint_ru": "Пополните, пожалуйста, на пятьсот рублей." },
+      { "id": "obj3", "description": "Hỏi chuyến tàu đi Quảng trường Đỏ", "hint_vi": "Đi Quảng trường Đỏ thì đi tuyến nào?", "hint_ru": "Как доехать до Красной площади?" },
+      { "id": "obj4", "description": "Hỏi thời gian tàu đến", "hint_vi": "Tàu tiếp theo đến lúc mấy giờ?", "hint_ru": "Когда будет следующий поезд?" },
+      { "id": "obj5", "description": "Hỏi cách qua cửa soát vé", "hint_vi": "Tôi quẹt thẻ ở đâu?", "hint_ru": "Где прикладывать карту?" }
     ]
   },
   {
@@ -52,12 +52,12 @@
     "ai_role": "Nhân viên bán hàng",
     "first_message": "Здравствуйте! Ищете что-то конкретное?",
     "objectives": [
-      { "id": "obj1", "description": "Yêu cầu xem mẫu áo khoác" },
-      { "id": "obj2", "description": "Hỏi size lớn hơn" },
-      { "id": "obj3", "description": "Hỏi vị trí phòng thử đồ" },
-      { "id": "obj4", "description": "Nhận xét màu không hợp" },
-      { "id": "obj5", "description": "Yêu cầu mẫu màu đen" },
-      { "id": "obj6", "description": "Hỏi về chương trình giảm giá" }
+      { "id": "obj1", "description": "Yêu cầu xem mẫu áo khoác", "hint_vi": "Tôi đang tìm áo khoác", "hint_ru": "Я ищу куртку." },
+      { "id": "obj2", "description": "Hỏi size lớn hơn", "hint_vi": "Có size lớn hơn không?", "hint_ru": "У вас есть размер побольше?" },
+      { "id": "obj3", "description": "Hỏi vị trí phòng thử đồ", "hint_vi": "Phòng thử đồ ở đâu?", "hint_ru": "Где примерочная?" },
+      { "id": "obj4", "description": "Nhận xét màu không hợp", "hint_vi": "Màu này không hợp với tôi", "hint_ru": "Этот цвет мне не подходит." },
+      { "id": "obj5", "description": "Yêu cầu mẫu màu đen", "hint_vi": "Cho tôi xem mẫu màu đen", "hint_ru": "Покажите мне чёрный, пожалуйста." },
+      { "id": "obj6", "description": "Hỏi về chương trình giảm giá", "hint_vi": "Có chương trình giảm giá nào không?", "hint_ru": "У вас есть скидки?" }
     ]
   },
   {
@@ -68,12 +68,12 @@
     "ai_role": "Bồi bàn",
     "first_message": "Добрый вечер! У вас забронирован столик?",
     "objectives": [
-      { "id": "obj1", "description": "Đọc tên đặt bàn của bạn" },
-      { "id": "obj2", "description": "Yêu cầu thực đơn món Nga" },
-      { "id": "obj3", "description": "Hỏi thành phần súp Borsch" },
-      { "id": "obj4", "description": "Phàn nàn món chính ra chậm" },
-      { "id": "obj5", "description": "Xin gọi thêm nước" },
-      { "id": "obj6", "description": "Yêu cầu hóa đơn" }
+      { "id": "obj1", "description": "Đọc tên đặt bàn của bạn", "hint_vi": "Tôi đặt bàn dưới tên...", "hint_ru": "Да, столик на имя Иван." },
+      { "id": "obj2", "description": "Yêu cầu thực đơn món Nga", "hint_vi": "Cho tôi xem thực đơn", "hint_ru": "Можно меню, пожалуйста?" },
+      { "id": "obj3", "description": "Hỏi thành phần súp Borsch", "hint_vi": "Súp Borsch có những gì?", "hint_ru": "Что входит в состав борща?" },
+      { "id": "obj4", "description": "Phàn nàn món chính ra chậm", "hint_vi": "Tôi đã đợi rất lâu rồi", "hint_ru": "Извините, я жду уже очень долго." },
+      { "id": "obj5", "description": "Xin gọi thêm nước", "hint_vi": "Cho tôi thêm một cốc nước", "hint_ru": "Принесите ещё стакан воды, пожалуйста." },
+      { "id": "obj6", "description": "Yêu cầu hóa đơn", "hint_vi": "Cho tôi hóa đơn", "hint_ru": "Счёт, пожалуйста." }
     ]
   },
   {
@@ -84,12 +84,12 @@
     "ai_role": "Nhân viên lễ tân",
     "first_message": "Здравствуйте! Добро пожаловать в наш отель. Могу я увидеть ваш паспорт, пожалуйста?",
     "objectives": [
-      { "id": "obj1", "description": "Check-in bằng Passport" },
-      { "id": "obj2", "description": "Hỏi mật khẩu WiFi" },
-      { "id": "obj3", "description": "Phàn nàn phòng có mùi thuốc lá" },
-      { "id": "obj4", "description": "Yêu cầu đổi phòng khác" },
-      { "id": "obj5", "description": "Hỏi giờ ăn sáng" },
-      { "id": "obj6", "description": "Yêu cầu dịch vụ báo thức" }
+      { "id": "obj1", "description": "Check-in bằng Passport", "hint_vi": "Đây, hộ chiếu của tôi", "hint_ru": "Вот мой паспорт." },
+      { "id": "obj2", "description": "Hỏi mật khẩu WiFi", "hint_vi": "Mật khẩu Wi-Fi là gì?", "hint_ru": "Какой пароль от Wi-Fi?" },
+      { "id": "obj3", "description": "Phàn nàn phòng có mùi thuốc lá", "hint_vi": "Phòng tôi có mùi thuốc lá", "hint_ru": "В моём номере пахнет сигаретами." },
+      { "id": "obj4", "description": "Yêu cầu đổi phòng khác", "hint_vi": "Tôi có thể đổi phòng không?", "hint_ru": "Можно поменять номер?" },
+      { "id": "obj5", "description": "Hỏi giờ ăn sáng", "hint_vi": "Bữa sáng lúc mấy giờ?", "hint_ru": "Во сколько завтрак?" },
+      { "id": "obj6", "description": "Yêu cầu dịch vụ báo thức", "hint_vi": "Đánh thức tôi lúc 7 giờ sáng nhé", "hint_ru": "Разбудите меня в семь утра, пожалуйста." }
     ]
   },
   {
@@ -100,13 +100,13 @@
     "ai_role": "Nhân viên an ninh / Hải quan",
     "first_message": "Здравствуйте. Ваш паспорт и билет, пожалуйста. Какова цель вашего визита?",
     "objectives": [
-      { "id": "obj1", "description": "Trình hộ chiếu và Visa" },
-      { "id": "obj2", "description": "Trả lời mục đích chuyến đi là du lịch" },
-      { "id": "obj3", "description": "Xác nhận số ngày lưu trú" },
-      { "id": "obj4", "description": "Khai báo không mang đồ cấm" },
-      { "id": "obj5", "description": "Gửi hành lý ký gửi" },
-      { "id": "obj6", "description": "Hỏi cổng ra máy bay" },
-      { "id": "obj7", "description": "Cảm ơn và chào tạm biệt" }
+      { "id": "obj1", "description": "Trình hộ chiếu và Visa", "hint_vi": "Đây, hộ chiếu và visa của tôi", "hint_ru": "Вот мой паспорт и виза." },
+      { "id": "obj2", "description": "Trả lời mục đích chuyến đi là du lịch", "hint_vi": "Tôi đến đây du lịch", "hint_ru": "Я приехал в качестве туриста." },
+      { "id": "obj3", "description": "Xác nhận số ngày lưu trú", "hint_vi": "Tôi ở lại mười ngày", "hint_ru": "Я буду здесь десять дней." },
+      { "id": "obj4", "description": "Khai báo không mang đồ cấm", "hint_vi": "Tôi không mang theo gì cấm cả", "hint_ru": "Нет, у меня нет запрещённых предметов." },
+      { "id": "obj5", "description": "Gửi hành lý ký gửi", "hint_vi": "Tôi muốn gửi hành lý", "hint_ru": "Я хочу сдать багаж." },
+      { "id": "obj6", "description": "Hỏi cổng ra máy bay", "hint_vi": "Cổng ra máy bay ở đâu?", "hint_ru": "Где мой выход на посадку?" },
+      { "id": "obj7", "description": "Cảm ơn và chào tạm biệt", "hint_vi": "Cảm ơn, tạm biệt!", "hint_ru": "Спасибо! До свидания!" }
     ]
   },
   {
@@ -117,13 +117,13 @@
     "ai_role": "Bác sĩ",
     "first_message": "Здравствуйте! Проходите, садитесь. На что жалуетесь?",
     "objectives": [
-      { "id": "obj1", "description": "Khai báo họ tên tại quầy" },
-      { "id": "obj2", "description": "Miêu tả triệu chứng (đau đầu, sốt)" },
-      { "id": "obj3", "description": "Trả lời câu hỏi bệnh từ bao giờ" },
-      { "id": "obj4", "description": "Xin bác sĩ kê đơn thuốc" },
-      { "id": "obj5", "description": "Hỏi cách sử dụng thuốc" },
-      { "id": "obj6", "description": "Hỏi nơi lấy thuốc" },
-      { "id": "obj7", "description": "Cảm ơn bác sĩ" }
+      { "id": "obj1", "description": "Khai báo họ tên tại quầy", "hint_vi": "Tôi tên là...", "hint_ru": "Меня зовут Иван Нгуен." },
+      { "id": "obj2", "description": "Miêu tả triệu chứng (đau đầu, sốt)", "hint_vi": "Tôi bị đau đầu và sốt", "hint_ru": "У меня болит голова и высокая температура." },
+      { "id": "obj3", "description": "Trả lời câu hỏi bệnh từ bao giờ", "hint_vi": "Từ hôm qua / ba ngày trước", "hint_ru": "Это началось три дня назад." },
+      { "id": "obj4", "description": "Xin bác sĩ kê đơn thuốc", "hint_vi": "Bác sĩ có thể kê đơn thuốc cho tôi không?", "hint_ru": "Вы можете выписать мне лекарство?" },
+      { "id": "obj5", "description": "Hỏi cách sử dụng thuốc", "hint_vi": "Uống thuốc này như thế nào?", "hint_ru": "Как принимать это лекарство?" },
+      { "id": "obj6", "description": "Hỏi nơi lấy thuốc", "hint_vi": "Tôi lấy thuốc ở đâu?", "hint_ru": "Где я могу получить лекарство?" },
+      { "id": "obj7", "description": "Cảm ơn bác sĩ", "hint_vi": "Cảm ơn bác sĩ rất nhiều!", "hint_ru": "Спасибо большое, доктор!" }
     ]
   }
 ]

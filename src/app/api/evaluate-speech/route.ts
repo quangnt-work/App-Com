@@ -4,7 +4,7 @@
 
 import { NextResponse } from "next/server";
 import Groq from "groq-sdk";
-import { generateContentWithFallback } from "@/lib/gemini";
+import { generateContentWithFallback, parseAIResponse } from "@/lib/gemini";
 
 // Groq chỉ dùng cho Whisper STT
 const groq = new Groq({ apiKey: process.env.GROQ_API_KEY });
@@ -83,7 +83,7 @@ export async function POST(request: Request) {
       },
     }, "gemini-3.1-flash-lite");
 
-    const resultJson = JSON.parse(response.text?.trim() || "{}");
+    const resultJson = parseAIResponse(response.text, {});
 
     return NextResponse.json(resultJson, { status: 200 });
 

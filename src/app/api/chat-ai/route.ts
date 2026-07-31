@@ -4,7 +4,7 @@
 
 import { NextResponse } from "next/server";
 import { ChatRequestBody } from "@/types/ai-chat";
-import { generateContentWithFallback } from "@/lib/gemini";
+import { generateContentWithFallback, parseAIResponse } from "@/lib/gemini";
 
 export async function POST(request: Request) {
   try {
@@ -55,10 +55,9 @@ Trả về kết quả bằng tiếng Việt. BẮT BUỘC trả về JSON với
     // Chế độ đánh giá → parse JSON
     if (isAssessment) {
       try {
-        const assessmentData = JSON.parse(responseText);
+        const assessmentData = parseAIResponse(response.text);
         return NextResponse.json({ success: true, isAssessment: true, data: assessmentData });
       } catch {
-        console.error("Lỗi Parse JSON từ AI:", responseText);
         return NextResponse.json({ error: "AI không trả về đúng định dạng đánh giá." }, { status: 500 });
       }
     }

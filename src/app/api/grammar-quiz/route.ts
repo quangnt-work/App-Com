@@ -3,7 +3,7 @@
 // Mỗi lần gọi sẽ gen câu khác nhau nhờ temperature + prompt "random"
 
 import { NextResponse } from "next/server";
-import { generateContentWithFallback } from "@/lib/gemini";
+import { generateContentWithFallback, parseAIResponse } from "@/lib/gemini";
 
 interface GrammarQuizRequest {
   topic: string;
@@ -55,12 +55,7 @@ BẮT BUỘC trả về JSON array với đúng format sau:
       },
     }, "gemini-3.1-flash-lite");
 
-    const responseText = response.text?.trim();
-    if (!responseText) {
-      return NextResponse.json({ error: "AI không trả về nội dung." }, { status: 500 });
-    }
-
-    const questions = JSON.parse(responseText);
+    const questions = parseAIResponse(response.text);
 
     // Validate cơ bản
     if (!Array.isArray(questions) || questions.length === 0) {

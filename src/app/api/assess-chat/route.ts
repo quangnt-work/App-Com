@@ -5,7 +5,7 @@
 
 import { NextResponse } from "next/server";
 import { ChatMessageType } from "@/types/ai-chat";
-import { generateContentWithFallback } from "@/lib/gemini";
+import { generateContentWithFallback, parseAIResponse } from "@/lib/gemini";
 
 interface AssessChatBody {
     messages: ChatMessageType[];
@@ -70,10 +70,7 @@ Trả về kết quả bằng tiếng Việt. BẮT BUỘC theo đúng JSON sau:
                 },
             }, "gemini-3.1-flash-lite");
 
-            const responseText = response.text?.trim();
-            if (!responseText) throw new Error("Gemini không trả về nội dung.");
-
-            const assessmentData = JSON.parse(responseText);
+            const assessmentData = parseAIResponse(response.text);
             return NextResponse.json({ success: true, data: assessmentData, mode: "audio" });
         }
 
@@ -96,10 +93,7 @@ ${conversationText}`;
             },
         }, "gemini-3.1-flash-lite");
 
-        const responseText = response.text?.trim();
-        if (!responseText) throw new Error("Gemini không trả về nội dung.");
-
-        const assessmentData = JSON.parse(responseText);
+        const assessmentData = parseAIResponse(response.text);
         return NextResponse.json({ success: true, data: assessmentData, mode: "text" });
 
     } catch (error: unknown) {

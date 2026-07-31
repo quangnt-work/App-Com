@@ -1,6 +1,6 @@
 import { NextResponse } from "next/server";
 import { ChatMessageType } from "@/types/ai-chat";
-import { generateContentWithFallback } from "@/lib/gemini";
+import { generateContentWithFallback, parseAIResponse } from "@/lib/gemini";
 
 export async function POST(request: Request) {
   try {
@@ -26,14 +26,23 @@ Lịch sử trò chuyện:
 ${conversation}
 
 Nhiệm vụ của bạn:
-1. Đóng vai "${ai_role}" và phản hồi lại câu nói cuối cùng của Học viên bằng TIẾNG NGA. Phản hồi phải tự nhiên, đúng ngữ cảnh và đúng vai. Chỉ nói tiếng Nga trong phần phản hồi.
-2. Kiểm tra xem trong toàn bộ lịch sử trò chuyện, Học viên đã hoàn thành những nhiệm vụ nào trong danh sách trên. (Đã nói đúng ý, hỏi đúng câu, hoặc đạt được mục đích).
+1. Đóng vai "${ai_role}" và phản hồi lại câu nói cuối cùng của Học viên bằng TIẾNG NGA. Phản hồi phải tự nhiên, đúng ngữ cảnh và đúng vai. Chỉ nói tiếng Nga trong phần phản hồi (reply).
+2. Dịch phần phản hồi tiếng Nga sang tiếng Việt (reply_vi).
+3. Kiểm tra xem trong toàn bộ lịch sử trò chuyện, Học viên đã hoàn thành những nhiệm vụ nào trong danh sách trên.
+4. Nếu câu nói cuối cùng của Học viên có lỗi ngữ pháp hoặc dùng từ sai, hãy sửa lỗi và giải thích ngắn gọn bằng tiếng Việt. Nếu không có lỗi, để trường correction là null.
 
 TRẢ VỀ KẾT QUẢ DƯỚI DẠNG JSON CHUẨN XÁC:
 {
   "reply": "Câu trả lời của bạn bằng tiếng Nga",
-  "completed_objectives": ["obj1", "obj3"] // Danh sách các ID nhiệm vụ mà học viên ĐÃ hoàn thành tính tới thời điểm hiện tại.
-}`;
+  "reply_vi": "Bản dịch tiếng Việt của reply",
+  "completed_objectives": ["obj1", "obj3"],
+  "correction": "Sửa lỗi: ... → ... (giải thích ngắn)" 
+}
+
+Lưu ý:
+- correction phải là null nếu câu của học viên không có lỗi.
+- reply_vi phải là bản dịch trung thành của reply.
+- completed_objectives chứa tất cả ID đã hoàn thành tính tới thời điểm hiện tại.`;
 
     const response = await generateContentWithFallback({
       contents: [{ role: "user", parts: [{ text: systemPrompt }] }],
@@ -43,15 +52,14 @@ TRẢ VỀ KẾT QUẢ DƯỚI DẠNG JSON CHUẨN XÁC:
       },
     }, "gemini-3.1-flash-lite");
 
-    const responseText = response.text?.trim();
-    if (!responseText) throw new Error("Gemini không trả về nội dung.");
-
-    const data = JSON.parse(responseText);
+    const data = parseAIResponse(response.text);
 
     return NextResponse.json({
       success: true,
       reply: data.reply,
-      completed_objectives: data.completed_objectives || []
+      reply_vi: data.reply_vi || null,
+      completed_objectives: data.completed_objectives || [],
+      correction: data.correction || null,
     });
 
   } catch (error: any) {

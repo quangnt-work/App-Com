@@ -4,7 +4,7 @@
 // Chịu tải bằng GEMINI_SECONDARY_API_KEY và cơ chế Retry Exponential Backoff
 
 import { NextResponse } from "next/server";
-import { generateContentWithFallback } from "@/lib/gemini";
+import { generateContentWithFallback, parseAIResponse } from "@/lib/gemini";
 
 export async function POST(request: Request) {
   try {
@@ -94,12 +94,7 @@ BẮT BUỘC TRẢ VỀ DUY NHẤT 1 ĐỐI TƯỢNG JSON CHUẨN XÁC, KHÔNG G
       },
     }, "gemini-3.1-flash-lite");
 
-    const responseText = response.text?.trim();
-    if (!responseText) {
-      return NextResponse.json({ error: "AI không trả về nội dung." }, { status: 500 });
-    }
-
-    const wordData = JSON.parse(responseText);
+    const wordData = parseAIResponse(response.text);
 
     const result = {
       id: `ai-${Date.now()}`,

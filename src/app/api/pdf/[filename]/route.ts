@@ -12,6 +12,12 @@ export async function GET(request: Request, { params }: { params: Promise<{ file
   }
 
   try {
+    // SECURITY FIX: Validate that the URL originates from our Supabase storage
+    const supabaseUrl = process.env.NEXT_PUBLIC_SUPABASE_URL;
+    if (!supabaseUrl || !fileUrl.startsWith(supabaseUrl)) {
+      return new NextResponse('Invalid or forbidden URL', { status: 403 });
+    }
+
     const response = await fetch(fileUrl);
     
     if (!response.ok) {

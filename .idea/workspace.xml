@@ -6,16 +6,8 @@
   <component name="ChangeListManager">
     <list default="true" id="14f236b2-fe28-40fe-b621-04c9b69c8367" name="Changes" comment="">
       <change beforePath="$PROJECT_DIR$/.idea/workspace.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/workspace.xml" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/package-lock.json" beforeDir="false" afterPath="$PROJECT_DIR$/package-lock.json" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/src/actions/examSubmissions.ts" beforeDir="false" afterPath="$PROJECT_DIR$/src/actions/examSubmissions.ts" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/src/app/(auth)/login/page.tsx" beforeDir="false" afterPath="$PROJECT_DIR$/src/app/(auth)/login/page.tsx" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/src/app/(auth)/register/page.tsx" beforeDir="false" afterPath="$PROJECT_DIR$/src/app/(auth)/register/page.tsx" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/src/app/api/assess-chat/route.ts" beforeDir="false" afterPath="$PROJECT_DIR$/src/app/api/assess-chat/route.ts" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/src/app/api/chat-ai/route.ts" beforeDir="false" afterPath="$PROJECT_DIR$/src/app/api/chat-ai/route.ts" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/src/app/api/roleplay-chat/route.ts" beforeDir="false" afterPath="$PROJECT_DIR$/src/app/api/roleplay-chat/route.ts" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/src/lib/actions/auth.ts" beforeDir="false" afterPath="$PROJECT_DIR$/src/lib/actions/auth.ts" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/src/lib/gemini.ts" beforeDir="false" afterPath="$PROJECT_DIR$/src/lib/gemini.ts" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/src/lib/supabase/middleware.ts" beforeDir="false" afterPath="$PROJECT_DIR$/src/lib/supabase/middleware.ts" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/components/student/lessons/grammars/grammar-detail/GrammarMainView.tsx" beforeDir="false" afterPath="$PROJECT_DIR$/src/components/student/lessons/grammars/grammar-detail/GrammarMainView.tsx" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/components/student/lessons/grammars/grammar-detail/GrammarViewer.tsx" beforeDir="false" afterPath="$PROJECT_DIR$/src/components/student/lessons/grammars/grammar-detail/GrammarViewer.tsx" afterDir="false" />
     </list>
     <option name="SHOW_DIALOG" value="false" />
     <option name="HIGHLIGHT_CONFLICTS" value="true" />
@@ -108,7 +100,7 @@
       <updated>1772437574477</updated>
       <workItem from="1785468629473" duration="2645000" />
       <workItem from="1785725960556" duration="23000" />
-      <workItem from="1786026761539" duration="2816000" />
+      <workItem from="1786026761539" duration="3868000" />
     </task>
     <servers />
   </component>

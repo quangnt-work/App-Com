@@ -6,6 +6,7 @@
 import { NextResponse } from "next/server";
 import { ChatMessageType } from "@/types/ai-chat";
 import { generateContentWithFallback, parseAIResponse } from "@/lib/gemini";
+import { createClient } from "@/lib/supabase/server";
 
 interface AssessChatBody {
     messages: ChatMessageType[];
@@ -16,6 +17,12 @@ interface AssessChatBody {
 
 export async function POST(request: Request) {
     try {
+        const supabase = await createClient();
+        const { data: { user } } = await supabase.auth.getUser();
+        if (!user) {
+            return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
+        }
+
         const body: AssessChatBody = await request.json();
         const { messages, topic, audioSamples } = body;
 
@@ -26,8 +33,9 @@ export async function POST(request: Request) {
             );
         }
 
-        // Tóm tắt lịch sử hội thoại dạng text để đưa vào prompt
-        const conversationText = messages
+        // Tóm tắt lịch sử hội thoại dạng text để đưa vào prompt (giới hạn 30 tin nhắn)
+        const recentMessages = messages.slice(-30); // Đánh giá có thể cần ngữ cảnh rộng hơn chút
+        const conversationText = recentMessages
             .map((m) => `${m.role === "user" ? "Học viên" : "AI"}: ${m.content}`)
             .join("\n");
 

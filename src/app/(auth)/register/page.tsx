@@ -13,17 +13,7 @@ import { Form, FormControl, FormField, FormItem, FormLabel, FormMessage } from "
 import { Loader2, User, Lock, EyeOff, Eye } from "lucide-react"
 import { toast } from "sonner"
 import Link from "next/link"
-import { RegisterInput } from "@/lib/schemas/auth"
-
-const registerSchema = z.object({
-  fullName: z.string().min(2, "Họ tên quá ngắn"),
-  username: z.string().min(3, "Username tối thiểu 3 ký tự").regex(/^[a-zA-Z0-9_]+$/, "Username không chứa ký tự đặc biệt"),
-  password: z.string().min(6, "Mật khẩu tối thiểu 6 ký tự"),
-  confirmPassword: z.string()
-}).refine((data) => data.password === data.confirmPassword, {
-  message: "Mật khẩu không khớp",
-  path: ["confirmPassword"],
-})
+import { RegisterSchema, RegisterInput } from "@/lib/schemas/auth"
 
 export default function RegisterPage() {
   const router = useRouter()
@@ -33,20 +23,19 @@ export default function RegisterPage() {
   const [showPassword, setShowPassword] = useState(false)
   const [showConfirmPassword, setShowConfirmPassword] = useState(false)
 
-  const form = useForm<z.infer<typeof registerSchema>>({
-    resolver: zodResolver(registerSchema),
+  const form = useForm<RegisterInput>({
+    resolver: zodResolver(RegisterSchema),
     defaultValues: { fullName: "", username: "", password: "", confirmPassword: "" },
   })
 
-  // Lưu ý: Type của values khi truyền vào signup cần khớp với RegisterInput
-  async function onSubmit(values: z.infer<typeof registerSchema>) {
+  async function onSubmit(values: RegisterInput) {
     setIsLoading(true)
     try {
-      const result = await signup(values as RegisterInput)
+      const result = await signup(values)
       
       if (result.success) {
         toast.success(result.message)
-        setTimeout(() => router.push('/login'), 1500)
+        router.replace('/')
       } else {
         toast.error(result.message)
       }

@@ -80,15 +80,14 @@ export async function updateSession(request: NextRequest) {
       if (role === 'admin' || role === 'ADMIN') {
         url.pathname = '/admin/dashboard'
       } else {
-        url.pathname = '/student/lessons' // Hoặc trang chủ học viên
+        url.pathname = '/' // Trang chủ chứa danh sách các module lớn
       }
       return NextResponse.redirect(url)
     }
 
-    // 2. Bảo vệ trang Admin: Nếu không phải Admin mà cố vào /admin -> Đá về trang học viên
     if (path.startsWith(protectedRoutes.admin) && role !== 'admin' && role !== 'ADMIN') {
       const url = request.nextUrl.clone()
-      url.pathname = '/student/lessons' // Hoặc trang 403 Forbidden
+      url.pathname = '/' // Trả về trang chủ nếu không có quyền admin
       return NextResponse.redirect(url)
     }
   }

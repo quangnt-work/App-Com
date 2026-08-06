@@ -5,9 +5,16 @@
 import { NextResponse } from "next/server";
 import { ChatRequestBody } from "@/types/ai-chat";
 import { generateContentWithFallback, parseAIResponse } from "@/lib/gemini";
+import { createClient } from "@/lib/supabase/server";
 
 export async function POST(request: Request) {
   try {
+    const supabase = await createClient();
+    const { data: { user } } = await supabase.auth.getUser();
+    if (!user) {
+      return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
+    }
+
     const body: ChatRequestBody = await request.json();
     const { messages, topic, isAssessment } = body;
 
@@ -27,12 +34,15 @@ Trả về kết quả bằng tiếng Việt. BẮT BUỘC trả về JSON với
 }`;
     }
 
+    // Giới hạn lịch sử hội thoại (20 tin nhắn gần nhất) để tiết kiệm token
+    const recentMessages = messages.slice(-20);
+
     // Chuyển đổi messages sang format Gemini
     // Nếu messages rỗng (startChat) → AI tự mở đầu hội thoại
     const geminiContents =
-      messages.length === 0
+      recentMessages.length === 0
         ? [{ role: "user" as const, parts: [{ text: `Bắt đầu buổi luyện tập về chủ đề: ${topic}` }] }]
-        : messages.map((msg) => ({
+        : recentMessages.map((msg) => ({
           role: msg.role === "model" ? ("model" as const) : ("user" as const),
           parts: [{ text: msg.content }],
         }));

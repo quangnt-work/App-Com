@@ -1,9 +1,16 @@
 import { NextResponse } from "next/server";
 import { ChatMessageType } from "@/types/ai-chat";
 import { generateContentWithFallback, parseAIResponse } from "@/lib/gemini";
+import { createClient } from "@/lib/supabase/server";
 
 export async function POST(request: Request) {
   try {
+    const supabase = await createClient();
+    const { data: { user } } = await supabase.auth.getUser();
+    if (!user) {
+      return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
+    }
+
     const { messages, context, ai_role, objectives } = await request.json();
 
     if (!messages || !Array.isArray(messages)) {
@@ -13,8 +20,9 @@ export async function POST(request: Request) {
     // Build list of objectives for the prompt
     const objectivesList = objectives.map((obj: any) => `- [${obj.id}]: ${obj.description}`).join('\n');
 
-    // Build conversation history
-    const conversation = messages.map((m: ChatMessageType) => `${m.role === 'user' ? 'Học viên' : ai_role}: ${m.content}`).join('\n');
+    // Build conversation history (giới hạn 20 tin nhắn gần nhất)
+    const recentMessages = messages.slice(-20);
+    const conversation = recentMessages.map((m: ChatMessageType) => `${m.role === 'user' ? 'Học viên' : ai_role}: ${m.content}`).join('\n');
 
     const systemPrompt = `Bạn là hệ thống điều khiển AI trong trò chơi nhập vai (Roleplay) luyện tiếng Nga.
 Bối cảnh: ${context}

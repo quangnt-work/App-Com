@@ -36,7 +36,7 @@ export default function LoginPage() {
           toast.success(result.message)
           const redirectUrl = result.role === 'admin' ? '/admin/dashboard' : '/'
           router.refresh()
-          router.push(redirectUrl)
+          router.replace(redirectUrl)
         } else {
           toast.error(result.message)
         }

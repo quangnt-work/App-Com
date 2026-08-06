@@ -61,8 +61,9 @@ export async function generateContentWithFallback(
       if (status === 429 || status === 503 || errorString.includes("429") || errorString.includes("503") || errorString.includes("quota") || errorString.includes("high demand")) {
         console.warn(`[Gemini Fallback] Attempt ${attempts + 1} failed with model ${modelToUse} (Key Index: ${currentKeyIndex === 0 ? API_KEYS.length - 1 : currentKeyIndex - 1}). Retrying...`);
         attempts++;
-        // Backoff delay before retry (500ms, 1000ms...)
-        await new Promise(resolve => setTimeout(resolve, 500 * attempts));
+        // Exponential backoff delay (1000ms, 2000ms, 4000ms...)
+        const delay = 1000 * Math.pow(2, attempts - 1);
+        await new Promise(resolve => setTimeout(resolve, delay));
         continue;
       }
       
@@ -76,7 +77,7 @@ export async function generateContentWithFallback(
 
 /**
  * Utility function to securely parse JSON from AI responses.
- * Strips markdown code blocks like ```json ... ``` before parsing.
+ * Uses Regex to extract the JSON block.
  */
 export function parseAIResponse<T = any>(text: string | null | undefined, fallbackDefault: T | null = null): T {
   if (!text) {
@@ -84,25 +85,18 @@ export function parseAIResponse<T = any>(text: string | null | undefined, fallba
     throw new Error("AI không trả về nội dung.");
   }
   
-  let cleanText = text.trim();
+  const cleanText = text.trim();
+  const jsonMatch = cleanText.match(/\{[\s\S]*\}|\[[\s\S]*\]/);
   
-  // Strip markdown json block
-  if (cleanText.startsWith("```json")) {
-    cleanText = cleanText.substring(7);
-  } else if (cleanText.startsWith("```")) {
-    cleanText = cleanText.substring(3);
+  if (!jsonMatch) {
+    console.error("Lỗi Parse JSON từ AI - Không tìm thấy định dạng JSON:", cleanText);
+    throw new Error("AI trả về dữ liệu không hợp lệ, không thể phân tích.");
   }
-  
-  if (cleanText.endsWith("```")) {
-    cleanText = cleanText.substring(0, cleanText.length - 3);
-  }
-  
-  cleanText = cleanText.trim();
-  
+
   try {
-    return JSON.parse(cleanText) as T;
+    return JSON.parse(jsonMatch[0]) as T;
   } catch (error) {
-    console.error("Lỗi Parse JSON từ AI:", cleanText);
+    console.error("Lỗi Parse JSON từ AI:", jsonMatch[0]);
     throw new Error("AI trả về dữ liệu không hợp lệ, không thể phân tích.");
   }
 }

@@ -4,9 +4,34 @@
 
 import { NextResponse } from "next/server";
 import { generateContentWithFallback, parseAIResponse } from "@/lib/gemini";
+import { createClient } from "@/lib/supabase/server";
+import { z } from "zod";
+
+const EvaluationSchema = z.object({
+  score: z.number().min(0).max(10),
+  word_analysis: z.array(
+    z.object({
+      word: z.string(),
+      status: z.enum(["correct", "wrong", "missing", "extra"]),
+      expected: z.string().optional(),
+    })
+  ),
+  feedback: z.string(),
+  pronunciation_tips: z.string().optional(),
+});
 
 export async function POST(request: Request) {
   try {
+    // 1. Kiểm tra xác thực (Bảo mật)
+    const supabase = await createClient();
+    const { data: { user } } = await supabase.auth.getUser();
+    if (!user) {
+      return NextResponse.json(
+        { error: "Vui lòng đăng nhập để sử dụng tính năng AI." },
+        { status: 401 }
+      );
+    }
+
     const { targetText, studentText } = await request.json();
 
     if (!targetText?.trim()) {
@@ -66,13 +91,16 @@ Quy tắc:
     );
 
     const data = parseAIResponse(response.text);
+    
+    // 2. Validate với Zod
+    const validatedData = EvaluationSchema.parse(data);
 
     return NextResponse.json({
-      score: data.score ?? 0,
+      score: validatedData.score,
       transcript: studentText,
-      word_analysis: data.word_analysis ?? [],
-      feedback: data.feedback ?? "",
-      pronunciation_tips: data.pronunciation_tips ?? "",
+      word_analysis: validatedData.word_analysis,
+      feedback: validatedData.feedback,
+      pronunciation_tips: validatedData.pronunciation_tips ?? "",
       evaluated_by: "ai",
     });
   } catch (error: unknown) {

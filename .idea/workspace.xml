@@ -6,12 +6,15 @@
   <component name="ChangeListManager">
     <list default="true" id="14f236b2-fe28-40fe-b621-04c9b69c8367" name="Changes" comment="">
       <change beforePath="$PROJECT_DIR$/.idea/workspace.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/workspace.xml" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/src/app/(student)/student/ai/immersive/roleplay/[id]/page.tsx" beforeDir="false" afterPath="$PROJECT_DIR$/src/app/(student)/student/ai/immersive/roleplay/[id]/page.tsx" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/src/app/(student)/student/ai/immersive/roleplay/page.tsx" beforeDir="false" afterPath="$PROJECT_DIR$/src/app/(student)/student/ai/immersive/roleplay/page.tsx" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/src/app/api/roleplay-chat/route.ts" beforeDir="false" afterPath="$PROJECT_DIR$/src/app/api/roleplay-chat/route.ts" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/src/components/student/ai/chat/RoleplayMessage.tsx" beforeDir="false" afterPath="$PROJECT_DIR$/src/components/student/ai/chat/RoleplayMessage.tsx" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/src/types/ai-chat.ts" beforeDir="false" afterPath="$PROJECT_DIR$/src/types/ai-chat.ts" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/src/types/database.type.ts" beforeDir="false" afterPath="$PROJECT_DIR$/src/types/database.type.ts" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/package-lock.json" beforeDir="false" afterPath="$PROJECT_DIR$/package-lock.json" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/package.json" beforeDir="false" afterPath="$PROJECT_DIR$/package.json" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/app/(student)/student/ai/immersive/shadowing/[id]/page.tsx" beforeDir="false" afterPath="$PROJECT_DIR$/src/app/(student)/student/ai/immersive/shadowing/[id]/page.tsx" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/app/api/shadowing-evaluate/route.ts" beforeDir="false" afterPath="$PROJECT_DIR$/src/app/api/shadowing-evaluate/route.ts" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/components/admin/dashboard/AdminStatsSection.tsx" beforeDir="false" afterPath="$PROJECT_DIR$/src/components/admin/dashboard/AdminStatsSection.tsx" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/components/student/ai/shadowing/WordHighlight.tsx" beforeDir="false" afterPath="$PROJECT_DIR$/src/components/student/ai/shadowing/WordHighlight.tsx" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/hooks/useSpeechRecognition.ts" beforeDir="false" afterPath="$PROJECT_DIR$/src/hooks/useSpeechRecognition.ts" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/lib/shadowingEvaluator.ts" beforeDir="false" afterPath="$PROJECT_DIR$/src/lib/shadowingEvaluator.ts" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/types/shadowing.ts" beforeDir="false" afterPath="$PROJECT_DIR$/src/types/shadowing.ts" afterDir="false" />
     </list>
     <option name="SHOW_DIALOG" value="false" />
     <option name="HIGHLIGHT_CONFLICTS" value="true" />
@@ -107,7 +110,7 @@
       <workItem from="1786439119356" duration="7131000" />
       <workItem from="1786457717061" duration="22000" />
       <workItem from="1786458999928" duration="422000" />
-      <workItem from="1786459430511" duration="114000" />
+      <workItem from="1786459430511" duration="4569000" />
     </task>
     <servers />
   </component>

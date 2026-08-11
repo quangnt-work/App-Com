@@ -24,20 +24,46 @@ const statusLabels: Record<WordAnalysis['status'], string> = {
 export function WordHighlight({ words }: WordHighlightProps) {
   if (!words || words.length === 0) return null;
 
+  const playWord = async (word: string) => {
+    // Dừng âm thanh đang phát
+    if ((window as any).currentWordAudio) {
+      (window as any).currentWordAudio.pause();
+    }
+    
+    try {
+      const res = await fetch('/api/tts', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ text: word, voice: 'ru-RU-DmitryNeural' }) // Giọng DmitryNeural
+      });
+      if (!res.ok) return;
+      const blob = await res.blob();
+      const url = URL.createObjectURL(blob);
+      const audio = new Audio(url);
+      (window as any).currentWordAudio = audio;
+      audio.play();
+    } catch (e) {
+      console.error(e);
+    }
+  };
+
   return (
     <div className="flex flex-wrap gap-1.5 justify-center py-3">
       {words.map((item, index) => {
         const style = statusStyles[item.status];
+        const isError = item.status === 'wrong' || item.status === 'missing';
+        const targetWord = item.expected || item.word;
 
         return (
           <span
             key={`${item.word}-${index}`}
-            className="relative group"
+            className="relative group cursor-pointer"
+            onClick={() => isError ? playWord(targetWord) : playWord(item.word)}
+            title="Nhấn để nghe phát âm chuẩn"
           >
             <span
-              className={`inline-block px-2 py-1 rounded-lg text-base font-medium transition-all
+              className={`inline-block px-2 py-1 rounded-lg text-base font-medium transition-all hover:scale-105 active:scale-95
                 ${style.bg} ${style.text} ${style.decoration || ''}
-                ${item.status === 'wrong' ? 'cursor-help' : ''}
               `}
             >
               {item.word}
@@ -50,6 +76,7 @@ export function WordHighlight({ words }: WordHighlightProps) {
                 {item.expected && (
                   <span className="block text-green-300 mt-0.5">→ {item.expected}</span>
                 )}
+                <span className="block text-gray-400 text-[10px] mt-1 text-center font-normal italic">(Click để nghe)</span>
                 <span className="absolute top-full left-1/2 -translate-x-1/2 -mt-1 border-4 border-transparent border-t-gray-800" />
               </span>
             )}

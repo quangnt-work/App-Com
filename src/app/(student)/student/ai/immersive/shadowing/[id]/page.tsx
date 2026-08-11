@@ -1,103 +1,112 @@
 'use client';
 
-import React, { useState, useEffect, useCallback, useRef, use } from 'react';
+import React, { useState, useEffect, useCallback, use } from 'react';
 import { useRouter } from 'next/navigation';
+import { createClient } from '@/lib/supabase/client';
 import { Mic, Volume2, Square, ArrowRight, EyeOff, Loader2 } from 'lucide-react';
 import { toast } from 'sonner';
-
 import shadowingData from '@/data/shadowing.json';
+
 import { useSpeechRecognition } from '@/hooks/useSpeechRecognition';
-import { evaluateOffline } from '@/lib/shadowingEvaluator';
+import { useShadowingSession } from '@/hooks/useShadowingSession';
 import { SpeedControl } from '@/components/student/ai/shadowing/SpeedControl';
 import { WordHighlight } from '@/components/student/ai/shadowing/WordHighlight';
 import { ShadowingResult } from '@/components/student/ai/shadowing/ShadowingResult';
+import { AudioVisualizer } from '@/components/student/ai/shadowing/AudioVisualizer';
 
-import type { SpeechSpeed, ShadowingEvaluation, ShadowingSessionState } from '@/types/shadowing';
+import type { SpeechSpeed, ShadowingSentence } from '@/types/shadowing';
 import { SPEED_CONFIG } from '@/types/shadowing';
-
-// ─── Constants ────────────────────────────────────────────────────────────────
-
-const DEFAULT_BLIND_START = 5; // Blind mode bắt đầu từ câu 6 (index 5)
-const ADAPTIVE_STREAK_THRESHOLD = 3; // 3 câu liên tiếp score >= 9 → blind sớm hơn
-const ADAPTIVE_SHIFT = 2; // Blind sớm hơn 2 câu
-const WEAK_STREAK_THRESHOLD = 3; // 3 câu liên tiếp score < 5 → tạm tắt blind
-
-// ─── AI Evaluation (fetch) ────────────────────────────────────────────────────
-
-async function evaluateWithAI(targetText: string, studentText: string): Promise<ShadowingEvaluation> {
-  const res = await fetch('/api/shadowing-evaluate', {
-    method: 'POST',
-    headers: { 'Content-Type': 'application/json' },
-    body: JSON.stringify({ targetText, studentText }),
-  });
-
-  if (!res.ok) {
-    throw new Error('AI evaluation failed');
-  }
-
-  return res.json();
-}
-
-// ─── Component ────────────────────────────────────────────────────────────────
 
 export default function ShadowingRoomPage({ params }: { params: Promise<{ id: string }> }) {
   const router = useRouter();
   const resolvedParams = use(params);
   const topicId = resolvedParams.id;
-  const topic = shadowingData.find(t => t.id === topicId);
+  
+  const [topic, setTopic] = useState<any>(null);
+  const [sentences, setSentences] = useState<ShadowingSentence[]>([]);
+  const [isLoading, setIsLoading] = useState(true);
 
-  // ─── State ──────────────────────────────────────────────────────────────────
+  // Fetch Topic và Sentences từ DB (hoặc JSON fallback)
+  useEffect(() => {
+    async function loadData() {
+      try {
+        const supabase = createClient();
+        
+        // 1. Thử fetch Topic từ DB
+        const { data: topicData, error: topicError } = await supabase
+          .from('shadowing_topics' as any)
+          .select('*')
+          .eq('id', topicId)
+          .single();
+          
+        if (!topicError && topicData) {
+          setTopic(topicData);
+          
+          const { data: sentencesData, error: sentencesError } = await supabase
+            .from('shadowing_sentences' as any)
+            .select('*')
+            .eq('topic_id', topicId)
+            .order('order_index', { ascending: true });
+            
+          if (sentencesError) throw sentencesError;
+          setSentences(sentencesData as any);
+        } else {
+          // Fallback: Tìm trong JSON
+          const jsonTopic = shadowingData.find(t => t.id === topicId);
+          if (jsonTopic) {
+             setTopic(jsonTopic);
+             setSentences(jsonTopic.sentences as any);
+          } else {
+             throw new Error("Không tìm thấy chủ đề trong cả DB và JSON.");
+          }
+        }
+      } catch (err) {
+        console.error(err);
+        toast.error('Không tìm thấy bài học này.');
+        router.push('/student/ai/immersive/shadowing');
+      } finally {
+        setIsLoading(false);
+      }
+    }
+    
+    if (topicId) {
+      loadData();
+    }
+  }, [topicId, router]);
 
-  const [currentIndex, setCurrentIndex] = useState(0);
+  const {
+    currentIndex,
+    currentSentence,
+    isBlindMode,
+    totalSentences,
+    currentPosition,
+    isFinished,
+    session,
+    isEvaluating,
+    currentEvaluation,
+    setCurrentEvaluation,
+    showHint,
+    failuresOnCurrent,
+    handleEvaluation,
+    handleNext,
+    handleRestart,
+    handleRetryWeak,
+  } = useShadowingSession(sentences);
+
   const [speed, setSpeed] = useState<SpeechSpeed>('normal');
-  const [showText, setShowText] = useState(true);
-  const [isEvaluating, setIsEvaluating] = useState(false);
-  const [currentEvaluation, setCurrentEvaluation] = useState<ShadowingEvaluation | null>(null);
-  const [isFinished, setIsFinished] = useState(false);
-
-  // Retry weak mode
-  const [retryIndices, setRetryIndices] = useState<number[] | null>(null);
-  const retryPositionRef = useRef(0);
-
-  // In-memory session
-  const [session, setSession] = useState<ShadowingSessionState>({
-    scores: [],
-    evaluations: [],
-    combo: 0,
-    maxCombo: 0,
-    totalAttempts: 0,
-  });
-
-  // Adaptive blind mode tracking
-  const recentScoresRef = useRef<number[]>([]);
-  const [blindStartIndex, setBlindStartIndex] = useState(DEFAULT_BLIND_START);
 
   // Speech recognition
   const {
     isRecording,
     transcript,
+    audioUrl,
     startRecording,
     stopRecording,
     resetTranscript,
     isSupported,
   } = useSpeechRecognition('ru-RU');
 
-  // ─── Derived State ──────────────────────────────────────────────────────────
-
-  const actualIndex = retryIndices ? retryIndices[retryPositionRef.current] ?? 0 : currentIndex;
-  const currentSentence = topic?.sentences[actualIndex];
-  const isBlindMode = actualIndex >= blindStartIndex;
-  const totalSentences = retryIndices ? retryIndices.length : (topic?.sentences.length ?? 0);
-  const currentPosition = retryIndices ? retryPositionRef.current : currentIndex;
-
-  // ─── Effects ────────────────────────────────────────────────────────────────
-
-  // Redirect if topic not found
-  useEffect(() => {
-    if (!topic) {
-      router.push('/student/ai/immersive/shadowing');
-    }
-  }, [topic, router]);
+  // Removed old redirect effect, covered by loadData
 
   // Cleanup speech synthesis on unmount
   useEffect(() => {
@@ -109,19 +118,18 @@ export default function ShadowingRoomPage({ params }: { params: Promise<{ id: st
   // Reset state when moving to a new sentence
   useEffect(() => {
     setCurrentEvaluation(null);
-    setShowText(!isBlindMode);
     resetTranscript();
 
     // Auto-play audio for new sentence
     const timer = setTimeout(() => {
       if (currentSentence) {
-        playAudio(currentSentence.ru);
+        playAudio(currentSentence.ru, (currentSentence as any).audio_url);
       }
     }, 500);
 
     return () => clearTimeout(timer);
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [currentIndex, retryIndices]);
+  }, [currentIndex]);
 
   // Evaluate when recording stops and we have a transcript
   useEffect(() => {
@@ -131,96 +139,51 @@ export default function ShadowingRoomPage({ params }: { params: Promise<{ id: st
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [isRecording, transcript]);
 
-  // ─── Audio ──────────────────────────────────────────────────────────────────
-
-  const playAudio = useCallback((text: string) => {
-    window.speechSynthesis.cancel();
-    const utterance = new SpeechSynthesisUtterance(text);
-    utterance.lang = 'ru-RU';
-    utterance.rate = SPEED_CONFIG[speed].rate;
-    window.speechSynthesis.speak(utterance);
-  }, [speed]);
-
-  // ─── Evaluation Logic ──────────────────────────────────────────────────────
-
-  const handleEvaluation = useCallback(async (studentText: string, targetText: string) => {
-    if (!studentText.trim()) return;
-
-    setIsEvaluating(true);
-
-    try {
-      let evaluation: ShadowingEvaluation;
-
-      if (isBlindMode) {
-        // AI evaluation for blind mode (câu 6+)
-        try {
-          evaluation = await evaluateWithAI(targetText, studentText);
-        } catch {
-          // Fallback to offline if AI fails
-          evaluation = evaluateOffline(targetText, studentText);
-          toast.error('AI không khả dụng, đánh giá offline.', { position: 'top-center' });
-        }
-      } else {
-        // Offline evaluation for visible text (câu 1-5)
-        evaluation = evaluateOffline(targetText, studentText);
-      }
-
-      setCurrentEvaluation(evaluation);
-      setShowText(true); // Show text for comparison
-
-      // Update session state
-      setSession(prev => {
-        const newScores = [...prev.scores];
-        newScores[actualIndex] = evaluation.score;
-        const newEvaluations = [...prev.evaluations];
-        newEvaluations[actualIndex] = evaluation;
-
-        let newCombo = prev.combo;
-        let newMaxCombo = prev.maxCombo;
-
-        if (evaluation.score >= 8) {
-          newCombo += 1;
-          newMaxCombo = Math.max(newMaxCombo, newCombo);
-          toast.success(`Tuyệt vời! +1 Combo (${newCombo})`, { position: 'top-center' });
-        } else {
-          newCombo = 0;
-          toast.error('Chưa chính xác lắm, hãy thử lại!', { position: 'top-center' });
-        }
-
-        return {
-          scores: newScores,
-          evaluations: newEvaluations,
-          combo: newCombo,
-          maxCombo: newMaxCombo,
-          totalAttempts: prev.totalAttempts + 1,
-        };
-      });
-
-      // Adaptive blind mode
-      recentScoresRef.current.push(evaluation.score);
-      if (recentScoresRef.current.length > ADAPTIVE_STREAK_THRESHOLD) {
-        recentScoresRef.current.shift();
-      }
-
-      const recent = recentScoresRef.current;
-      if (recent.length >= ADAPTIVE_STREAK_THRESHOLD) {
-        if (recent.every(s => s >= 9)) {
-          // All recent scores >= 9 → make blind mode start earlier
-          setBlindStartIndex(prev => Math.max(prev - ADAPTIVE_SHIFT, 2));
-        } else if (recent.every(s => s < 5)) {
-          // All recent scores < 5 → relax blind mode
-          setBlindStartIndex(prev => Math.min(prev + ADAPTIVE_SHIFT, DEFAULT_BLIND_START + 4));
-        }
-      }
-    } catch (error) {
-      console.error('Evaluation error:', error);
-      toast.error('Lỗi đánh giá. Vui lòng thử lại.', { position: 'top-center' });
-    } finally {
-      setIsEvaluating(false);
+  const playAudio = useCallback(async (text: string, dbAudioUrl?: string) => {
+    // Dừng âm thanh đang phát nếu có
+    if ((window as any).currentAudio) {
+      (window as any).currentAudio.pause();
     }
-  }, [isBlindMode, actualIndex]);
-
-  // ─── Controls ───────────────────────────────────────────────────────────────
+    
+    // Ưu tiên file mp3 lưu trên Storage
+    if (dbAudioUrl) {
+       const audio = new Audio(dbAudioUrl);
+       // Chỉnh tốc độ
+       audio.playbackRate = SPEED_CONFIG[speed].rate;
+       (window as any).currentAudio = audio;
+       await audio.play().catch(e => console.error(e));
+       return;
+    }
+    
+    // Fallback: Nếu không có file mp3 thì tự sinh bằng API
+    toast.promise(
+      async () => {
+        const rateNumber = SPEED_CONFIG[speed].rate;
+        const edgeRate = rateNumber >= 1 
+           ? `+${Math.round((rateNumber - 1) * 100)}%` 
+           : `${Math.round((rateNumber - 1) * 100)}%`;
+           
+        const res = await fetch('/api/tts', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ text, rate: edgeRate, voice: 'ru-RU-DmitryNeural' })
+        });
+        
+        if (!res.ok) throw new Error('TTS failed');
+        
+        const blob = await res.blob();
+        const url = URL.createObjectURL(blob);
+        const audio = new Audio(url);
+        (window as any).currentAudio = audio;
+        await audio.play();
+      },
+      {
+        loading: 'Đang tải giọng chuẩn...',
+        success: 'Đang phát âm thanh 🔊',
+        error: 'Lỗi tải giọng đọc mẫu',
+      }
+    );
+  }, [speed]);
 
   const toggleRecording = useCallback(() => {
     if (!isSupported) {
@@ -234,56 +197,23 @@ export default function ShadowingRoomPage({ params }: { params: Promise<{ id: st
       resetTranscript();
       startRecording();
     }
-  }, [isSupported, isRecording, stopRecording, resetTranscript, startRecording]);
+  }, [isSupported, isRecording, stopRecording, resetTranscript, startRecording, setCurrentEvaluation]);
 
-  const handleNext = useCallback(() => {
-    if (retryIndices) {
-      // Retry weak mode
-      if (retryPositionRef.current < retryIndices.length - 1) {
-        retryPositionRef.current += 1;
-        setCurrentIndex(prev => prev + 1); // Trigger re-render
-      } else {
-        setIsFinished(true);
-      }
-    } else {
-      if (currentIndex < (topic?.sentences.length ?? 0) - 1) {
-        setCurrentIndex(prev => prev + 1);
-      } else {
-        setIsFinished(true);
-      }
-    }
-  }, [retryIndices, currentIndex, topic]);
-
-  const handleRestart = useCallback(() => {
-    setCurrentIndex(0);
-    setIsFinished(false);
-    setRetryIndices(null);
-    retryPositionRef.current = 0;
-    setBlindStartIndex(DEFAULT_BLIND_START);
-    recentScoresRef.current = [];
-    setSession({
-      scores: [],
-      evaluations: [],
-      combo: 0,
-      maxCombo: 0,
-      totalAttempts: 0,
-    });
-  }, []);
-
-  const handleRetryWeak = useCallback((weakIndices: number[]) => {
-    setRetryIndices(weakIndices);
-    retryPositionRef.current = 0;
-    setCurrentIndex(0); // Reset to trigger re-render
-    setIsFinished(false);
-    setSession(prev => ({ ...prev, combo: 0 }));
-  }, []);
-
-  // ─── Render Guards ──────────────────────────────────────────────────────────
-
+  // Render Guards
+  if (isLoading) {
+    return (
+      <div className="min-h-screen bg-[#f8f9fc] flex items-center justify-center font-sans">
+        <div className="flex flex-col items-center gap-4 text-gray-500">
+          <Loader2 size={40} className="animate-spin text-blue-600" />
+          <p className="font-medium">Đang tải bài học...</p>
+        </div>
+      </div>
+    );
+  }
+  
   if (!topic || !currentSentence) return null;
 
-  // ─── Finished State ─────────────────────────────────────────────────────────
-
+  // Finished State
   if (isFinished) {
     return (
       <div className="min-h-screen bg-[#f8f9fc] flex flex-col font-sans">
@@ -301,8 +231,7 @@ export default function ShadowingRoomPage({ params }: { params: Promise<{ id: st
     );
   }
 
-  // ─── Practice UI ────────────────────────────────────────────────────────────
-
+  // Practice UI
   return (
     <div className="min-h-screen bg-[#f8f9fc] flex flex-col font-sans">
       <main className="flex-1 container mx-auto px-4 py-8 max-w-[800px]">
@@ -314,7 +243,7 @@ export default function ShadowingRoomPage({ params }: { params: Promise<{ id: st
               🔥 Combo: {session.combo}
             </div>
             <div className="bg-blue-100 text-blue-700 font-bold px-4 py-2 rounded-xl">
-              {retryIndices ? '🔄 ' : ''}Câu {currentPosition + 1} / {totalSentences}
+              Câu {currentPosition + 1} / {totalSentences}
             </div>
           </div>
           <SpeedControl currentSpeed={speed} onSpeedChange={setSpeed} />
@@ -324,22 +253,17 @@ export default function ShadowingRoomPage({ params }: { params: Promise<{ id: st
         <div className="bg-white rounded-3xl p-8 md:p-12 shadow-xl border border-gray-100 text-center relative overflow-hidden">
 
           {/* Blind Mode Badge */}
-          {isBlindMode && !showText && (
+          {!showHint && !currentEvaluation && (
             <div className="absolute top-4 right-4 text-xs font-bold bg-red-100 text-red-600 px-3 py-1 rounded-full flex items-center gap-1">
               <EyeOff size={14} /> BLIND MODE
             </div>
           )}
 
-          {/* Adaptive Badge */}
-          {blindStartIndex !== DEFAULT_BLIND_START && (
-            <div className="absolute top-4 left-4 text-xs font-bold bg-purple-100 text-purple-600 px-3 py-1 rounded-full">
-              ⚡ Adaptive
-            </div>
-          )}
+          {/* Removed Adaptive Badge as it's full blind mode now */}
 
           {/* Sentence Display */}
           <div className="mb-10 min-h-[160px] flex flex-col items-center justify-center">
-            {showText ? (
+            {showHint || currentEvaluation ? (
               <div className="animate-in fade-in zoom-in duration-300">
                 <h2 className="text-4xl md:text-5xl font-extrabold text-gray-800 mb-6 tracking-tight">
                   {currentSentence.ru}
@@ -353,15 +277,23 @@ export default function ShadowingRoomPage({ params }: { params: Promise<{ id: st
                 <div className="w-24 h-24 bg-gray-100 rounded-full flex items-center justify-center mx-auto mb-4 border-4 border-dashed border-gray-300">
                   <EyeOff size={40} className="text-gray-400" />
                 </div>
-                <p className="text-gray-500 font-medium">Câu này đã bị che. Hãy lắng nghe và lặp lại.</p>
+                <p className="text-gray-500 font-medium">Lắng nghe Audio và lặp lại nhé.</p>
+                {failuresOnCurrent > 0 && (
+                  <p className="text-orange-500 text-sm mt-2 font-medium">
+                    Bạn đã thử {failuresOnCurrent}/3 lần.
+                  </p>
+                )}
               </div>
             )}
           </div>
+          
+          {/* Audio Visualizer */}
+          <AudioVisualizer isRecording={isRecording} />
 
           {/* Control Buttons */}
           <div className="flex justify-center gap-4 mb-10">
             <button
-              onClick={() => playAudio(currentSentence.ru)}
+              onClick={() => playAudio(currentSentence.ru, (currentSentence as any).audio_url)}
               className="w-16 h-16 rounded-full bg-blue-50 text-blue-600 flex items-center justify-center hover:bg-blue-100 transition-colors"
               title={`Nghe lại (${SPEED_CONFIG[speed].label})`}
             >
@@ -401,7 +333,7 @@ export default function ShadowingRoomPage({ params }: { params: Promise<{ id: st
                     ? 'bg-purple-100 text-purple-600'
                     : 'bg-gray-200 text-gray-600'
                 }`}>
-                  {currentEvaluation.evaluated_by === 'ai' ? '🤖 AI' : '📊 Offline'}
+                  {currentEvaluation.evaluated_by === 'ai' ? '🤖 AI' : '📊 WER Offline'}
                 </span>
               </div>
 
@@ -424,11 +356,19 @@ export default function ShadowingRoomPage({ params }: { params: Promise<{ id: st
               </div>
 
               {/* Feedback */}
-              <p className="text-gray-600 text-sm">{currentEvaluation.feedback}</p>
+              <p className="text-gray-600 text-sm mb-4">{currentEvaluation.feedback}</p>
+
+              {/* Playback of User's voice */}
+              {audioUrl && (
+                <div className="mt-4 p-4 bg-white rounded-xl border border-gray-100 shadow-sm flex flex-col items-center">
+                  <div className="text-sm font-bold text-gray-600 mb-2">🎧 Nghe lại giọng bạn</div>
+                  <audio src={audioUrl} controls className="h-10 w-full max-w-[300px]" />
+                </div>
+              )}
 
               {/* Pronunciation Tips (AI only) */}
               {currentEvaluation.pronunciation_tips && (
-                <div className="mt-3 p-3 bg-blue-50 rounded-xl border border-blue-100">
+                <div className="mt-4 p-3 bg-blue-50 rounded-xl border border-blue-100">
                   <p className="text-blue-700 text-sm">
                     <span className="font-bold">💡 Mẹo phát âm:</span> {currentEvaluation.pronunciation_tips}
                   </p>

@@ -1,8 +1,7 @@
 // src/lib/shadowingEvaluator.ts
-// Offline evaluation for sentences 1-5 (visible text mode)
-// Uses string-similarity for overall score + word-level diff for highlighting
+// Offline evaluation using Word Error Rate (WER) / Levenshtein distance on words
+// This replaces string-similarity for much higher accuracy.
 
-import stringSimilarity from 'string-similarity';
 import type { ShadowingEvaluation, WordAnalysis } from '@/types/shadowing';
 
 /**
@@ -14,89 +13,70 @@ import type { ShadowingEvaluation, WordAnalysis } from '@/types/shadowing';
 function normalize(str: string): string {
   return str
     .toLowerCase()
-    .replace(/[.,!?;:«»"""''—–\-()]/g, '')
+    .replace(/[.,!?;:«»""''—–\-()]/g, '')
     .replace(/\s+/g, ' ')
     .trim();
 }
 
 /**
- * Compare two word arrays and produce word-level analysis.
- * Uses a simple LCS-like approach to align words.
+ * Calculate Levenshtein matrix and backtrack to find word alignments
  */
-function analyzeWords(targetWords: string[], studentWords: string[]): WordAnalysis[] {
-  const results: WordAnalysis[] = [];
+function analyzeWordsWER(targetWords: string[], studentWords: string[]): WordAnalysis[] {
+  const n = targetWords.length;
+  const m = studentWords.length;
   
-  let ti = 0; // target index
-  let si = 0; // student index
-
-  while (ti < targetWords.length || si < studentWords.length) {
-    if (ti >= targetWords.length) {
-      // Student said extra words
-      results.push({ word: studentWords[si], status: 'extra' });
-      si++;
-      continue;
-    }
-    
-    if (si >= studentWords.length) {
-      // Student missed words
-      results.push({ word: targetWords[ti], status: 'missing' });
-      ti++;
-      continue;
-    }
-
-    const targetWord = targetWords[ti];
-    const studentWord = studentWords[si];
-
-    if (normalize(targetWord) === normalize(studentWord)) {
-      // Exact match
-      results.push({ word: studentWord, status: 'correct' });
-      ti++;
-      si++;
-    } else {
-      // Check if it's a substitution or a skip
-      // Look ahead in target to see if student word appears later
-      const futureTargetIdx = targetWords.slice(ti + 1, ti + 4).findIndex(
-        w => normalize(w) === normalize(studentWord)
-      );
+  // dp[i][j] stores the minimum edit distance
+  const dp: number[][] = Array(n + 1).fill(null).map(() => Array(m + 1).fill(0));
+  
+  // Backtracking matrix to reconstruct path
+  // 0: match/substitute, 1: insert (extra), 2: delete (missing)
+  const ptr: number[][] = Array(n + 1).fill(null).map(() => Array(m + 1).fill(0));
+  
+  for (let i = 1; i <= n; i++) dp[i][0] = i;
+  for (let j = 1; j <= m; j++) dp[0][j] = j;
+  
+  for (let i = 1; i <= n; i++) {
+    for (let j = 1; j <= m; j++) {
+      const cost = targetWords[i - 1] === studentWords[j - 1] ? 0 : 1;
       
-      // Look ahead in student to see if target word appears later
-      const futureStudentIdx = studentWords.slice(si + 1, si + 4).findIndex(
-        w => normalize(w) === normalize(targetWord)
-      );
-
-      if (futureTargetIdx !== -1 && (futureStudentIdx === -1 || futureTargetIdx <= futureStudentIdx)) {
-        // Target word was skipped — mark as missing
-        for (let i = 0; i <= futureTargetIdx; i++) {
-          results.push({ word: targetWords[ti + i], status: 'missing' });
-        }
-        ti += futureTargetIdx + 1;
-        // Don't advance si — we'll match it in the next iteration
-      } else if (futureStudentIdx !== -1) {
-        // Student said extra words before the target
-        for (let i = 0; i < futureStudentIdx; i++) {
-          results.push({ word: studentWords[si + i], status: 'extra' });
-        }
-        si += futureStudentIdx;
-        // Don't advance ti — we'll match it in the next iteration
+      const sub = dp[i - 1][j - 1] + cost;
+      const del = dp[i - 1][j] + 1;
+      const ins = dp[i][j - 1] + 1;
+      
+      dp[i][j] = Math.min(sub, del, ins);
+      
+      if (dp[i][j] === sub) {
+        ptr[i][j] = 0; // match or sub
+      } else if (dp[i][j] === ins) {
+        ptr[i][j] = 1; // student added extra word
       } else {
-        // Simple substitution — wrong word
-        const wordSim = stringSimilarity.compareTwoStrings(
-          normalize(targetWord),
-          normalize(studentWord)
-        );
-
-        if (wordSim >= 0.6) {
-          // Close enough — likely a pronunciation variant
-          results.push({ word: studentWord, status: 'correct' });
-        } else {
-          results.push({ word: studentWord, status: 'wrong', expected: targetWord });
-        }
-        ti++;
-        si++;
+        ptr[i][j] = 2; // student missed target word
       }
     }
   }
-
+  
+  // Backtrack
+  const results: WordAnalysis[] = [];
+  let i = n;
+  let j = m;
+  
+  while (i > 0 || j > 0) {
+    if (i > 0 && j > 0 && ptr[i][j] === 0) {
+      if (targetWords[i - 1] === studentWords[j - 1]) {
+        results.unshift({ word: studentWords[j - 1], status: 'correct' });
+      } else {
+        results.unshift({ word: studentWords[j - 1], status: 'wrong', expected: targetWords[i - 1] });
+      }
+      i--; j--;
+    } else if (j > 0 && (i === 0 || ptr[i][j] === 1)) {
+      results.unshift({ word: studentWords[j - 1], status: 'extra' });
+      j--;
+    } else if (i > 0 && (j === 0 || ptr[i][j] === 2)) {
+      results.unshift({ word: targetWords[i - 1], status: 'missing' });
+      i--;
+    }
+  }
+  
   return results;
 }
 
@@ -112,8 +92,7 @@ function generateFeedback(score: number): string {
 }
 
 /**
- * Evaluate a student's speech OFFLINE (no API call).
- * Used for sentences 1-5 where text is visible.
+ * Evaluate a student's speech OFFLINE using Word Error Rate (WER)
  */
 export function evaluateOffline(targetText: string, studentText: string): ShadowingEvaluation {
   if (!studentText.trim()) {
@@ -126,17 +105,30 @@ export function evaluateOffline(targetText: string, studentText: string): Shadow
     };
   }
 
-  // Overall similarity score
-  const similarity = stringSimilarity.compareTwoStrings(
-    normalize(targetText),
-    normalize(studentText)
-  );
-  const score = Math.round(similarity * 10);
-
-  // Word-level analysis
   const targetWords = normalize(targetText).split(' ').filter(Boolean);
   const studentWords = normalize(studentText).split(' ').filter(Boolean);
-  const word_analysis = analyzeWords(targetWords, studentWords);
+  
+  if (targetWords.length === 0) {
+     return {
+        score: 10, transcript: studentText, word_analysis: [], feedback: '', evaluated_by: 'offline'
+     };
+  }
+
+  const word_analysis = analyzeWordsWER(targetWords, studentWords);
+  
+  // Calculate WER score
+  let errorCount = 0;
+  word_analysis.forEach(w => {
+    if (w.status !== 'correct') errorCount++;
+  });
+  
+  // Convert error rate to 0-10 score
+  const wer = errorCount / targetWords.length;
+  // If errors >= length, score is 0. If errors == 0, score is 10.
+  let rawScore = (1 - wer) * 10;
+  rawScore = Math.max(0, Math.min(10, rawScore));
+  
+  const score = Math.round(rawScore);
 
   return {
     score,

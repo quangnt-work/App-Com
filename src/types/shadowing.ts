@@ -13,6 +13,7 @@ export interface ShadowingSentence {
   id: number;
   ru: string;
   vi: string;
+  audio_url?: string;
 }
 
 // ─── Word-level Analysis ──────────────────────────────────────────────────────

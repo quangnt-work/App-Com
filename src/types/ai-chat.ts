@@ -39,3 +39,24 @@ export interface ChatRequestBody {
   topic: string;
   isAssessment: boolean;
 }
+
+// ─── Roleplay Types ───────────────────────────────────────────────────────────
+
+export interface RoleplayObjective {
+  id: string;
+  description: string;
+  hint_vi: string;
+  hint_ru: string;
+}
+
+export interface RoleplayScenario {
+  id: string;
+  title: string;
+  level: number | string;
+  context: string;
+  ai_role: string;
+  first_message: string;
+  objectives: RoleplayObjective[];
+  topic_keyword?: string;
+  created_at?: string;
+}

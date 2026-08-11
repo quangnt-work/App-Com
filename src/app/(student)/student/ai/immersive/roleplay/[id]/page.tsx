@@ -2,11 +2,16 @@
 
 import React, { useState, useRef, useEffect, useCallback, use } from 'react';
 import { useRouter } from 'next/navigation';
-import { Mic, Send, Square, CheckCircle2, Circle, Loader2, Lightbulb, Timer, Star, RotateCcw } from 'lucide-react';
+import { Mic, Send, Square, Loader2, Timer } from 'lucide-react';
 import roleplayData from '@/data/roleplay.json';
 import { useSpeechRecognition } from '@/hooks/useSpeechRecognition';
 import { RoleplayMessage } from '@/components/student/ai/chat/RoleplayMessage';
+import { RoleplayEvaluation } from '@/components/student/ai/chat/RoleplayEvaluation';
+import { QuestBoard, HintState } from '@/components/student/ai/chat/QuestBoard';
+import { speakRussian, cancelSpeech } from '@/lib/tts';
 import { toast } from 'sonner';
+import { createClient } from '@/lib/supabase/client';
+import { RoleplayScenario } from '@/types/ai-chat';
 
 // ─── Types ────────────────────────────────────────────────────────────────────
 
@@ -18,10 +23,6 @@ interface RoleplayMessageData {
   correction?: string | null;
 }
 
-interface HintState {
-  [objectiveId: string]: 'vi' | 'ru'; // Level of hint revealed
-}
-
 // ─── Helpers ──────────────────────────────────────────────────────────────────
 
 function formatTime(seconds: number): string {
@@ -30,29 +31,14 @@ function formatTime(seconds: number): string {
   return `${m}:${s.toString().padStart(2, '0')}`;
 }
 
-function calculateStars(objectivesCompleted: number, totalObjectives: number, hintsUsed: number, timeSeconds: number): number {
-  const completionRatio = objectivesCompleted / totalObjectives;
-  if (completionRatio < 0.5) return 1;
-
-  let stars = 3;
-  // Penalty for hints
-  if (hintsUsed > 3) stars -= 1;
-  if (hintsUsed > 6) stars -= 1;
-  // Penalty for incomplete
-  if (completionRatio < 1) stars -= 1;
-  // Bonus for speed (under 3 minutes for full completion)
-  if (completionRatio === 1 && timeSeconds < 180 && hintsUsed === 0) stars = 3;
-
-  return Math.max(1, Math.min(3, stars));
-}
-
 // ─── Component ────────────────────────────────────────────────────────────────
 
 export default function RoleplayRoomPage({ params }: { params: Promise<{ id: string }> }) {
   const router = useRouter();
   const resolvedParams = use(params);
   const topicId = resolvedParams.id;
-  const topic = roleplayData.find(t => t.id === topicId);
+  const [topic, setTopic] = useState<RoleplayScenario | null>(null);
+  const [isTopicLoaded, setIsTopicLoaded] = useState(false);
 
   // ─── State ──────────────────────────────────────────────────────────────────
 
@@ -87,14 +73,37 @@ export default function RoleplayRoomPage({ params }: { params: Promise<{ id: str
   // ─── Effects ────────────────────────────────────────────────────────────────
 
   useEffect(() => {
-    if (!topic) {
-      router.push('/student/ai/immersive/roleplay');
-    }
-  }, [topic, router]);
+    const loadTopic = async () => {
+      // 1. Tìm trong file tĩnh trước
+      const staticTopic = roleplayData.find(t => t.id === topicId);
+      if (staticTopic) {
+        setTopic(staticTopic as unknown as RoleplayScenario);
+        setIsTopicLoaded(true);
+        return;
+      }
+
+      // 2. Nếu không có, tìm trong Supabase
+      const supabase = createClient();
+      const { data, error } = await supabase
+        .from('roleplay_scenarios')
+        .select('*')
+        .eq('id', topicId)
+        .single();
+
+      if (data && !error) {
+        setTopic(data as unknown as RoleplayScenario);
+      } else {
+        router.push('/student/ai/immersive/roleplay');
+      }
+      setIsTopicLoaded(true);
+    };
+
+    loadTopic();
+  }, [topicId, router]);
 
   useEffect(() => {
     return () => {
-      window.speechSynthesis.cancel();
+      cancelSpeech();
       if (timerRef.current) clearInterval(timerRef.current);
     };
   }, []);
@@ -140,14 +149,7 @@ export default function RoleplayRoomPage({ params }: { params: Promise<{ id: str
 
   // ─── Actions ────────────────────────────────────────────────────────────────
 
-  if (!topic) return null;
-
-  const playAudio = (text: string) => {
-    window.speechSynthesis.cancel();
-    const utterance = new SpeechSynthesisUtterance(text);
-    utterance.lang = 'ru-RU';
-    window.speechSynthesis.speak(utterance);
-  };
+  if (!isTopicLoaded || !topic) return <div className="min-h-screen flex items-center justify-center"><Loader2 className="animate-spin text-orange-500" size={40} /></div>;
 
   const startRoleplay = () => {
     setIsStarted(true);
@@ -160,7 +162,7 @@ export default function RoleplayRoomPage({ params }: { params: Promise<{ id: str
       correction: null,
     };
     setMessages([firstMsg]);
-    playAudio(topic.first_message);
+    speakRussian(topic.first_message);
   };
 
   const handleSend = async (content: string) => {
@@ -191,7 +193,7 @@ export default function RoleplayRoomPage({ params }: { params: Promise<{ id: str
       if (data.correction) {
         setMessages(prev => {
           const updated = [...prev];
-          const lastUserIdx = updated.length - 1; // last message is the user msg we just added
+          const lastUserIdx = updated.length - 1;
           if (updated[lastUserIdx]?.role === 'user') {
             updated[lastUserIdx] = { ...updated[lastUserIdx], correction: data.correction };
           }
@@ -209,11 +211,16 @@ export default function RoleplayRoomPage({ params }: { params: Promise<{ id: str
       };
 
       setMessages(prev => [...prev, aiMsg]);
-      setCompletedObjectives(data.completed_objectives || []);
-      playAudio(data.reply);
+
+      // Merge completed objectives instead of overwriting (P2 fix)
+      const newObjectives: string[] = data.completed_objectives || [];
+      setCompletedObjectives(prev => [...new Set([...prev, ...newObjectives])]);
+
+      speakRussian(data.reply);
 
       // Check win condition
-      if (data.completed_objectives?.length === topic.objectives.length) {
+      const allIds = new Set([...completedObjectives, ...newObjectives]);
+      if (allIds.size === topic.objectives.length) {
         toast.success("Chúc mừng! Bạn đã hoàn thành toàn bộ nhiệm vụ!", { duration: 3000 });
         stopTimer();
         setTimeout(() => setIsFinished(true), 2500);
@@ -232,7 +239,6 @@ export default function RoleplayRoomPage({ params }: { params: Promise<{ id: str
     }
     if (isRecording) {
       stopRecording();
-      // Auto-send is handled by the useEffect watching isRecording
     } else {
       resetTranscript();
       setInput('');
@@ -251,7 +257,7 @@ export default function RoleplayRoomPage({ params }: { params: Promise<{ id: str
         setHintsUsed(h => h + 1);
         return { ...prev, [objectiveId]: 'ru' };
       }
-      return prev; // Already at max
+      return prev;
     });
   };
 
@@ -271,84 +277,15 @@ export default function RoleplayRoomPage({ params }: { params: Promise<{ id: str
   // ─── Evaluation Screen ──────────────────────────────────────────────────────
 
   if (isFinished) {
-    const stars = calculateStars(completedObjectives.length, topic.objectives.length, hintsUsed, elapsedSeconds);
-    const percentage = Math.round((completedObjectives.length / topic.objectives.length) * 100);
-
-    let title = '';
-    let message = '';
-
-    if (percentage < 50) {
-      title = 'Khách du lịch bỡ ngỡ';
-      message = 'Giao tiếp còn khá hạn chế. Đừng ngại dùng gợi ý và thử lại nhé!';
-    } else if (percentage < 100) {
-      title = 'Người giao tiếp tự tin';
-      message = 'Rất tốt! Bạn đã giải quyết được phần lớn vấn đề. Chỉ chút nữa là hoàn hảo.';
-    } else {
-      title = 'Người bản xứ thực thụ';
-      message = 'Xuất sắc! Bạn đã xử lý tình huống cực kỳ mượt mà.';
-    }
-
     return (
-      <div className="min-h-screen bg-[#f8f9fc] flex flex-col font-sans">
-        <main className="flex-1 container mx-auto px-4 py-8 max-w-[800px]">
-          <div className="bg-white rounded-3xl p-8 md:p-12 shadow-xl border border-gray-100 text-center animate-in fade-in zoom-in duration-500">
-            {/* Stars */}
-            <div className="flex justify-center gap-2 mb-6">
-              {[1, 2, 3].map(i => (
-                <Star
-                  key={i}
-                  size={48}
-                  className={i <= stars ? 'text-yellow-400 fill-yellow-400' : 'text-gray-200'}
-                  strokeWidth={1.5}
-                />
-              ))}
-            </div>
-
-            <h2 className="text-3xl md:text-4xl font-extrabold text-gray-800 mb-2">{title}</h2>
-            <p className="text-gray-400 text-sm mb-6">{topic.title}</p>
-
-            {/* Stats Grid */}
-            <div className="grid grid-cols-3 gap-3 mb-8 max-w-md mx-auto">
-              <div className="bg-orange-50 rounded-2xl p-4 text-center">
-                <div className="text-2xl font-black text-[#f07b32]">{completedObjectives.length}/{topic.objectives.length}</div>
-                <div className="text-xs font-semibold text-orange-400 uppercase tracking-wider mt-1">Nhiệm vụ</div>
-              </div>
-              <div className="bg-blue-50 rounded-2xl p-4 text-center">
-                <div className="text-2xl font-black text-blue-600">{formatTime(elapsedSeconds)}</div>
-                <div className="text-xs font-semibold text-blue-400 uppercase tracking-wider mt-1">Thời gian</div>
-              </div>
-              <div className="bg-purple-50 rounded-2xl p-4 text-center">
-                <div className="text-2xl font-black text-purple-600">{hintsUsed}</div>
-                <div className="text-xs font-semibold text-purple-400 uppercase tracking-wider mt-1">Gợi ý</div>
-              </div>
-            </div>
-
-            <p className="text-gray-500 text-lg mb-10 max-w-md mx-auto leading-relaxed">{message}</p>
-
-            {/* Hint penalty info */}
-            {hintsUsed > 0 && (
-              <p className="text-sm text-amber-600 mb-6">
-                💡 Bạn đã dùng {hintsUsed} gợi ý. Thử lại không dùng gợi ý để đạt 3 ⭐!
-              </p>
-            )}
-
-            <div className="flex flex-col sm:flex-row justify-center gap-3">
-              <button
-                onClick={handleRestart}
-                className="px-6 py-3 bg-gray-100 text-gray-700 font-bold rounded-xl hover:bg-gray-200 transition-colors flex items-center justify-center gap-2"
-              >
-                <RotateCcw size={18} /> Chơi lại
-              </button>
-              <button
-                onClick={() => router.push('/student/ai/immersive/roleplay')}
-                className="px-6 py-3 bg-[#f07b32] text-white font-bold rounded-xl hover:bg-[#e26a24] transition-colors"
-              >
-                Chọn kịch bản khác
-              </button>
-            </div>
-          </div>
-        </main>
-      </div>
+      <RoleplayEvaluation
+        topicTitle={topic.title}
+        objectives={topic.objectives}
+        completedObjectives={completedObjectives}
+        hintsUsed={hintsUsed}
+        elapsedSeconds={elapsedSeconds}
+        onRestart={handleRestart}
+      />
     );
   }
 
@@ -382,85 +319,16 @@ export default function RoleplayRoomPage({ params }: { params: Promise<{ id: str
         <div className="flex flex-col lg:flex-row gap-6 h-[80vh]">
 
           {/* QUEST BOARD */}
-          <div className="w-full lg:w-1/3 bg-white rounded-3xl shadow-sm border border-gray-100 p-6 flex flex-col">
-            <h3 className="font-extrabold text-gray-800 text-lg mb-4 border-b pb-4 flex items-center justify-between">
-              Bảng Nhiệm Vụ
-              <span className="text-sm bg-orange-100 text-[#f07b32] px-2 py-1 rounded-lg">
-                {completedObjectives.length} / {topic.objectives.length}
-              </span>
-            </h3>
-            <p className="text-sm text-gray-500 mb-6 italic">{topic.context}</p>
-
-            <div className="flex-1 overflow-y-auto space-y-3">
-              {topic.objectives.map((obj) => {
-                const isDone = completedObjectives.includes(obj.id);
-                const hintLevel = hints[obj.id];
-
-                return (
-                  <div key={obj.id} className={`p-3 rounded-2xl border transition-all ${
-                    isDone ? 'bg-green-50 border-green-200' : 'bg-gray-50 border-gray-100'
-                  }`}>
-                    <div className="flex items-start gap-3">
-                      <div className="mt-0.5 shrink-0">
-                        {isDone
-                          ? <CheckCircle2 className="text-green-500" size={18} />
-                          : <Circle className="text-gray-300" size={18} />
-                        }
-                      </div>
-                      <div className="flex-1 min-w-0">
-                        <div className={`text-sm font-medium ${isDone ? 'text-green-800 line-through decoration-green-300' : 'text-gray-600'}`}>
-                          {obj.description}
-                        </div>
-
-                        {/* Hints */}
-                        {!isDone && hintLevel && (
-                          <div className="mt-2 space-y-1 animate-in fade-in duration-200">
-                            <div className="text-xs text-amber-700 bg-amber-50 px-2.5 py-1.5 rounded-lg border border-amber-100">
-                              🇻🇳 {obj.hint_vi}
-                            </div>
-                            {hintLevel === 'ru' && (
-                              <div className="text-xs text-blue-700 bg-blue-50 px-2.5 py-1.5 rounded-lg border border-blue-100 font-medium">
-                                🇷🇺 {obj.hint_ru}
-                              </div>
-                            )}
-                          </div>
-                        )}
-                      </div>
-
-                      {/* Hint button */}
-                      {!isDone && isStarted && (
-                        <button
-                          onClick={() => revealHint(obj.id)}
-                          disabled={hintLevel === 'ru'}
-                          className={`shrink-0 w-7 h-7 rounded-lg flex items-center justify-center transition-all ${
-                            hintLevel === 'ru'
-                              ? 'bg-gray-100 text-gray-300 cursor-not-allowed'
-                              : 'bg-amber-50 text-amber-500 hover:bg-amber-100 border border-amber-200'
-                          }`}
-                          title={!hintLevel ? 'Gợi ý tiếng Việt' : hintLevel === 'vi' ? 'Gợi ý tiếng Nga' : 'Đã hiện hết'}
-                        >
-                          <Lightbulb size={14} />
-                        </button>
-                      )}
-                    </div>
-                  </div>
-                );
-              })}
-            </div>
-
-            {/* Hints used counter */}
-            {hintsUsed > 0 && (
-              <div className="mt-4 pt-3 border-t border-dashed text-xs text-amber-600 font-medium text-center">
-                💡 Đã dùng {hintsUsed} gợi ý {hintsUsed > 3 && '(ảnh hưởng số ⭐)'}
-              </div>
-            )}
-
-            {isAllCompleted && (
-              <div className="mt-4 bg-green-500 text-white p-4 rounded-2xl text-center font-bold animate-bounce">
-                🎉 Hoàn Thành Kịch Bản!
-              </div>
-            )}
-          </div>
+          <QuestBoard
+            context={topic.context}
+            objectives={topic.objectives}
+            completedObjectives={completedObjectives}
+            hints={hints}
+            hintsUsed={hintsUsed}
+            isStarted={isStarted}
+            isAllCompleted={isAllCompleted}
+            onRevealHint={revealHint}
+          />
 
           {/* CHAT AREA */}
           <div className="w-full lg:w-2/3 flex flex-col bg-white rounded-3xl shadow-sm border border-gray-100 overflow-hidden">

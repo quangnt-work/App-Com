@@ -17,6 +17,22 @@ export async function POST(request: Request) {
       return NextResponse.json({ error: "Messages không hợp lệ" }, { status: 400 });
     }
 
+    if (!context || typeof context !== 'string') {
+      return NextResponse.json({ error: "Thiếu hoặc sai định dạng 'context'" }, { status: 400 });
+    }
+
+    if (!ai_role || typeof ai_role !== 'string') {
+      return NextResponse.json({ error: "Thiếu hoặc sai định dạng 'ai_role'" }, { status: 400 });
+    }
+
+    if (!objectives || !Array.isArray(objectives) || objectives.length === 0) {
+      return NextResponse.json({ error: "Thiếu hoặc sai định dạng 'objectives'" }, { status: 400 });
+    }
+
+    if (messages.length > 50) {
+      return NextResponse.json({ error: "Lịch sử tin nhắn quá dài (tối đa 50)" }, { status: 400 });
+    }
+
     // Build list of objectives for the prompt
     const objectivesList = objectives.map((obj: { id: string; description: string }) => `- [${obj.id}]: ${obj.description}`).join('\n');
 

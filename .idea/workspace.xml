@@ -6,13 +6,12 @@
   <component name="ChangeListManager">
     <list default="true" id="14f236b2-fe28-40fe-b621-04c9b69c8367" name="Changes" comment="">
       <change beforePath="$PROJECT_DIR$/.idea/workspace.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/workspace.xml" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/src/actions/ExamActions.ts" beforeDir="false" afterPath="$PROJECT_DIR$/src/actions/ExamActions.ts" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/src/app/api/dictionary-lookup/route.ts" beforeDir="false" afterPath="$PROJECT_DIR$/src/app/api/dictionary-lookup/route.ts" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/src/app/api/grammar-quiz/route.ts" beforeDir="false" afterPath="$PROJECT_DIR$/src/app/api/grammar-quiz/route.ts" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/app/(student)/student/ai/immersive/roleplay/[id]/page.tsx" beforeDir="false" afterPath="$PROJECT_DIR$/src/app/(student)/student/ai/immersive/roleplay/[id]/page.tsx" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/app/(student)/student/ai/immersive/roleplay/page.tsx" beforeDir="false" afterPath="$PROJECT_DIR$/src/app/(student)/student/ai/immersive/roleplay/page.tsx" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/src/app/api/roleplay-chat/route.ts" beforeDir="false" afterPath="$PROJECT_DIR$/src/app/api/roleplay-chat/route.ts" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/src/app/page.tsx" beforeDir="false" afterPath="$PROJECT_DIR$/src/app/page.tsx" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/src/repositories/ExamRepository.ts" beforeDir="false" afterPath="$PROJECT_DIR$/src/repositories/ExamRepository.ts" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/src/services/ExamService.ts" beforeDir="false" afterPath="$PROJECT_DIR$/src/services/ExamService.ts" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/components/student/ai/chat/RoleplayMessage.tsx" beforeDir="false" afterPath="$PROJECT_DIR$/src/components/student/ai/chat/RoleplayMessage.tsx" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/types/ai-chat.ts" beforeDir="false" afterPath="$PROJECT_DIR$/src/types/ai-chat.ts" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/types/database.type.ts" beforeDir="false" afterPath="$PROJECT_DIR$/src/types/database.type.ts" afterDir="false" />
     </list>
     <option name="SHOW_DIALOG" value="false" />
     <option name="HIGHLIGHT_CONFLICTS" value="true" />
@@ -20,7 +19,7 @@
     <option name="LAST_RESOLUTION" value="IGNORE" />
   </component>
   <component name="EmbeddingIndexingInfo">
-    <option name="cachedIndexableFilesCount" value="268" />
+    <option name="cachedIndexableFilesCount" value="274" />
   </component>
   <component name="Git.Settings">
     <option name="RECENT_GIT_ROOT_PATH" value="$PROJECT_DIR$" />
@@ -38,35 +37,35 @@
     <option name="hideEmptyMiddlePackages" value="true" />
     <option name="showLibraryContents" value="true" />
   </component>
-  <component name="PropertiesComponent">{
-  &quot;keyToString&quot;: {
-    &quot;ModuleVcsDetector.initialDetectionPerformed&quot;: &quot;true&quot;,
-    &quot;RunOnceActivity.MCP Project settings loaded&quot;: &quot;true&quot;,
-    &quot;RunOnceActivity.ShowReadmeOnStart&quot;: &quot;true&quot;,
-    &quot;RunOnceActivity.TerminalTabsStorage.copyFrom.TerminalArrangementManager.252&quot;: &quot;true&quot;,
-    &quot;RunOnceActivity.git.unshallow&quot;: &quot;true&quot;,
-    &quot;RunOnceActivity.go.formatter.settings.were.checked&quot;: &quot;true&quot;,
-    &quot;RunOnceActivity.typescript.service.memoryLimit.init&quot;: &quot;true&quot;,
-    &quot;codeWithMe.voiceChat.enabledByDefault&quot;: &quot;false&quot;,
-    &quot;com.intellij.ml.llm.matterhorn.ej.ui.settings.DefaultModelSelectionForGA.v1&quot;: &quot;true&quot;,
-    &quot;dart.analysis.tool.window.visible&quot;: &quot;false&quot;,
-    &quot;git-widget-placeholder&quot;: &quot;main&quot;,
-    &quot;js.debugger.nextJs.config.created.client&quot;: &quot;true&quot;,
-    &quot;js.debugger.nextJs.config.created.server&quot;: &quot;true&quot;,
-    &quot;junie.onboarding.icon.badge.shown&quot;: &quot;true&quot;,
-    &quot;kotlin-language-version-configured&quot;: &quot;true&quot;,
-    &quot;last_opened_file_path&quot;: &quot;/Users/qa-quangnt/Desktop/Project/russian learning/App-Com&quot;,
-    &quot;node.js.detected.package.eslint&quot;: &quot;true&quot;,
-    &quot;node.js.detected.package.tslint&quot;: &quot;true&quot;,
-    &quot;node.js.selected.package.eslint&quot;: &quot;(autodetect)&quot;,
-    &quot;node.js.selected.package.tslint&quot;: &quot;(autodetect)&quot;,
-    &quot;nodejs_package_manager_path&quot;: &quot;npm&quot;,
-    &quot;settings.editor.selected.configurable&quot;: &quot;preferences.lookFeel&quot;,
-    &quot;show.migrate.to.gradle.popup&quot;: &quot;false&quot;,
-    &quot;to.speed.mode.migration.done&quot;: &quot;true&quot;,
-    &quot;vue.rearranger.settings.migration&quot;: &quot;true&quot;
+  <component name="PropertiesComponent"><![CDATA[{
+  "keyToString": {
+    "ModuleVcsDetector.initialDetectionPerformed": "true",
+    "RunOnceActivity.MCP Project settings loaded": "true",
+    "RunOnceActivity.ShowReadmeOnStart": "true",
+    "RunOnceActivity.TerminalTabsStorage.copyFrom.TerminalArrangementManager.252": "true",
+    "RunOnceActivity.git.unshallow": "true",
+    "RunOnceActivity.go.formatter.settings.were.checked": "true",
+    "RunOnceActivity.typescript.service.memoryLimit.init": "true",
+    "codeWithMe.voiceChat.enabledByDefault": "false",
+    "com.intellij.ml.llm.matterhorn.ej.ui.settings.DefaultModelSelectionForGA.v1": "true",
+    "dart.analysis.tool.window.visible": "false",
+    "git-widget-placeholder": "main",
+    "js.debugger.nextJs.config.created.client": "true",
+    "js.debugger.nextJs.config.created.server": "true",
+    "junie.onboarding.icon.badge.shown": "true",
+    "kotlin-language-version-configured": "true",
+    "last_opened_file_path": "/Users/qa-quangnt/Desktop/Project/russian learning/App-Com",
+    "node.js.detected.package.eslint": "true",
+    "node.js.detected.package.tslint": "true",
+    "node.js.selected.package.eslint": "(autodetect)",
+    "node.js.selected.package.tslint": "(autodetect)",
+    "nodejs_package_manager_path": "npm",
+    "settings.editor.selected.configurable": "com.anthropic.code.plugin.settings",
+    "show.migrate.to.gradle.popup": "false",
+    "to.speed.mode.migration.done": "true",
+    "vue.rearranger.settings.migration": "true"
   }
-}</component>
+}]]></component>
   <component name="RecentsManager">
     <key name="MoveFile.RECENT_KEYS">
       <recent name="C:\Users\UPSC\Desktop\Quang\App-Com\src\components\student\lessons\grammars" />
@@ -105,11 +104,18 @@
       <workItem from="1785468629473" duration="2645000" />
       <workItem from="1785725960556" duration="23000" />
       <workItem from="1786026761539" duration="5040000" />
-      <workItem from="1786439119356" duration="1373000" />
+      <workItem from="1786439119356" duration="7131000" />
+      <workItem from="1786457717061" duration="22000" />
+      <workItem from="1786458999928" duration="422000" />
+      <workItem from="1786459430511" duration="114000" />
     </task>
     <servers />
   </component>
   <component name="TypeScriptGeneratedFilesManager">
     <option name="version" value="3" />
+  </component>
+  <component name="XSLT-Support.FileAssociations.UIState">
+    <expand />
+    <select />
   </component>
 </project>

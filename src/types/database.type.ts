@@ -164,11 +164,13 @@ export type Database = {
           exam_id: string | null
           graded_by: string | null
           id: string
+          passed: boolean | null
           score: number | null
           started_at: string | null
           status: Database["public"]["Enums"]["submission_status"] | null
           submitted_at: string | null
           teacher_feedback: string | null
+          time_spent: number | null
           total_score: number | null
           user_id: string | null
         }
@@ -178,11 +180,13 @@ export type Database = {
           exam_id?: string | null
           graded_by?: string | null
           id?: string
+          passed?: boolean | null
           score?: number | null
           started_at?: string | null
           status?: Database["public"]["Enums"]["submission_status"] | null
           submitted_at?: string | null
           teacher_feedback?: string | null
+          time_spent?: number | null
           total_score?: number | null
           user_id?: string | null
         }
@@ -192,11 +196,13 @@ export type Database = {
           exam_id?: string | null
           graded_by?: string | null
           id?: string
+          passed?: boolean | null
           score?: number | null
           started_at?: string | null
           status?: Database["public"]["Enums"]["submission_status"] | null
           submitted_at?: string | null
           teacher_feedback?: string | null
+          time_spent?: number | null
           total_score?: number | null
           user_id?: string | null
         }
@@ -223,12 +229,12 @@ export type Database = {
           created_at: string
           description: string | null
           duration: number
+          exam_type: string
           id: string
           level: string
           pass_score: number | null
           question_count: number
           status: string
-          exam_type: string
           title: string
           total_score: number | null
         }
@@ -237,12 +243,12 @@ export type Database = {
           created_at?: string
           description?: string | null
           duration?: number
+          exam_type: string
           id?: string
           level: string
           pass_score?: number | null
           question_count?: number
           status?: string
-          exam_type: string
           title: string
           total_score?: number | null
         }
@@ -251,12 +257,12 @@ export type Database = {
           created_at?: string
           description?: string | null
           duration?: number
+          exam_type?: string
           id?: string
           level?: string
           pass_score?: number | null
           question_count?: number
           status?: string
-          exam_type?: string
           title?: string
           total_score?: number | null
         }
@@ -265,6 +271,7 @@ export type Database = {
       grammars: {
         Row: {
           audio_url: string | null
+          audios: Json | null
           category: string | null
           content: string | null
           created_at: string | null
@@ -276,6 +283,7 @@ export type Database = {
           instructor_id: string | null
           price: number | null
           questions: Json | null
+          reference_files: Json | null
           slug: string | null
           status: string | null
           tags: string[] | null
@@ -286,6 +294,7 @@ export type Database = {
         }
         Insert: {
           audio_url?: string | null
+          audios?: Json | null
           category?: string | null
           content?: string | null
           created_at?: string | null
@@ -297,6 +306,7 @@ export type Database = {
           instructor_id?: string | null
           price?: number | null
           questions?: Json | null
+          reference_files?: Json | null
           slug?: string | null
           status?: string | null
           tags?: string[] | null
@@ -307,6 +317,7 @@ export type Database = {
         }
         Update: {
           audio_url?: string | null
+          audios?: Json | null
           category?: string | null
           content?: string | null
           created_at?: string | null
@@ -318,6 +329,7 @@ export type Database = {
           instructor_id?: string | null
           price?: number | null
           questions?: Json | null
+          reference_files?: Json | null
           slug?: string | null
           status?: string | null
           tags?: string[] | null
@@ -489,6 +501,42 @@ export type Database = {
         }
         Relationships: []
       }
+      roleplay_scenarios: {
+        Row: {
+          ai_role: string
+          context: string
+          created_at: string
+          first_message: string
+          id: string
+          level: string
+          objectives: Json
+          title: string
+          topic_keyword: string | null
+        }
+        Insert: {
+          ai_role: string
+          context: string
+          created_at?: string
+          first_message: string
+          id?: string
+          level: string
+          objectives: Json
+          title: string
+          topic_keyword?: string | null
+        }
+        Update: {
+          ai_role?: string
+          context?: string
+          created_at?: string
+          first_message?: string
+          id?: string
+          level?: string
+          objectives?: Json
+          title?: string
+          topic_keyword?: string | null
+        }
+        Relationships: []
+      }
       sentences: {
         Row: {
           created_at: string
@@ -515,6 +563,79 @@ export type Database = {
           vietnamese_text?: string
         }
         Relationships: []
+      }
+      submission_question_results: {
+        Row: {
+          admin_explanation: string | null
+          ai_feedback: string | null
+          correct_answer: string | null
+          created_at: string | null
+          earned_score: number | null
+          id: string
+          is_correct: boolean | null
+          max_score: number | null
+          order_index: number | null
+          question_id: string
+          question_text: string
+          question_type: string
+          submission_id: string
+          user_answer: string | null
+        }
+        Insert: {
+          admin_explanation?: string | null
+          ai_feedback?: string | null
+          correct_answer?: string | null
+          created_at?: string | null
+          earned_score?: number | null
+          id?: string
+          is_correct?: boolean | null
+          max_score?: number | null
+          order_index?: number | null
+          question_id: string
+          question_text: string
+          question_type: string
+          submission_id: string
+          user_answer?: string | null
+        }
+        Update: {
+          admin_explanation?: string | null
+          ai_feedback?: string | null
+          correct_answer?: string | null
+          created_at?: string | null
+          earned_score?: number | null
+          id?: string
+          is_correct?: boolean | null
+          max_score?: number | null
+          order_index?: number | null
+          question_id?: string
+          question_text?: string
+          question_type?: string
+          submission_id?: string
+          user_answer?: string | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "sqr_question_fkey"
+            columns: ["question_id"]
+            isOneToOne: false
+            referencedRelation: "exam_questions"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "sqr_submission_fkey"
+            columns: ["submission_id"]
+            isOneToOne: false
+            referencedRelation: "exam_submissions"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "submission_question_results_submission_id_fkey"
+            columns: ["submission_id"]
+            isOneToOne: false
+            referencedRelation: "exam_submissions"
+            referencedColumns: ["id"]
+          },
+        ]
       }
       user_practice_progress: {
         Row: {

@@ -2,6 +2,7 @@
 
 import React, { useState, useEffect, useRef } from 'react';
 import { Volume2, Languages, AlertCircle } from 'lucide-react';
+import { speakRussian } from '@/lib/tts';
 
 interface RoleplayMessageProps {
   role: 'user' | 'model';
@@ -16,13 +17,7 @@ export function RoleplayMessage({ role, content, replyVi, correction, autoPlayAu
   const [showTranslation, setShowTranslation] = useState(false);
   const hasAutoPlayed = useRef(false);
 
-  const playAudio = (text: string) => {
-    window.speechSynthesis.cancel();
-    const utterance = new SpeechSynthesisUtterance(text);
-    utterance.lang = 'ru-RU';
-    utterance.rate = 0.9;
-    window.speechSynthesis.speak(utterance);
-  };
+  const playAudio = (text: string) => speakRussian(text, 0.9);
 
   useEffect(() => {
     if (isModel && autoPlayAudio && !hasAutoPlayed.current) {

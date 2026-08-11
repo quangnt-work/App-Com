@@ -18,7 +18,7 @@ export async function POST(request: Request) {
     }
 
     // Build list of objectives for the prompt
-    const objectivesList = objectives.map((obj: any) => `- [${obj.id}]: ${obj.description}`).join('\n');
+    const objectivesList = objectives.map((obj: { id: string; description: string }) => `- [${obj.id}]: ${obj.description}`).join('\n');
 
     // Build conversation history (giới hạn 20 tin nhắn gần nhất)
     const recentMessages = messages.slice(-20);

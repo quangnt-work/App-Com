@@ -53,19 +53,7 @@ export const ExamRepository = {
   async delete(id: string) {
     const supabase = await createClient();
     
-    // Tìm các submissions để xóa chi tiết kết quả (nếu không có ON DELETE CASCADE)
-    const { data: subs } = await supabase.from("exam_submissions").select("id").eq("exam_id", id);
-    if (subs && subs.length > 0) {
-      const subIds = subs.map(s => s.id);
-      // Bỏ qua lỗi nếu table chưa được tạo hoặc không có record
-      await (supabase as any).from("submission_question_results").delete().in("submission_id", subIds);
-      await supabase.from("exam_submissions").delete().in("id", subIds);
-    }
-    
-    // Xóa các câu hỏi của đề
-    await supabase.from("exam_questions").delete().eq("exam_id", id);
-    
-    // Bắt đầu xóa thật bản ghi chính
+    // Supabase DB đã được cấu hình ON DELETE CASCADE, nên chỉ cần xóa bản ghi chính
     const { data, error } = await supabase.from("exams").delete().eq("id", id).select("id");
     
     if (error) return { error };

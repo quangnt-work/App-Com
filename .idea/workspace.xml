@@ -6,8 +6,13 @@
   <component name="ChangeListManager">
     <list default="true" id="14f236b2-fe28-40fe-b621-04c9b69c8367" name="Changes" comment="">
       <change beforePath="$PROJECT_DIR$/.idea/workspace.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/workspace.xml" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/src/components/student/lessons/grammars/grammar-detail/GrammarMainView.tsx" beforeDir="false" afterPath="$PROJECT_DIR$/src/components/student/lessons/grammars/grammar-detail/GrammarMainView.tsx" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/src/components/student/lessons/grammars/grammar-detail/GrammarViewer.tsx" beforeDir="false" afterPath="$PROJECT_DIR$/src/components/student/lessons/grammars/grammar-detail/GrammarViewer.tsx" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/actions/ExamActions.ts" beforeDir="false" afterPath="$PROJECT_DIR$/src/actions/ExamActions.ts" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/app/api/dictionary-lookup/route.ts" beforeDir="false" afterPath="$PROJECT_DIR$/src/app/api/dictionary-lookup/route.ts" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/app/api/grammar-quiz/route.ts" beforeDir="false" afterPath="$PROJECT_DIR$/src/app/api/grammar-quiz/route.ts" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/app/api/roleplay-chat/route.ts" beforeDir="false" afterPath="$PROJECT_DIR$/src/app/api/roleplay-chat/route.ts" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/app/page.tsx" beforeDir="false" afterPath="$PROJECT_DIR$/src/app/page.tsx" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/repositories/ExamRepository.ts" beforeDir="false" afterPath="$PROJECT_DIR$/src/repositories/ExamRepository.ts" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/services/ExamService.ts" beforeDir="false" afterPath="$PROJECT_DIR$/src/services/ExamService.ts" afterDir="false" />
     </list>
     <option name="SHOW_DIALOG" value="false" />
     <option name="HIGHLIGHT_CONFLICTS" value="true" />
@@ -15,7 +20,7 @@
     <option name="LAST_RESOLUTION" value="IGNORE" />
   </component>
   <component name="EmbeddingIndexingInfo">
-    <option name="cachedIndexableFilesCount" value="267" />
+    <option name="cachedIndexableFilesCount" value="268" />
   </component>
   <component name="Git.Settings">
     <option name="RECENT_GIT_ROOT_PATH" value="$PROJECT_DIR$" />
@@ -86,8 +91,7 @@
   <component name="SharedIndexes">
     <attachedChunks>
       <set>
-        <option value="bundled-jdk-30f59d01ecdd-37e91769500f-intellij.indexing.shared.core-IU-261.26222.65" />
-        <option value="bundled-js-predefined-d6986cc7102b-31caf2ab9e3c-JavaScript-IU-261.26222.65" />
+        <option value="bundled-jdk-30f59d01ecdd-34e2839f716b-intellij.indexing.shared.core-IU-262.9437.185" />
       </set>
     </attachedChunks>
   </component>
@@ -100,7 +104,8 @@
       <updated>1772437574477</updated>
       <workItem from="1785468629473" duration="2645000" />
       <workItem from="1785725960556" duration="23000" />
-      <workItem from="1786026761539" duration="3868000" />
+      <workItem from="1786026761539" duration="5040000" />
+      <workItem from="1786439119356" duration="1373000" />
     </task>
     <servers />
   </component>

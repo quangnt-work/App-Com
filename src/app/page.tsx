@@ -8,12 +8,6 @@ export default async function HomePage() {
   // Gọi Supabase server để check auth ngay từ phía máy chủ
   const supabase = await createClient();
   const { data: { user } } = await supabase.auth.getUser();
-
-  const userData = user ? { 
-    name: user.user_metadata?.full_name || user.email, 
-    role: user.user_metadata?.role || 'STUDENT'
-  } : null;
-
   const features = [
     { id: '1', title: 'Bài học', icon: <BookOpen size={40} />, href: '/student/lessons', buttonLabel: 'Khám phá' },
     { id: '2', title: 'Luyện tập cùng AI', icon: <Bot size={40} />, href: '/student/ai', buttonLabel: 'Bắt đầu' },

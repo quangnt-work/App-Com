@@ -2,7 +2,7 @@
 
 import { ExamRepository } from "@/repositories/ExamRepository";
 import { ExamService } from "@/services/ExamService";
-import { ExamInput } from "@/lib/schemas/exam";
+import { ExamInput, ExamQuestion } from "@/lib/schemas/exam";
 import { revalidatePath } from "next/cache";
 
 export async function getExams(page = 1, pageSize = 10, search = "") {
@@ -30,21 +30,21 @@ export async function getExamQuestions(examId: string) {
     const { data, error } = await ExamService.getQuestions(examId);
     if (error) throw error;
     // Map db options JSON string back to actual questions
-    const questions = data?.map((q) => q.options) || [];
+    const questions = (data?.map((q) => q.options) || []) as ExamQuestion[];
 
-    const groupedQuestions: any[] = [];
-    let currentReadingGroup: any = null;
+    const groupedQuestions: ExamQuestion[] = [];
+    let currentReadingGroup: Extract<ExamQuestion, { question_type: 'reading_group' }> | null = null;
 
     for (const q of questions) {
-      if ((q as any).question_type === 'reading_mcq') {
-         if (currentReadingGroup && currentReadingGroup.passage === (q as any).passage) {
+      if (q.question_type === 'reading_mcq') {
+         if (currentReadingGroup && currentReadingGroup.passage === q.passage) {
             // Add to existing group
             currentReadingGroup.sub_questions.push({
-              question: (q as any).question,
-              selection_mode: (q as any).selection_mode,
-              options: (q as any).options,
-              correct_indexes: (q as any).correct_indexes,
-              explanation: (q as any).explanation,
+              question: q.question,
+              selection_mode: q.selection_mode,
+              options: q.options,
+              correct_indexes: q.correct_indexes,
+              explanation: q.explanation,
             });
          } else {
             // Finish previous group if exists
@@ -54,14 +54,14 @@ export async function getExamQuestions(examId: string) {
             // Start new group
             currentReadingGroup = {
               question_type: 'reading_group',
-              passage: (q as any).passage,
-              instruction: (q as any).instruction,
+              passage: q.passage,
+              instruction: q.instruction,
               sub_questions: [{
-                question: (q as any).question,
-                selection_mode: (q as any).selection_mode,
-                options: (q as any).options,
-                correct_indexes: (q as any).correct_indexes,
-                explanation: (q as any).explanation,
+                question: q.question,
+                selection_mode: q.selection_mode,
+                options: q.options,
+                correct_indexes: q.correct_indexes,
+                explanation: q.explanation,
               }],
             };
          }
@@ -78,8 +78,8 @@ export async function getExamQuestions(examId: string) {
     }
 
     // Pass 2: Group consecutive listening_mcq into listening_group
-    const finalGroupedQuestions: any[] = [];
-    let currentListeningGroup: any = null;
+    const finalGroupedQuestions: ExamQuestion[] = [];
+    let currentListeningGroup: Extract<ExamQuestion, { question_type: 'listening_group' }> | null = null;
 
     for (const q of groupedQuestions) {
       if (q.question_type === 'listening_mcq' && q.audio_url) {
@@ -128,75 +128,7 @@ export async function getExamQuestions(examId: string) {
 
 export async function upsertExam(payload: ExamInput, id?: string) {
   try {
-    const flatQuestions: any[] = [];
-    if (payload.questions) {
-      for (const q of payload.questions) {
-        if (q.question_type === 'reading_group') {
-          for (const sub of (q as any).sub_questions) {
-             flatQuestions.push({
-               question_type: 'reading_mcq',
-               passage: (q as any).passage,
-               instruction: (q as any).instruction,
-               question: sub.question,
-               selection_mode: sub.selection_mode,
-               options: sub.options,
-               correct_indexes: sub.correct_indexes,
-               explanation: sub.explanation
-             });
-          }
-        } else if (q.question_type === 'listening_group') {
-          for (const sub of (q as any).sub_questions) {
-             flatQuestions.push({
-               question_type: 'listening_mcq',
-               audio_url: (q as any).audio_url,
-               instruction: (q as any).instruction,
-               question: sub.question,
-               selection_mode: sub.selection_mode,
-               options: sub.options,
-               correct_indexes: sub.correct_indexes,
-               explanation: sub.explanation
-             });
-          }
-        } else {
-          flatQuestions.push(q);
-        }
-      }
-    }
-
-    const dbPayload = {
-      title: payload.title,
-      description: payload.description ?? null,
-      duration: payload.duration,
-      level: payload.level,
-      exam_type: payload.exam_type,
-      status: payload.status ? "published" : "draft",
-      question_count: flatQuestions.length,
-    };
-
-    let examId = id;
-    let error;
-
-    if (examId) {
-      // Update exam
-      ({ error } = await ExamRepository.update(examId, dbPayload));
-    } else {
-      // Create exam
-      const createPayload = {
-        ...dbPayload,
-        code: `EX-${Date.now()}`,
-      };
-      const { data, error: createError } = await ExamRepository.create(createPayload);
-      error = createError;
-      if (data) examId = data.id;
-    }
-
-    if (error) throw error;
-
-    // Save questions separately if examId is available
-    if (examId) {
-      const { error: qError } = await ExamRepository.saveQuestions(examId, flatQuestions);
-      if (qError) throw qError;
-    }
+    await ExamService.upsert(payload, id);
 
     revalidatePath("/admin/exams");
     revalidatePath("/admin/dashboard");

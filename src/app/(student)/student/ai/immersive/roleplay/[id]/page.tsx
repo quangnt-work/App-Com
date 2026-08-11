@@ -151,6 +151,27 @@ export default function RoleplayRoomPage({ params }: { params: Promise<{ id: str
 
   if (!isTopicLoaded || !topic) return <div className="min-h-screen flex items-center justify-center"><Loader2 className="animate-spin text-orange-500" size={40} /></div>;
 
+  const saveHistory = async (finalMessages: RoleplayMessageData[], finalCompletedIds: string[]) => {
+    try {
+      const supabase = createClient();
+      const { data: { user } } = await supabase.auth.getUser();
+      if (!user) return;
+
+      await supabase.from('roleplay_history').insert({
+        user_id: user.id,
+        scenario_id: topic.id,
+        topic_title: topic.title,
+        messages: finalMessages,
+        completed_objectives: finalCompletedIds,
+        total_objectives: topic.objectives.length,
+        hints_used: hintsUsed,
+        elapsed_seconds: elapsedSeconds
+      });
+    } catch (err) {
+      console.error("Lỗi khi lưu lịch sử Roleplay:", err);
+    }
+  };
+
   const startRoleplay = () => {
     setIsStarted(true);
     startTimer();
@@ -210,19 +231,21 @@ export default function RoleplayRoomPage({ params }: { params: Promise<{ id: str
         correction: null,
       };
 
-      setMessages(prev => [...prev, aiMsg]);
+      const finalMessages = [...newMessages, aiMsg];
+      setMessages(finalMessages);
 
       // Merge completed objectives instead of overwriting (P2 fix)
       const newObjectives: string[] = data.completed_objectives || [];
-      setCompletedObjectives(prev => [...new Set([...prev, ...newObjectives])]);
+      const allCompleted = [...new Set([...completedObjectives, ...newObjectives])];
+      setCompletedObjectives(allCompleted);
 
       speakRussian(data.reply);
 
       // Check win condition
-      const allIds = new Set([...completedObjectives, ...newObjectives]);
-      if (allIds.size === topic.objectives.length) {
+      if (allCompleted.length === topic.objectives.length) {
         toast.success("Chúc mừng! Bạn đã hoàn thành toàn bộ nhiệm vụ!", { duration: 3000 });
         stopTimer();
+        saveHistory(finalMessages, allCompleted);
         setTimeout(() => setIsFinished(true), 2500);
       }
     } catch {
@@ -307,7 +330,11 @@ export default function RoleplayRoomPage({ params }: { params: Promise<{ id: str
           </div>
           {isStarted && (
             <button
-              onClick={() => { stopTimer(); setIsFinished(true); }}
+              onClick={() => { 
+                stopTimer(); 
+                saveHistory(messages, completedObjectives);
+                setIsFinished(true); 
+              }}
               disabled={isTyping}
               className="bg-red-50 text-red-500 font-bold px-4 py-2 rounded-xl border border-red-200 hover:bg-red-100 transition-colors disabled:opacity-50"
             >

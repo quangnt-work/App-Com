@@ -1,18 +1,20 @@
 // src/components/student/profile/ProfileClient.tsx
 'use client';
-import { useEffect } from 'react';
+import { useEffect, useState } from 'react';
 import { UserProfileCard } from '@/components/student/profile/UserProfileCard';
 import { ProgressChart } from '@/components/student/profile/ProgressChart';
 import { HistoryTable } from '@/components/student/profile/HistoryTable';
-import { UserProfile, TestRecord, ChartDataPoint } from '@/types/profile';
+import { RoleplayHistoryTable } from '@/components/student/profile/RoleplayHistoryTable';
+import { UserProfile, TestRecord, ChartDataPoint, RoleplayHistoryRecord } from '@/types/profile';
 
 interface ProfileClientProps {
   profile: UserProfile;
   history: TestRecord[];
   chartData: ChartDataPoint[];
+  roleplayHistory: RoleplayHistoryRecord[];
 }
 
-export function ProfileClient({ profile, history, chartData }: ProfileClientProps) {
+export function ProfileClient({ profile, history, chartData, roleplayHistory }: ProfileClientProps) {
 
   useEffect(() => {
     // Push a dummy state so the current entry has something to intercept
@@ -27,6 +29,7 @@ export function ProfileClient({ profile, history, chartData }: ProfileClientProp
     return () => window.removeEventListener('popstate', handlePopState);
   }, []);
 
+  const [activeTab, setActiveTab] = useState<'exam' | 'roleplay'>('roleplay');
 
   return (
     <div className="min-h-screen bg-[#f8f9fc] p-4 md:p-8 font-sans">
@@ -46,13 +49,34 @@ export function ProfileClient({ profile, history, chartData }: ProfileClientProp
             {/* Header Thống kê & Bộ lọc */}
             <div className="bg-white p-4 rounded-2xl shadow-sm border border-gray-100 flex items-center justify-between">
               <h2 className="text-xl font-bold text-gray-800">Thống kê học tập</h2>
+              
+              <div className="flex bg-gray-100 p-1 rounded-xl">
+                <button 
+                  onClick={() => setActiveTab('exam')}
+                  className={`px-4 py-2 rounded-lg text-sm font-semibold transition-all ${activeTab === 'exam' ? 'bg-white shadow-sm text-blue-600' : 'text-gray-500 hover:text-gray-700'}`}
+                >
+                  Bài kiểm tra
+                </button>
+                <button 
+                  onClick={() => setActiveTab('roleplay')}
+                  className={`px-4 py-2 rounded-lg text-sm font-semibold transition-all ${activeTab === 'roleplay' ? 'bg-white shadow-sm text-[#f07b32]' : 'text-gray-500 hover:text-gray-700'}`}
+                >
+                  Nhập vai AI
+                </button>
+              </div>
             </div>
 
-            {/* Chart */}
-            <ProgressChart data={chartData} />
+            {activeTab === 'exam' ? (
+              <>
+                {/* Chart */}
+                <ProgressChart data={chartData} />
 
-            {/* History Table */}
-            <HistoryTable records={history} />
+                {/* History Table */}
+                <HistoryTable records={history} />
+              </>
+            ) : (
+              <RoleplayHistoryTable records={roleplayHistory} />
+            )}
 
           </div>
         </div>

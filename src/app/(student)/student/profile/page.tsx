@@ -123,10 +123,26 @@ export default async function ProfilePage() {
     chartData.push(cp);
   }
 
-  // Always have at least 5 slots
-  for (let i = chartData.length; i < 10; i++) {
-    chartData.push({ name: `T${i + 1}` });
-  }
+  // Fetch roleplay history
+  const { data: roleplayData } = await supabase
+    .from('roleplay_history')
+    .select('*')
+    .eq('user_id', user.id)
+    .order('created_at', { ascending: false });
 
-  return <ProfileClient profile={profile} history={history} chartData={chartData} />;
+  const roleplayHistory = (roleplayData || []).map((r: any) => ({
+    id: r.id,
+    scenarioId: r.scenario_id,
+    topicTitle: r.topic_title,
+    date: new Date(r.created_at).toLocaleDateString('vi-VN', {
+      day: '2-digit', month: '2-digit', year: 'numeric', hour: '2-digit', minute: '2-digit'
+    }),
+    completedObjectives: (r.completed_objectives || []).length,
+    totalObjectives: r.total_objectives,
+    hintsUsed: r.hints_used,
+    elapsedSeconds: r.elapsed_seconds,
+    messages: r.messages || []
+  }));
+
+  return <ProfileClient profile={profile} history={history} chartData={chartData} roleplayHistory={roleplayHistory} />;
 }

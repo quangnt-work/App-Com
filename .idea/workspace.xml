@@ -6,15 +6,11 @@
   <component name="ChangeListManager">
     <list default="true" id="14f236b2-fe28-40fe-b621-04c9b69c8367" name="Changes" comment="">
       <change beforePath="$PROJECT_DIR$/.idea/workspace.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/workspace.xml" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/package-lock.json" beforeDir="false" afterPath="$PROJECT_DIR$/package-lock.json" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/package.json" beforeDir="false" afterPath="$PROJECT_DIR$/package.json" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/src/app/(student)/student/ai/immersive/shadowing/[id]/page.tsx" beforeDir="false" afterPath="$PROJECT_DIR$/src/app/(student)/student/ai/immersive/shadowing/[id]/page.tsx" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/src/app/api/shadowing-evaluate/route.ts" beforeDir="false" afterPath="$PROJECT_DIR$/src/app/api/shadowing-evaluate/route.ts" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/app/(admin)/admin/shadowing/page.tsx" beforeDir="false" afterPath="$PROJECT_DIR$/src/app/(admin)/admin/shadowing/page.tsx" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/app/(student)/student/ai/immersive/roleplay/page.tsx" beforeDir="false" afterPath="$PROJECT_DIR$/src/app/(student)/student/ai/immersive/roleplay/page.tsx" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/app/api/generate-roleplay/route.ts" beforeDir="false" />
       <change beforePath="$PROJECT_DIR$/src/components/admin/dashboard/AdminStatsSection.tsx" beforeDir="false" afterPath="$PROJECT_DIR$/src/components/admin/dashboard/AdminStatsSection.tsx" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/src/components/student/ai/shadowing/WordHighlight.tsx" beforeDir="false" afterPath="$PROJECT_DIR$/src/components/student/ai/shadowing/WordHighlight.tsx" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/src/hooks/useSpeechRecognition.ts" beforeDir="false" afterPath="$PROJECT_DIR$/src/hooks/useSpeechRecognition.ts" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/src/lib/shadowingEvaluator.ts" beforeDir="false" afterPath="$PROJECT_DIR$/src/lib/shadowingEvaluator.ts" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/src/types/shadowing.ts" beforeDir="false" afterPath="$PROJECT_DIR$/src/types/shadowing.ts" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/lib/tts.ts" beforeDir="false" afterPath="$PROJECT_DIR$/src/lib/tts.ts" afterDir="false" />
     </list>
     <option name="SHOW_DIALOG" value="false" />
     <option name="HIGHLIGHT_CONFLICTS" value="true" />
@@ -66,6 +62,7 @@
     "settings.editor.selected.configurable": "com.anthropic.code.plugin.settings",
     "show.migrate.to.gradle.popup": "false",
     "to.speed.mode.migration.done": "true",
+    "ts.external.directory.path": "/Users/qa-quangnt/Desktop/Project/russian learning/App-Com/node_modules/typescript/lib",
     "vue.rearranger.settings.migration": "true"
   }
 }]]></component>
@@ -110,7 +107,7 @@
       <workItem from="1786439119356" duration="7131000" />
       <workItem from="1786457717061" duration="22000" />
       <workItem from="1786458999928" duration="422000" />
-      <workItem from="1786459430511" duration="4569000" />
+      <workItem from="1786459430511" duration="6227000" />
     </task>
     <servers />
   </component>

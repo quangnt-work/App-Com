@@ -101,26 +101,25 @@ export function AdminStatsSection({ stats }: Props) {
         </div>
       </Link>
 
-      {/* Card 5: AI Shadowing */}
+      {/* Card 5: Quản lý AI */}
       <Link
-        href="/admin/shadowing"
-        className="block bg-gradient-to-br from-blue-50 to-indigo-50 rounded-2xl p-6 shadow-sm border border-blue-100 flex flex-col min-h-[250px] transition-all duration-300 hover:shadow-md hover:-translate-y-1 hover:border-blue-300"
+        href="/admin/ai"
+        className="block bg-white rounded-2xl p-6 shadow-sm border border-gray-100 flex flex-col min-h-[250px] transition-all duration-300 hover:shadow-md hover:-translate-y-1 hover:border-orange-200"
       >
         <div className="flex justify-between items-start mb-6">
-          <h3 className="text-gray-800 font-bold text-lg">AI Shadowing</h3>
-          <div className="p-3 bg-blue-600 text-white rounded-xl shadow-sm">
+          <h3 className="text-gray-600 font-semibold text-lg">Công cụ AI</h3>
+          <div className="p-3 bg-orange-50 text-[#ea580c] rounded-xl">
             <Sparkles size={24} />
           </div>
         </div>
         <div>
-          <span className="text-2xl font-extrabold text-blue-900 bg-clip-text">
-            Tạo bài học
+          <span className="text-4xl lg:text-5xl font-extrabold text-gray-800">
+            2
           </span>
         </div>
-        <div className="mt-auto pt-4 text-blue-600/80 text-sm font-medium">
-          <p className="leading-relaxed">
-            Sinh tự động kịch bản & Audio bằng AI (Gemini + Edge TTS)
-          </p>
+        <div className="mt-auto pt-6 text-gray-500 text-sm space-y-2">
+          <p className="flex items-center gap-2">🪄 AI Shadowing</p>
+          <p className="flex items-center gap-2">🎭 AI Roleplay</p>
         </div>
       </Link>
 

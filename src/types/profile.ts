@@ -46,3 +46,14 @@ export interface ExamResultDetail {
   totalScore: number;
   passed: boolean;
 }
+export interface RoleplayHistoryRecord {
+  id: string;
+  scenarioId: string;
+  topicTitle: string;
+  date: string;
+  completedObjectives: number;
+  totalObjectives: number;
+  hintsUsed: number;
+  elapsedSeconds: number;
+  messages: any[]; // The chat history array
+}

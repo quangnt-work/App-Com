@@ -1,6 +1,6 @@
 'use client';
 
-import React, { useState, useEffect, useCallback, use } from 'react';
+import React, { useState, useEffect, useCallback, use, useRef } from 'react';
 import { useRouter } from 'next/navigation';
 import { createClient } from '@/lib/supabase/client';
 import { Mic, Volume2, Square, ArrowRight, EyeOff, Loader2 } from 'lucide-react';
@@ -25,6 +25,7 @@ export default function ShadowingRoomPage({ params }: { params: Promise<{ id: st
   const [topic, setTopic] = useState<any>(null);
   const [sentences, setSentences] = useState<ShadowingSentence[]>([]);
   const [isLoading, setIsLoading] = useState(true);
+  const audioRef = useRef<HTMLAudioElement | null>(null);
 
   // Fetch Topic và Sentences từ DB (hoặc JSON fallback)
   useEffect(() => {
@@ -49,13 +50,13 @@ export default function ShadowingRoomPage({ params }: { params: Promise<{ id: st
             .order('order_index', { ascending: true });
             
           if (sentencesError) throw sentencesError;
-          setSentences(sentencesData as any);
+          setSentences(sentencesData as ShadowingSentence[]);
         } else {
           // Fallback: Tìm trong JSON
           const jsonTopic = shadowingData.find(t => t.id === topicId);
           if (jsonTopic) {
              setTopic(jsonTopic);
-             setSentences(jsonTopic.sentences as any);
+             setSentences(jsonTopic.sentences as ShadowingSentence[]);
           } else {
              throw new Error("Không tìm thấy chủ đề trong cả DB và JSON.");
           }
@@ -112,6 +113,10 @@ export default function ShadowingRoomPage({ params }: { params: Promise<{ id: st
   useEffect(() => {
     return () => {
       window.speechSynthesis.cancel();
+      if (audioRef.current) {
+        audioRef.current.pause();
+        audioRef.current = null;
+      }
     };
   }, []);
 
@@ -123,35 +128,37 @@ export default function ShadowingRoomPage({ params }: { params: Promise<{ id: st
     // Auto-play audio for new sentence
     const timer = setTimeout(() => {
       if (currentSentence) {
-        playAudio(currentSentence.ru, (currentSentence as any).audio_url);
+        playAudio(currentSentence.ru, (currentSentence as ShadowingSentence & { audio_url?: string }).audio_url);
       }
     }, 500);
 
     return () => clearTimeout(timer);
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [currentIndex]);
+  }, [currentIndex, currentSentence, playAudio, resetTranscript, setCurrentEvaluation]);
 
   // Evaluate when recording stops and we have a transcript
   useEffect(() => {
     if (!isRecording && transcript && currentSentence && !currentEvaluation) {
       handleEvaluation(transcript, currentSentence.ru);
     }
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [isRecording, transcript]);
+  }, [isRecording, transcript, currentSentence, currentEvaluation, handleEvaluation]);
 
   const playAudio = useCallback(async (text: string, dbAudioUrl?: string) => {
     // Dừng âm thanh đang phát nếu có
-    if ((window as any).currentAudio) {
-      (window as any).currentAudio.pause();
+    if (audioRef.current) {
+      audioRef.current.pause();
     }
     
     // Ưu tiên file mp3 lưu trên Storage
     if (dbAudioUrl) {
-       const audio = new Audio(dbAudioUrl);
-       // Chỉnh tốc độ
-       audio.playbackRate = SPEED_CONFIG[speed].rate;
-       (window as any).currentAudio = audio;
-       await audio.play().catch(e => console.error(e));
+       try {
+         const audio = new Audio(dbAudioUrl);
+         // Chỉnh tốc độ
+         audio.playbackRate = SPEED_CONFIG[speed].rate;
+         audioRef.current = audio;
+         await audio.play();
+       } catch (e) {
+         console.error(e);
+       }
        return;
     }
     
@@ -174,7 +181,7 @@ export default function ShadowingRoomPage({ params }: { params: Promise<{ id: st
         const blob = await res.blob();
         const url = URL.createObjectURL(blob);
         const audio = new Audio(url);
-        (window as any).currentAudio = audio;
+        audioRef.current = audio;
         await audio.play();
       },
       {
@@ -293,7 +300,8 @@ export default function ShadowingRoomPage({ params }: { params: Promise<{ id: st
           {/* Control Buttons */}
           <div className="flex justify-center gap-4 mb-10">
             <button
-              onClick={() => playAudio(currentSentence.ru, (currentSentence as any).audio_url)}
+              aria-label="Nghe câu mẫu"
+              onClick={() => playAudio(currentSentence.ru, (currentSentence as ShadowingSentence & { audio_url?: string }).audio_url)}
               className="w-16 h-16 rounded-full bg-blue-50 text-blue-600 flex items-center justify-center hover:bg-blue-100 transition-colors"
               title={`Nghe lại (${SPEED_CONFIG[speed].label})`}
             >
@@ -301,6 +309,7 @@ export default function ShadowingRoomPage({ params }: { params: Promise<{ id: st
             </button>
 
             <button
+              aria-label={isEvaluating ? 'Đang chấm...' : isRecording ? 'Dừng ghi âm' : 'Bắt đầu ghi âm'}
               onClick={toggleRecording}
               disabled={isEvaluating}
               className={`w-20 h-20 rounded-full flex items-center justify-center transition-all
@@ -379,6 +388,7 @@ export default function ShadowingRoomPage({ params }: { params: Promise<{ id: st
 
           {/* Next Button */}
           <button
+            aria-label="Câu tiếp theo"
             onClick={handleNext}
             disabled={isRecording || isEvaluating}
             className="mx-auto flex items-center gap-2 bg-gray-900 text-white px-8 py-4 rounded-xl font-bold hover:bg-gray-800 transition-colors disabled:opacity-50"

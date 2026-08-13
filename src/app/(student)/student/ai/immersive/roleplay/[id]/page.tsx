@@ -183,7 +183,6 @@ export default function RoleplayRoomPage({ params }: { params: Promise<{ id: str
       correction: null,
     };
     setMessages([firstMsg]);
-    speakRussian(topic.first_message);
   };
 
   const handleSend = async (content: string) => {
@@ -238,8 +237,6 @@ export default function RoleplayRoomPage({ params }: { params: Promise<{ id: str
       const newObjectives: string[] = data.completed_objectives || [];
       const allCompleted = [...new Set([...completedObjectives, ...newObjectives])];
       setCompletedObjectives(allCompleted);
-
-      speakRussian(data.reply);
 
       // Check win condition
       if (allCompleted.length === topic.objectives.length) {
@@ -330,6 +327,7 @@ export default function RoleplayRoomPage({ params }: { params: Promise<{ id: str
           </div>
           {isStarted && (
             <button
+              aria-label="Kết thúc kịch bản"
               onClick={() => { 
                 stopTimer(); 
                 saveHistory(messages, completedObjectives);
@@ -398,6 +396,7 @@ export default function RoleplayRoomPage({ params }: { params: Promise<{ id: str
                       content={m.content}
                       replyVi={m.reply_vi}
                       correction={m.correction}
+                      autoPlayAudio={i === messages.length - 1 && m.role === 'model'}
                     />
                   ))}
                   {isTyping && (
@@ -429,6 +428,7 @@ export default function RoleplayRoomPage({ params }: { params: Promise<{ id: str
                     className="w-full p-4 pr-14 rounded-2xl bg-gray-50 border border-transparent focus:bg-white focus:border-[#f07b32] focus:ring-2 focus:ring-orange-100 transition-all outline-none text-gray-700"
                   />
                   <button
+                    aria-label="Gửi tin nhắn"
                     onClick={() => handleSend(input)}
                     disabled={isTyping || !input.trim() || isRecording}
                     className="absolute right-3 top-1/2 -translate-y-1/2 w-10 h-10 bg-[#f07b32] text-white rounded-xl flex items-center justify-center hover:bg-[#e26a24] disabled:opacity-50 transition-colors"
@@ -438,6 +438,7 @@ export default function RoleplayRoomPage({ params }: { params: Promise<{ id: str
                 </div>
 
                 <button
+                  aria-label={isRecording ? 'Dừng thu âm' : 'Bắt đầu thu âm'}
                   onClick={toggleRecording}
                   disabled={isTyping}
                   className={`w-14 h-14 rounded-2xl flex items-center justify-center transition-all disabled:opacity-50 ${

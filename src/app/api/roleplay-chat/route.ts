@@ -86,10 +86,11 @@ Lưu ý:
       correction: data.correction || null,
     });
 
-  } catch (error: any) {
-    console.error("Lỗi Roleplay API:", error);
+  } catch (error: unknown) {
+    const errorMessage = error instanceof Error ? error.message : "Lỗi không xác định";
+    console.error("Lỗi Roleplay API:", errorMessage);
     return NextResponse.json(
-      { error: "Lỗi khi xử lý phản hồi từ AI." },
+      { error: "Lỗi khi xử lý phản hồi từ AI: " + errorMessage },
       { status: 500 }
     );
   }

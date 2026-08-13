@@ -44,6 +44,7 @@ export function RoleplayMessage({ role, content, replyVi, correction, autoPlayAu
           {isModel && (
             <div className="mt-3 flex items-center gap-2 flex-wrap">
               <button
+                aria-label="Nghe đoạn thoại"
                 onClick={() => playAudio(content)}
                 className="flex items-center gap-1.5 text-sm font-medium text-blue-600 hover:text-blue-800 transition-colors bg-blue-50 hover:bg-blue-100 px-3 py-1.5 rounded-xl border border-blue-100"
               >
@@ -51,6 +52,7 @@ export function RoleplayMessage({ role, content, replyVi, correction, autoPlayAu
               </button>
               {replyVi && (
                 <button
+                  aria-label={showTranslation ? 'Ẩn dịch' : 'Xem dịch'}
                   onClick={() => setShowTranslation(!showTranslation)}
                   className={`flex items-center gap-1.5 text-sm font-medium transition-colors px-3 py-1.5 rounded-xl border ${
                     showTranslation

@@ -2,21 +2,8 @@
 import { ExamRepository } from "@/repositories/ExamRepository";
 import { createClient } from "@/lib/supabase/server";
 import { ExamInput } from "@/lib/schemas/exam";
+import { requireAdmin } from "@/lib/auth";
 
-async function requireAdmin() {
-  const supabase = await createClient();
-  const {
-    data: { user },
-  } = await supabase.auth.getUser();
-  if (!user) throw new Error("Unauthorized");
-
-  const { data: profile } = await supabase
-    .from("profiles")
-    .select("role")
-    .eq("id", user.id)
-    .single();
-  if (profile?.role !== "admin") throw new Error("Forbidden: Admin access required");
-}
 
 export const ExamService = {
   async getList(page: number, pageSize: number, search: string) {

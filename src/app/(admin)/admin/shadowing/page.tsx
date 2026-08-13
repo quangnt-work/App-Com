@@ -25,7 +25,7 @@ export default function AdminShadowingPage() {
     async function loadTopics() {
       try {
         const { data, error } = await supabase
-          .from('shadowing_topics' as any)
+          .from('shadowing_topics')
           .select('*')
           .order('created_at', { ascending: false });
         

@@ -5,6 +5,10 @@
 import { NextResponse } from "next/server";
 import { generateContentWithFallback, parseAIResponse } from "@/lib/gemini";
 import { createClient } from "@/lib/supabase/server";
+import { rateLimit } from "@/lib/rate-limit";
+
+const quizRateLimit = rateLimit(10, 60000); // 10 req / 1 minute
+
 
 interface GrammarQuizRequest {
   topic: string;
@@ -25,6 +29,13 @@ export async function POST(request: Request) {
     if (!topic) {
       return NextResponse.json({ error: "Thiếu chủ đề." }, { status: 400 });
     }
+
+    const ip = request.headers.get("x-forwarded-for") || user.id;
+    const { success: rateLimitSuccess } = quizRateLimit(ip);
+    if (!rateLimitSuccess) {
+      return NextResponse.json({ error: "Quá nhiều yêu cầu tạo quiz. Vui lòng thử lại sau." }, { status: 429 });
+    }
+
 
     // Tạo seed ngẫu nhiên để đảm bảo mỗi lần gen khác nhau
     const randomSeed = Math.random().toString(36).substring(2, 10);

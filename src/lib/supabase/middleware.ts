@@ -1,6 +1,8 @@
 // src/lib/supabase/middleware.ts
 import { createServerClient } from '@supabase/ssr'
 import { NextResponse, type NextRequest } from 'next/server'
+import type { Database } from '@/types/database.type'
+
 
 // Định nghĩa các Route cần bảo vệ
 const protectedRoutes = {
@@ -19,7 +21,7 @@ export async function updateSession(request: NextRequest) {
   })
 
   // 2. Tạo Supabase Client
-  const supabase = createServerClient(
+  const supabase = createServerClient<Database>(
     process.env.NEXT_PUBLIC_SUPABASE_URL!,
     process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY!,
     {
@@ -47,11 +49,10 @@ export async function updateSession(request: NextRequest) {
   )
 
   // ==========================================
-  // 3. TỐI ƯU TỐC ĐỘ: Dùng getSession() thay vì getUser()
-  // getSession() chỉ giải mã cookie cục bộ (0ms), không gửi request qua mạng
+  // 3. TỐI ƯU BẢO MẬT: Dùng getUser() thay vì getSession()
+  // getUser() gửi request qua mạng để verify token với server (chống giả mạo JWT)
   // ==========================================
-  const { data: { session } } = await supabase.auth.getSession()
-  const user = session?.user
+  const { data: { user } } = await supabase.auth.getUser()
 
   const path = request.nextUrl.pathname
 
@@ -73,11 +74,12 @@ export async function updateSession(request: NextRequest) {
   if (user) {
     // Lấy Role từ user_metadata (đọc trực tiếp từ JWT Token siêu nhanh)
     const role = user.user_metadata?.role || 'student' // mặc định là student nếu không có role
+    const isAdmin = role === 'admin' || role === 'ADMIN'
 
     // 1. Nếu đang ở trang Auth (Login/Register) -> Redirect về trang dashboard tương ứng
     if (path === protectedRoutes.login || path === protectedRoutes.register) {
       const url = request.nextUrl.clone()
-      if (role === 'admin' || role === 'ADMIN') {
+      if (isAdmin) {
         url.pathname = '/admin/dashboard'
       } else {
         url.pathname = '/' // Trang chủ chứa danh sách các module lớn
@@ -85,7 +87,7 @@ export async function updateSession(request: NextRequest) {
       return NextResponse.redirect(url)
     }
 
-    if (path.startsWith(protectedRoutes.admin) && role !== 'admin' && role !== 'ADMIN') {
+    if (path.startsWith(protectedRoutes.admin) && !isAdmin) {
       const url = request.nextUrl.clone()
       url.pathname = '/' // Trả về trang chủ nếu không có quyền admin
       return NextResponse.redirect(url)

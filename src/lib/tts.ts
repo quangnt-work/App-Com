@@ -4,6 +4,7 @@
  */
 
 let currentAudio: HTMLAudioElement | null = null;
+let currentObjectUrl: string | null = null;
 let currentSpeechToken = 0;
 
 export function cancelSpeech(): void {
@@ -13,6 +14,10 @@ export function cancelSpeech(): void {
     currentAudio.pause();
     currentAudio.currentTime = 0;
     currentAudio = null;
+  }
+  if (currentObjectUrl) {
+    URL.revokeObjectURL(currentObjectUrl);
+    currentObjectUrl = null;
   }
 }
 
@@ -41,7 +46,16 @@ export async function speakRussian(text: string, rate: number = 1.0): Promise<vo
     if (token !== currentSpeechToken) return; // Bị hủy do có yêu cầu mới
 
     const url = URL.createObjectURL(blob);
+    currentObjectUrl = url;
     currentAudio = new Audio(url);
+    
+    currentAudio.onended = () => {
+      if (currentObjectUrl === url) {
+        URL.revokeObjectURL(url);
+        currentObjectUrl = null;
+      }
+    };
+    
     await currentAudio.play();
   } catch (error: any) {
     if (token !== currentSpeechToken) return; // Bị hủy do có yêu cầu mới

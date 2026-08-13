@@ -6,6 +6,10 @@ import { NextResponse } from "next/server";
 import { ChatRequestBody } from "@/types/ai-chat";
 import { generateContentWithFallback, parseAIResponse } from "@/lib/gemini";
 import { createClient } from "@/lib/supabase/server";
+import { rateLimit } from "@/lib/rate-limit";
+
+const aiRateLimit = rateLimit(30, 60000); // 30 req / 1 minute
+
 
 export async function POST(request: Request) {
   try {
@@ -17,6 +21,17 @@ export async function POST(request: Request) {
 
     const body: ChatRequestBody = await request.json();
     const { messages, topic, isAssessment } = body;
+
+    if (JSON.stringify(messages || []).length > 20000) {
+      return NextResponse.json({ error: "Payload quá lớn" }, { status: 400 });
+    }
+
+    const ip = request.headers.get("x-forwarded-for") || user.id;
+    const { success: rateLimitSuccess } = aiRateLimit(ip);
+    if (!rateLimitSuccess) {
+      return NextResponse.json({ error: "Quá nhiều yêu cầu. Vui lòng thử lại sau." }, { status: 429 });
+    }
+
 
     // System prompt cho chế độ chat thường
     let systemInstruction = `Bạn là một người Nga bản xứ. Chủ đề trò chuyện hiện tại là: "${topic}". Cuộc trò chuyện luôn PHẢI sử dụng tiếng Nga, không được sử dụng bất kỳ ngôn ngữ khác.

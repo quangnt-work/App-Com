@@ -70,7 +70,7 @@ Trả về kết quả 100% dưới định dạng JSON array:
 
     // 3. Khởi tạo Topic trong DB
     const { data: topicData, error: topicError } = await supabase
-      .from("shadowing_topics" as any)
+      .from("shadowing_topics")
       .insert({
         title: topicName,
         description: description || `Luyện tập Shadowing chủ đề ${topicName}`,
@@ -81,7 +81,7 @@ Trả về kết quả 100% dưới định dạng JSON array:
 
     if (topicError) throw topicError;
 
-    const topicId = (topicData as any).id;
+    const topicId = topicData.id;
     const tts = new EdgeTTS({ voice: "ru-RU-DmitryNeural", lang: "ru-RU" });
     const generatedSentences = [];
 
@@ -118,7 +118,7 @@ Trả về kết quả 100% dưới định dạng JSON array:
 
         // Lưu vào DB
         const { data: sentenceData, error: sentenceError } = await supabase
-          .from("shadowing_sentences" as any)
+          .from("shadowing_sentences")
           .insert({
             topic_id: topicId,
             order_index: i + 1,

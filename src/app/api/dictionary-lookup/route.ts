@@ -6,6 +6,10 @@
 import { NextResponse } from "next/server";
 import { generateContentWithFallback, parseAIResponse } from "@/lib/gemini";
 import { createClient } from "@/lib/supabase/server";
+import { rateLimit } from "@/lib/rate-limit";
+
+const dictRateLimit = rateLimit(30, 60000); // 30 req / 1 minute
+
 
 export async function POST(request: Request) {
   try {
@@ -23,6 +27,16 @@ export async function POST(request: Request) {
     }
 
     const trimmedWord = word.trim();
+    if (trimmedWord.length > 100) {
+      return NextResponse.json({ error: "Từ cần tra cứu quá dài." }, { status: 400 });
+    }
+
+    const ip = request.headers.get("x-forwarded-for") || user.id;
+    const { success: rateLimitSuccess } = dictRateLimit(ip);
+    if (!rateLimitSuccess) {
+      return NextResponse.json({ error: "Quá nhiều yêu cầu. Vui lòng thử lại sau." }, { status: 429 });
+    }
+
 
     const prompt = `Bạn là từ điển Nga-Việt chuyên nghiệp, chính xác tuyệt đối. Hệ thống của bạn hoạt động như một cỗ máy tạo JSON. Tra cứu từ/cụm từ tiếng Nga: "${trimmedWord}"
 

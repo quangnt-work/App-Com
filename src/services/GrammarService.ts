@@ -3,6 +3,7 @@ import { GrammarInput } from "@/lib/schemas/grammar";
 import slugify from "slugify";
 import { createClient } from "@/lib/supabase/server";
 import { GRAMMAR_STATUS } from "@/lib/constants/GrammarConstants";
+import { requireAdmin } from "@/lib/auth";
 
 // Helper function tách riêng
 async function generateUniqueSlug(title: string, currentId?: string) {
@@ -18,16 +19,7 @@ async function generateUniqueSlug(title: string, currentId?: string) {
   return slug;
 }
 
-// Hàm check quyền admin
-async function requireAdmin() {
-  const supabase = await createClient();
-  const { data: { user } } = await supabase.auth.getUser();
-  if (!user) throw new Error("Unauthorized");
 
-  // Nên check thêm role từ bảng profiles
-  const { data: profile } = await supabase.from('profiles').select('role').eq('id', user.id).single();
-  if (profile?.role !== 'admin') throw new Error("Forbidden: Admin access required");
-}
 
 export const GrammarService = {
   async getList(page: number, pageSize: number, search: string, category: string, type?: string) {

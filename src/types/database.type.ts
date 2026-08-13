@@ -564,6 +564,68 @@ export type Database = {
         }
         Relationships: []
       }
+      shadowing_sentences: {
+        Row: {
+          audio_url: string | null
+          created_at: string | null
+          id: string
+          order_index: number | null
+          ru: string
+          topic_id: string | null
+          vi: string
+        }
+        Insert: {
+          audio_url?: string | null
+          created_at?: string | null
+          id?: string
+          order_index?: number | null
+          ru: string
+          topic_id?: string | null
+          vi: string
+        }
+        Update: {
+          audio_url?: string | null
+          created_at?: string | null
+          id?: string
+          order_index?: number | null
+          ru?: string
+          topic_id?: string | null
+          vi?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "shadowing_sentences_topic_id_fkey"
+            columns: ["topic_id"]
+            isOneToOne: false
+            referencedRelation: "shadowing_topics"
+            referencedColumns: ["id"]
+          }
+        ]
+      }
+      shadowing_topics: {
+        Row: {
+          created_at: string | null
+          description: string | null
+          id: string
+          level: string
+          title: string
+        }
+        Insert: {
+          created_at?: string | null
+          description?: string | null
+          id?: string
+          level?: string
+          title: string
+        }
+        Update: {
+          created_at?: string | null
+          description?: string | null
+          id?: string
+          level?: string
+          title?: string
+        }
+        Relationships: []
+      }
       submission_question_results: {
         Row: {
           admin_explanation: string | null

@@ -9,7 +9,7 @@ export default async function ShadowingListPage() {
   const supabase = await createClient();
 
   const { data: dbTopics, error } = await supabase
-    .from('shadowing_topics' as any)
+    .from('shadowing_topics')
     .select('*, shadowing_sentences(id)')
     .order('created_at', { ascending: false });
 

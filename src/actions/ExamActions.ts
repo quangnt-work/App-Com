@@ -4,6 +4,7 @@ import { ExamRepository } from "@/repositories/ExamRepository";
 import { ExamService } from "@/services/ExamService";
 import { ExamInput, ExamQuestion } from "@/lib/schemas/exam";
 import { revalidatePath } from "next/cache";
+import { createClient } from "@/lib/supabase/server";
 
 export async function getExams(page = 1, pageSize = 10, search = "") {
   const { data, count, error } = await ExamService.getList(page, pageSize, search);
@@ -27,6 +28,13 @@ export async function getExamDetail(id: string) {
 
 export async function getExamQuestions(examId: string) {
   try {
+    const supabase = await createClient();
+    const { data: { user } } = await supabase.auth.getUser();
+    if (!user) throw new Error("Unauthorized");
+    
+    const role = user.user_metadata?.role;
+    const isAdmin = role === "admin" || role === "ADMIN";
+
     const { data, error } = await ExamService.getQuestions(examId);
     if (error) throw error;
     // Map db options JSON string back to actual questions
@@ -117,6 +125,19 @@ export async function getExamQuestions(examId: string) {
     }
     if (currentListeningGroup) {
       finalGroupedQuestions.push(currentListeningGroup);
+    }
+
+    if (!isAdmin) {
+      const stripAnswers = (q: any) => {
+        const copy = { ...q };
+        delete copy.correct_indexes;
+        delete copy.explanation;
+        if (copy.sub_questions) {
+          copy.sub_questions = copy.sub_questions.map((sub: any) => stripAnswers(sub));
+        }
+        return copy;
+      };
+      return { data: finalGroupedQuestions.map(stripAnswers), error: null };
     }
 
     return { data: finalGroupedQuestions, error: null };

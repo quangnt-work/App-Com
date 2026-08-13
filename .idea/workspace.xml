@@ -6,11 +6,6 @@
   <component name="ChangeListManager">
     <list default="true" id="14f236b2-fe28-40fe-b621-04c9b69c8367" name="Changes" comment="">
       <change beforePath="$PROJECT_DIR$/.idea/workspace.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/workspace.xml" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/src/app/(admin)/admin/shadowing/page.tsx" beforeDir="false" afterPath="$PROJECT_DIR$/src/app/(admin)/admin/shadowing/page.tsx" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/src/app/(student)/student/ai/immersive/roleplay/page.tsx" beforeDir="false" afterPath="$PROJECT_DIR$/src/app/(student)/student/ai/immersive/roleplay/page.tsx" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/src/app/api/generate-roleplay/route.ts" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/src/components/admin/dashboard/AdminStatsSection.tsx" beforeDir="false" afterPath="$PROJECT_DIR$/src/components/admin/dashboard/AdminStatsSection.tsx" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/src/lib/tts.ts" beforeDir="false" afterPath="$PROJECT_DIR$/src/lib/tts.ts" afterDir="false" />
     </list>
     <option name="SHOW_DIALOG" value="false" />
     <option name="HIGHLIGHT_CONFLICTS" value="true" />
@@ -18,7 +13,7 @@
     <option name="LAST_RESOLUTION" value="IGNORE" />
   </component>
   <component name="EmbeddingIndexingInfo">
-    <option name="cachedIndexableFilesCount" value="274" />
+    <option name="cachedIndexableFilesCount" value="285" />
   </component>
   <component name="Git.Settings">
     <option name="RECENT_GIT_ROOT_PATH" value="$PROJECT_DIR$" />
@@ -26,6 +21,65 @@
   <component name="McpProjectServerCommands">
     <commands />
     <urls />
+  </component>
+  <component name="NextEditCompletionFeaturesState">
+    <decayedCancelled>
+      <entry key="MS100" value="1.025722861520125" />
+      <entry key="MS500" value="2.7488277640301915" />
+      <entry key="S2" value="6.564723454442371" />
+      <entry key="S5" value="8.370886125340117" />
+      <entry key="S10" value="9.13437336237381" />
+      <entry key="S30" value="9.699364423679521" />
+      <entry key="S60" value="9.932185794302532" />
+      <entry key="M2" value="11.63936252245638" />
+      <entry key="M5" value="20.444632707402047" />
+      <entry key="M10" value="29.131943525568126" />
+      <entry key="M15" value="33.401057170377946" />
+      <entry key="M30" value="38.6198891093142" />
+      <entry key="H1" value="41.64983372378695" />
+      <entry key="H2" value="43.282851726459995" />
+      <entry key="H4" value="44.13064355477498" />
+      <entry key="D1" value="44.853586588649" />
+      <entry key="W1" value="44.97904625212311" />
+    </decayedCancelled>
+    <decayedSelected>
+      <entry key="MS100" value="0.0" />
+      <entry key="MS500" value="0.0" />
+      <entry key="S2" value="0.0" />
+      <entry key="S5" value="0.0" />
+      <entry key="S10" value="0.0" />
+      <entry key="S30" value="0.0" />
+      <entry key="S60" value="0.0" />
+      <entry key="M2" value="0.0" />
+      <entry key="M5" value="0.0" />
+      <entry key="M10" value="0.0" />
+      <entry key="M15" value="0.0" />
+      <entry key="M30" value="0.0" />
+      <entry key="H1" value="0.0" />
+      <entry key="H2" value="0.0" />
+      <entry key="H4" value="0.0" />
+      <entry key="D1" value="0.0" />
+      <entry key="W1" value="0.0" />
+    </decayedSelected>
+    <decayedShown>
+      <entry key="MS100" value="1.0044638225992648" />
+      <entry key="MS500" value="2.7195581066980505" />
+      <entry key="S2" value="6.540205951513079" />
+      <entry key="S5" value="8.358070518703238" />
+      <entry key="S10" value="9.127355104305616" />
+      <entry key="S30" value="9.69687738335637" />
+      <entry key="S60" value="9.930915114760525" />
+      <entry key="M2" value="11.638645237626072" />
+      <entry key="M5" value="20.444178794601072" />
+      <entry key="M10" value="29.131634213169775" />
+      <entry key="M15" value="33.400823976850525" />
+      <entry key="M30" value="38.61975601635268" />
+      <entry key="H1" value="41.649762388168035" />
+      <entry key="H2" value="43.282814768007505" />
+      <entry key="H4" value="44.130624740517014" />
+      <entry key="D1" value="44.853583405322944" />
+      <entry key="W1" value="44.97904579618177" />
+    </decayedShown>
   </component>
   <component name="ProjectColorInfo">{
   &quot;customColor&quot;: &quot;&quot;,
@@ -36,36 +90,36 @@
     <option name="hideEmptyMiddlePackages" value="true" />
     <option name="showLibraryContents" value="true" />
   </component>
-  <component name="PropertiesComponent"><![CDATA[{
-  "keyToString": {
-    "ModuleVcsDetector.initialDetectionPerformed": "true",
-    "RunOnceActivity.MCP Project settings loaded": "true",
-    "RunOnceActivity.ShowReadmeOnStart": "true",
-    "RunOnceActivity.TerminalTabsStorage.copyFrom.TerminalArrangementManager.252": "true",
-    "RunOnceActivity.git.unshallow": "true",
-    "RunOnceActivity.go.formatter.settings.were.checked": "true",
-    "RunOnceActivity.typescript.service.memoryLimit.init": "true",
-    "codeWithMe.voiceChat.enabledByDefault": "false",
-    "com.intellij.ml.llm.matterhorn.ej.ui.settings.DefaultModelSelectionForGA.v1": "true",
-    "dart.analysis.tool.window.visible": "false",
-    "git-widget-placeholder": "main",
-    "js.debugger.nextJs.config.created.client": "true",
-    "js.debugger.nextJs.config.created.server": "true",
-    "junie.onboarding.icon.badge.shown": "true",
-    "kotlin-language-version-configured": "true",
-    "last_opened_file_path": "/Users/qa-quangnt/Desktop/Project/russian learning/App-Com",
-    "node.js.detected.package.eslint": "true",
-    "node.js.detected.package.tslint": "true",
-    "node.js.selected.package.eslint": "(autodetect)",
-    "node.js.selected.package.tslint": "(autodetect)",
-    "nodejs_package_manager_path": "npm",
-    "settings.editor.selected.configurable": "com.anthropic.code.plugin.settings",
-    "show.migrate.to.gradle.popup": "false",
-    "to.speed.mode.migration.done": "true",
-    "ts.external.directory.path": "/Users/qa-quangnt/Desktop/Project/russian learning/App-Com/node_modules/typescript/lib",
-    "vue.rearranger.settings.migration": "true"
+  <component name="PropertiesComponent">{
+  &quot;keyToString&quot;: {
+    &quot;ModuleVcsDetector.initialDetectionPerformed&quot;: &quot;true&quot;,
+    &quot;RunOnceActivity.MCP Project settings loaded&quot;: &quot;true&quot;,
+    &quot;RunOnceActivity.ShowReadmeOnStart&quot;: &quot;true&quot;,
+    &quot;RunOnceActivity.TerminalTabsStorage.copyFrom.TerminalArrangementManager.252&quot;: &quot;true&quot;,
+    &quot;RunOnceActivity.git.unshallow&quot;: &quot;true&quot;,
+    &quot;RunOnceActivity.go.formatter.settings.were.checked&quot;: &quot;true&quot;,
+    &quot;RunOnceActivity.typescript.service.memoryLimit.init&quot;: &quot;true&quot;,
+    &quot;codeWithMe.voiceChat.enabledByDefault&quot;: &quot;false&quot;,
+    &quot;com.intellij.ml.llm.matterhorn.ej.ui.settings.DefaultModelSelectionForGA.v1&quot;: &quot;true&quot;,
+    &quot;dart.analysis.tool.window.visible&quot;: &quot;false&quot;,
+    &quot;git-widget-placeholder&quot;: &quot;main&quot;,
+    &quot;js.debugger.nextJs.config.created.client&quot;: &quot;true&quot;,
+    &quot;js.debugger.nextJs.config.created.server&quot;: &quot;true&quot;,
+    &quot;junie.onboarding.icon.badge.shown&quot;: &quot;true&quot;,
+    &quot;kotlin-language-version-configured&quot;: &quot;true&quot;,
+    &quot;last_opened_file_path&quot;: &quot;/Users/qa-quangnt/Desktop/Project/russian learning/App-Com&quot;,
+    &quot;node.js.detected.package.eslint&quot;: &quot;true&quot;,
+    &quot;node.js.detected.package.tslint&quot;: &quot;true&quot;,
+    &quot;node.js.selected.package.eslint&quot;: &quot;(autodetect)&quot;,
+    &quot;node.js.selected.package.tslint&quot;: &quot;(autodetect)&quot;,
+    &quot;nodejs_package_manager_path&quot;: &quot;npm&quot;,
+    &quot;settings.editor.selected.configurable&quot;: &quot;com.anthropic.code.plugin.settings&quot;,
+    &quot;show.migrate.to.gradle.popup&quot;: &quot;false&quot;,
+    &quot;to.speed.mode.migration.done&quot;: &quot;true&quot;,
+    &quot;ts.external.directory.path&quot;: &quot;/Users/qa-quangnt/Desktop/Project/russian learning/App-Com/node_modules/typescript/lib&quot;,
+    &quot;vue.rearranger.settings.migration&quot;: &quot;true&quot;
   }
-}]]></component>
+}</component>
   <component name="RecentsManager">
     <key name="MoveFile.RECENT_KEYS">
       <recent name="C:\Users\UPSC\Desktop\Quang\App-Com\src\components\student\lessons\grammars" />
@@ -107,7 +161,8 @@
       <workItem from="1786439119356" duration="7131000" />
       <workItem from="1786457717061" duration="22000" />
       <workItem from="1786458999928" duration="422000" />
-      <workItem from="1786459430511" duration="6227000" />
+      <workItem from="1786459430511" duration="8051000" />
+      <workItem from="1786525771185" duration="2144000" />
     </task>
     <servers />
   </component>

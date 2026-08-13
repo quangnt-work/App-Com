@@ -34,7 +34,7 @@ export default function ShadowingRoomPage({ params }: { params: Promise<{ id: st
         
         // 1. Thử fetch Topic từ DB
         const { data: topicData, error: topicError } = await supabase
-          .from('shadowing_topics' as any)
+          .from('shadowing_topics')
           .select('*')
           .eq('id', topicId)
           .single();
@@ -43,7 +43,7 @@ export default function ShadowingRoomPage({ params }: { params: Promise<{ id: st
           setTopic(topicData);
           
           const { data: sentencesData, error: sentencesError } = await supabase
-            .from('shadowing_sentences' as any)
+            .from('shadowing_sentences')
             .select('*')
             .eq('topic_id', topicId)
             .order('order_index', { ascending: true });

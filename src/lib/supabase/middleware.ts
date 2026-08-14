@@ -49,10 +49,12 @@ export async function updateSession(request: NextRequest) {
   )
 
   // ==========================================
-  // 3. TỐI ƯU BẢO MẬT: Dùng getUser() thay vì getSession()
-  // getUser() gửi request qua mạng để verify token với server (chống giả mạo JWT)
+  // 3. TỐI ƯU HIỆU NĂNG: Dùng getSession() thay vì getUser()
+  // getSession() giải mã JWT ngay lập tức ở phía Server (không tốn mạng = tốc độ siêu tốc)
+  // Chỉ khi token hết hạn nó mới tự động gọi mạng để refresh.
   // ==========================================
-  const { data: { user } } = await supabase.auth.getUser()
+  const { data: { session } } = await supabase.auth.getSession()
+  const user = session?.user
 
   const path = request.nextUrl.pathname
 

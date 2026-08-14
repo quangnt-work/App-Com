@@ -22,6 +22,7 @@ export const metadata: Metadata = {
   manifest: "/manifest.json",
 };
 
+import NextTopLoader from 'nextjs-toploader';
 import { getAuthUser } from "@/lib/actions/auth";
 
 export default async function RootLayout({ children }: { children: React.ReactNode }) {
@@ -30,6 +31,7 @@ export default async function RootLayout({ children }: { children: React.ReactNo
   return (
     <html lang="vi">
       <body suppressHydrationWarning>
+        <NextTopLoader color="#F28422" showSpinner={false} speed={200} />
         <Header initialUser={user} />
         {children}
         <Toaster position="top-center" richColors /> {/* <-- Thêm dòng này */}

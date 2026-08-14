@@ -161,7 +161,7 @@ export default function RoleplayRoomPage({ params }: { params: Promise<{ id: str
         user_id: user.id,
         scenario_id: topic.id,
         topic_title: topic.title,
-        messages: finalMessages,
+        messages: finalMessages as any,
         completed_objectives: finalCompletedIds,
         total_objectives: topic.objectives.length,
         hints_used: hintsUsed,

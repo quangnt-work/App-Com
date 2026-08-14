@@ -50,7 +50,7 @@ export default function ShadowingRoomPage({ params }: { params: Promise<{ id: st
             .order('order_index', { ascending: true });
             
           if (sentencesError) throw sentencesError;
-          setSentences(sentencesData as ShadowingSentence[]);
+          setSentences(sentencesData as unknown as ShadowingSentence[]);
         } else {
           // Fallback: Tìm trong JSON
           const jsonTopic = shadowingData.find(t => t.id === topicId);
@@ -120,28 +120,6 @@ export default function ShadowingRoomPage({ params }: { params: Promise<{ id: st
     };
   }, []);
 
-  // Reset state when moving to a new sentence
-  useEffect(() => {
-    setCurrentEvaluation(null);
-    resetTranscript();
-
-    // Auto-play audio for new sentence
-    const timer = setTimeout(() => {
-      if (currentSentence) {
-        playAudio(currentSentence.ru, (currentSentence as ShadowingSentence & { audio_url?: string }).audio_url);
-      }
-    }, 500);
-
-    return () => clearTimeout(timer);
-  }, [currentIndex, currentSentence, playAudio, resetTranscript, setCurrentEvaluation]);
-
-  // Evaluate when recording stops and we have a transcript
-  useEffect(() => {
-    if (!isRecording && transcript && currentSentence && !currentEvaluation) {
-      handleEvaluation(transcript, currentSentence.ru);
-    }
-  }, [isRecording, transcript, currentSentence, currentEvaluation, handleEvaluation]);
-
   const playAudio = useCallback(async (text: string, dbAudioUrl?: string) => {
     // Dừng âm thanh đang phát nếu có
     if (audioRef.current) {
@@ -191,6 +169,29 @@ export default function ShadowingRoomPage({ params }: { params: Promise<{ id: st
       }
     );
   }, [speed]);
+
+  // Reset state when moving to a new sentence
+  useEffect(() => {
+    setCurrentEvaluation(null);
+    resetTranscript();
+
+    // Auto-play audio for new sentence
+    const timer = setTimeout(() => {
+      if (currentSentence) {
+        playAudio(currentSentence.ru, (currentSentence as ShadowingSentence & { audio_url?: string }).audio_url);
+      }
+    }, 500);
+
+    return () => clearTimeout(timer);
+  }, [currentIndex, currentSentence, playAudio, resetTranscript, setCurrentEvaluation]);
+
+  // Evaluate when recording stops and we have a transcript
+  useEffect(() => {
+    if (!isRecording && transcript && currentSentence && !currentEvaluation) {
+      handleEvaluation(transcript, currentSentence.ru);
+    }
+  }, [isRecording, transcript, currentSentence, currentEvaluation, handleEvaluation]);
+
 
   const toggleRecording = useCallback(() => {
     if (!isSupported) {

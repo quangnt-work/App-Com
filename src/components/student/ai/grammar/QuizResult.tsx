@@ -44,7 +44,7 @@ export function QuizResult({ result, topicTitle, onRetry }: QuizResultProps) {
 
         {/* Circular Progress */}
         <div className="relative w-48 h-48 mx-auto mb-8">
-          <svg className="w-48 h-48 -rotate-90" viewBox="0 0 160 160">
+          <svg className="w-48 h-48 -rotate-90" viewBox="0 0 160 160" aria-hidden="true" role="presentation">
             <circle cx="80" cy="80" r={radius} stroke="#f3f4f6" strokeWidth="10" fill="none" />
             <circle
               cx="80" cy="80" r={radius}

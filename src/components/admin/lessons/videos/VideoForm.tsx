@@ -218,13 +218,22 @@ export default function VideoForm({ initialData, isEditing }: VideoFormProps) {
                                 </FormLabel>
 
                                 <div
+                                    role="button"
+                                    tabIndex={0}
+                                    aria-label="Kéo thả hoặc bấm để tải ảnh bìa lên"
+                                    onKeyDown={(e) => {
+                                        if (e.key === 'Enter' || e.key === ' ') {
+                                            e.preventDefault();
+                                            thumbInputRef.current?.click();
+                                        }
+                                    }}
                                     className="border-2 border-dashed border-gray-200 rounded-xl p-6 text-center hover:border-rose-300 transition-colors bg-rose-50/10 cursor-pointer"
                                     onClick={() => thumbInputRef.current?.click()}
                                 >
                                     {thumbFileName ? (
                                         <div className="flex items-center justify-center gap-3 text-rose-700">
                                             <span className="text-sm font-medium truncate max-w-[250px]">{thumbFileName}</span>
-                                            <button type="button" onClick={(e) => {
+                                            <button type="button" aria-label="Xóa ảnh bìa đính kèm" onClick={(e) => {
                                                 e.stopPropagation();
                                                 form.setValue("thumbnail", "");
                                                 setThumbFileName(null);

@@ -221,6 +221,15 @@ export default function GrammarForm({ initialData, isEditing }: GrammarFormProps
 
                 {/* Upload area */}
                 <div
+                  role="button"
+                  tabIndex={0}
+                  aria-label="Kéo thả hoặc bấm để tải tài liệu lên"
+                  onKeyDown={(e) => {
+                    if (e.key === 'Enter' || e.key === ' ') {
+                      e.preventDefault();
+                      if (!isUploading) fileRef.current?.click();
+                    }
+                  }}
                   className={`border-2 border-dashed rounded-xl p-8 text-center transition-all cursor-pointer
                                         ${isUploading ? "border-orange-300 bg-orange-50/30" : "border-gray-200 hover:border-orange-300 hover:bg-orange-50/20"}`}
                   onClick={() => !isUploading && fileRef.current?.click()}
@@ -242,7 +251,7 @@ export default function GrammarForm({ initialData, isEditing }: GrammarFormProps
                           Xem tài liệu ↗
                         </a>
                       </div>
-                      <button type="button" onClick={(e) => {
+                      <button type="button" aria-label="Xóa tài liệu đính kèm" onClick={(e) => {
                         e.stopPropagation();
                         form.setValue("file_url", "");
                         setFileName(null);

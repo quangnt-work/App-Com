@@ -345,6 +345,15 @@ export default function AudioForm({ initialData, isEditing }: AudioFormProps) {
 
                                 {/* Drop zone */}
                                 <div
+                                    role="button"
+                                    tabIndex={0}
+                                    aria-label="Kéo thả hoặc bấm để tải audio lên"
+                                    onKeyDown={(e) => {
+                                        if (e.key === 'Enter' || e.key === ' ') {
+                                            e.preventDefault();
+                                            fileInputRef.current?.click();
+                                        }
+                                    }}
                                     className="border-2 border-dashed border-gray-200 rounded-xl p-6 text-center hover:border-sky-300 hover:bg-sky-50/20 transition-all cursor-pointer"
                                     onClick={() => fileInputRef.current?.click()}
                                 >
@@ -383,7 +392,7 @@ export default function AudioForm({ initialData, isEditing }: AudioFormProps) {
                                                     </span>
                                                 )}
                                                 {uf.status !== "uploading" && (
-                                                    <button type="button" onClick={() => removeFile(uf.id)}
+                                                    <button type="button" aria-label="Xóa file tải lên" onClick={() => removeFile(uf.id)}
                                                         className="text-gray-300 hover:text-red-500 transition-colors shrink-0 p-0.5 rounded">
                                                         <X className="w-4 h-4" />
                                                     </button>

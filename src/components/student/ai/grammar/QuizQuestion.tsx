@@ -56,7 +56,7 @@ export function QuizQuestion({ question, selectedIndex, onSelect, isAnswered }: 
             <button
               key={index}
               onClick={() => !isAnswered && onSelect(index)}
-              disabled={isAnswered}
+              aria-disabled={isAnswered}
               className={`w-full text-left p-4 md:p-5 rounded-2xl border-2 transition-all duration-200 flex items-center gap-4 ${optionClass}`}
             >
               {/* Label A/B/C/D */}

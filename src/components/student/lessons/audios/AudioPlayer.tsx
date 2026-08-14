@@ -26,6 +26,7 @@ function formatTime(seconds: number): string {
 
 export function AudioPlayer({ src }: AudioPlayerProps) {
     const audioRef = useRef<HTMLAudioElement>(null);
+    const rateMenuRef = useRef<HTMLDivElement>(null);
     const [isPlaying, setIsPlaying] = useState(false);
     const [currentTime, setCurrentTime] = useState(0);
     const [duration, setDuration] = useState(0);
@@ -41,6 +42,22 @@ export function AudioPlayer({ src }: AudioPlayerProps) {
         audio.volume = volume;
         audio.playbackRate = playbackRate;
     }, []);
+
+    // Đóng menu tốc độ khi click ra ngoài
+    useEffect(() => {
+        const handleClickOutside = (event: MouseEvent) => {
+            if (rateMenuRef.current && !rateMenuRef.current.contains(event.target as Node)) {
+                setShowRateMenu(false);
+            }
+        };
+
+        if (showRateMenu) {
+            document.addEventListener('mousedown', handleClickOutside);
+        }
+        return () => {
+            document.removeEventListener('mousedown', handleClickOutside);
+        };
+    }, [showRateMenu]);
 
     const togglePlay = useCallback(() => {
         const audio = audioRef.current;
@@ -153,7 +170,11 @@ export function AudioPlayer({ src }: AudioPlayerProps) {
             <div className="flex items-center justify-between mt-4">
                 {/* Volume */}
                 <div className="flex items-center gap-2">
-                    <button onClick={toggleMute} className="text-gray-500 hover:text-gray-700 transition-colors">
+                    <button 
+                        onClick={toggleMute} 
+                        className="text-gray-500 hover:text-gray-700 transition-colors"
+                        aria-label={isMuted || volume === 0 ? "Bật âm thanh" : "Tắt âm thanh"}
+                    >
                         {isMuted || volume === 0 ? (
                             <VolumeX className="w-4 h-4" />
                         ) : (
@@ -173,12 +194,14 @@ export function AudioPlayer({ src }: AudioPlayerProps) {
                 </div>
 
                 {/* Playback rate */}
-                <div className="relative">
+                <div className="relative" ref={rateMenuRef}>
                     <div className="flex items-center gap-2 text-sm text-gray-600">
                         <span className="text-xs text-gray-500">Tốc độ phát:</span>
                         <button
                             onClick={() => setShowRateMenu((v) => !v)}
                             className="flex items-center gap-1 border border-gray-200 rounded-lg px-3 py-1.5 text-sm font-medium hover:border-[#f07b32] hover:text-[#f07b32] transition-colors bg-white"
+                            aria-label="Mở menu chọn tốc độ phát"
+                            aria-expanded={showRateMenu}
                         >
                             {currentRateLabel}
                             <svg className="w-3.5 h-3.5 ml-0.5" fill="none" stroke="currentColor" viewBox="0 0 24 24">

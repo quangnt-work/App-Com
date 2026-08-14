@@ -50,7 +50,7 @@ export async function POST(req: Request) {
     }
 
 
-    return new NextResponse(audioBuffer, {
+    return new NextResponse(audioBuffer as unknown as BodyInit, {
       status: 200,
       headers: {
         'Content-Type': 'audio/mpeg',

@@ -92,6 +92,7 @@ export default function GrammarTable({ data }: GrammarTableProps) {
                     <Button
                       variant="ghost"
                       size="icon"
+                      aria-label="Xem trước bài học"
                       className="h-8 w-8 text-gray-400 hover:text-gray-700 hover:bg-gray-100 rounded-full"
                       onClick={(e) => {
                         e.stopPropagation();
@@ -101,7 +102,7 @@ export default function GrammarTable({ data }: GrammarTableProps) {
                       <Eye className="w-4 h-4" />
                     </Button>
 
-                    <Button asChild variant="ghost" size="icon" className="h-8 w-8 text-gray-400 hover:text-gray-700 hover:bg-gray-100 rounded-full">
+                    <Button asChild variant="ghost" size="icon" aria-label="Chỉnh sửa bài học" className="h-8 w-8 text-gray-400 hover:text-gray-700 hover:bg-gray-100 rounded-full">
                       <Link href={`/admin/lessons/grammars/${lesson.id}`}>
                         <Edit className="w-4 h-4" />
                       </Link>

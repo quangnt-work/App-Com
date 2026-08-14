@@ -30,6 +30,7 @@ export function GrammarViewer({ grammar, isFullscreen, onToggleFullscreen }: Gra
         {/* Nút công cụ (Fullscreen) đặt lọt lòng bên trong khung iframe */}
         <div className="absolute top-[68px] right-6 flex items-center gap-3 z-50">
            <button 
+              aria-label={isFullscreen ? 'Thu nhỏ' : 'Phóng to'}
               onClick={onToggleFullscreen}
               className="w-10 h-10 bg-white/90 backdrop-blur-sm rounded-xl border border-gray-200 flex items-center justify-center text-gray-700 hover:bg-white hover:text-[#F28422] transition-colors shadow-sm"
               title="Phóng to / Thu nhỏ"
@@ -42,7 +43,7 @@ export function GrammarViewer({ grammar, isFullscreen, onToggleFullscreen }: Gra
           <iframe 
             src={`https://view.officeapps.live.com/op/embed.aspx?src=${encodeURIComponent(grammar.file_url)}`} 
             className="w-full h-full" 
-            frameBorder="0" 
+            style={{ border: 0 }}
             allowFullScreen 
           />
         )}
@@ -51,7 +52,7 @@ export function GrammarViewer({ grammar, isFullscreen, onToggleFullscreen }: Gra
           <iframe 
             src={`/api/pdf/${encodeURIComponent(grammar.title + '.pdf')}?url=${encodeURIComponent(grammar.file_url)}#view=FitH`} 
             className="w-full h-full" 
-            frameBorder="0" 
+            style={{ border: 0 }} 
             allowFullScreen 
           />
         )}

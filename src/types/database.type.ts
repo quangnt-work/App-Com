@@ -501,6 +501,53 @@ export type Database = {
         }
         Relationships: []
       }
+      roleplay_history: {
+        Row: {
+          completed_objectives: string[]
+          created_at: string
+          elapsed_seconds: number
+          hints_used: number
+          id: string
+          messages: Json
+          scenario_id: string
+          topic_title: string
+          total_objectives: number
+          user_id: string
+        }
+        Insert: {
+          completed_objectives: string[]
+          created_at?: string
+          elapsed_seconds: number
+          hints_used?: number
+          id?: string
+          messages: Json
+          scenario_id: string
+          topic_title: string
+          total_objectives: number
+          user_id: string
+        }
+        Update: {
+          completed_objectives?: string[]
+          created_at?: string
+          elapsed_seconds?: number
+          hints_used?: number
+          id?: string
+          messages?: Json
+          scenario_id?: string
+          topic_title?: string
+          total_objectives?: number
+          user_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "roleplay_history_scenario_id_fkey"
+            columns: ["scenario_id"]
+            isOneToOne: false
+            referencedRelation: "roleplay_scenarios"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       roleplay_scenarios: {
         Row: {
           ai_role: string
@@ -569,7 +616,7 @@ export type Database = {
           audio_url: string | null
           created_at: string | null
           id: string
-          order_index: number | null
+          order_index: number
           ru: string
           topic_id: string | null
           vi: string
@@ -578,7 +625,7 @@ export type Database = {
           audio_url?: string | null
           created_at?: string | null
           id?: string
-          order_index?: number | null
+          order_index: number
           ru: string
           topic_id?: string | null
           vi: string
@@ -587,7 +634,7 @@ export type Database = {
           audio_url?: string | null
           created_at?: string | null
           id?: string
-          order_index?: number | null
+          order_index?: number
           ru?: string
           topic_id?: string | null
           vi?: string
@@ -599,7 +646,7 @@ export type Database = {
             isOneToOne: false
             referencedRelation: "shadowing_topics"
             referencedColumns: ["id"]
-          }
+          },
         ]
       }
       shadowing_topics: {
@@ -614,7 +661,7 @@ export type Database = {
           created_at?: string | null
           description?: string | null
           id?: string
-          level?: string
+          level: string
           title: string
         }
         Update: {

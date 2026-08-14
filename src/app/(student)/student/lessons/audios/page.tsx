@@ -3,12 +3,22 @@ import { Inbox, Headphones } from 'lucide-react';
 import { GrammarRepository } from '@/repositories/GrammarRepository';
 import { type Grammar } from '@/types/grammar';
 import { AudioLessonCard } from '@/components/student/lessons/audios/AudioLessonCard';
+import { Pagination } from '@/components/common/Pagination';
 
-export default async function AudioLessonsPage() {
+interface AudioLessonsPageProps {
+  searchParams: Promise<{ page?: string }>;
+}
+
+export default async function AudioLessonsPage({ searchParams }: AudioLessonsPageProps) {
+  const params = await searchParams;
+  const currentPage = Number(params?.page) || 1;
+  const pageSize = 12;
+
   // Fetch bài học có type='audio' từ bảng grammars, status='published'
-  const { data, count, error } = await GrammarRepository.getByType('audio');
+  const { data, count, error } = await GrammarRepository.getByType('audio', currentPage, pageSize);
   const lessons: Grammar[] = (data as unknown as Grammar[]) ?? [];
   const isEmpty = lessons.length === 0;
+  const totalPages = Math.ceil((count || 0) / pageSize);
 
   return (
     <div className="min-h-screen bg-[#f8f9fc] flex flex-col font-sans">
@@ -44,16 +54,21 @@ export default async function AudioLessonsPage() {
             <p className="text-slate-500 mt-2">Hệ thống đang được cập nhật. Vui lòng quay lại sau.</p>
           </div>
         ) : (
-          // Grid 4 cột — đồng bộ với grammars page
-          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6">
-            {lessons.map((lesson, index) => (
-              <AudioLessonCard
-                key={lesson.id}
-                lesson={lesson}
-                index={index}
-              />
-            ))}
-          </div>
+          <>
+            {/* Grid 4 cột — đồng bộ với grammars page */}
+            <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6">
+              {lessons.map((lesson, index) => (
+                <AudioLessonCard
+                  key={lesson.id}
+                  lesson={lesson}
+                  index={(currentPage - 1) * pageSize + index}
+                />
+              ))}
+            </div>
+            
+            {/* Pagination */}
+            {totalPages > 1 && <Pagination totalPages={totalPages} />}
+          </>
         )}
       </main>
     </div>

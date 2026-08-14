@@ -1,22 +1,23 @@
-# Kế hoạch Tối ưu hiệu năng (Performance Optimization)
+# Kế hoạch Tự động Đánh giá & Tối ưu: Chức năng Nghe (Audio Module)
 
-Dựa trên các triệu chứng bạn cung cấp, tôi đã phân tích (Profile & Đo lường) và xác định được các điểm nghẽn (bottleneck) sau:
+Qua quá trình kiểm toán toàn diện (Audit & Review) chức năng nghe `student/lessons/audios`, tôi đã phát hiện 2 vấn đề lớn liên quan đến Trải nghiệm người dùng (UX), Trợ năng (A11y) và Lỗi chức năng nghiêm trọng (Functional Bug).
 
-## 1. Tối ưu độ trễ âm thanh chức năng Shadowing [Hoàn tất]
-- **Nguyên nhân (Triệu chứng: Mất một lúc mới load và phát ra âm thanh):** 
-  - API `/api/tts` (Text-to-Speech) sử dụng phương thức `POST`, do đó trình duyệt không tự động cache lại kết quả. 
-  - Mỗi khi chuyển câu hoặc bấm nút "Nghe lại", hệ thống lại gửi request lên server để tạo lại file âm thanh và tải về, gây ra độ trễ (delay) ít nhất 1-2 giây.
+## 1. Tối ưu Trình phát nhạc - AudioPlayer (UX & A11y)
+- **Vấn đề:** Thanh tua thời gian (Progress bar) hiện tại đang được code bằng thẻ `<div>` thuần túy bắt sự kiện `onClick`. Việc này dẫn đến việc người dùng không thể sử dụng bàn phím (Tab, mũi tên trái/phải) để tua bài nghe, và các trình đọc màn hình cũng không nhận diện được thanh này.
+- **Giải pháp:** 
+  - [x] Chuyển đổi kiến trúc thanh tua thời gian sang sử dụng thẻ `<input type="range">` để được trình duyệt hỗ trợ mặc định về trợ năng (Accessible Slider). 
+  - [x] Đồng bộ phong cách thiết kế (CSS) cũ bằng kỹ thuật tạo overlay (track & thumb).
+  - [x] Bổ sung các nhãn `aria-label` cho thanh tua.
+
+## 2. Sửa lỗi Ghi chú bị mất - NotesSection (Bug & A11y)
+- **Vấn đề (Data Loss Bug):** Tính năng "Ghi chú của bạn" hiện tại chỉ là lớp vỏ giao diện (UI). Khi người dùng gõ ghi chú và vô tình làm mới (F5) trang hoặc quay lại sau, toàn bộ ghi chú sẽ "bay màu" vì không được lưu trữ. Ngoài ra, vùng gõ chữ (contentEditable) không được hệ thống đọc màn hình nhận diện là hộp văn bản.
 - **Giải pháp:**
-  1. **Tích hợp Audio Cache (Client-side):** Sử dụng `useRef<Map>` để lưu lại các `Blob URL` đã được tải. Nếu người dùng bấm nghe lại một câu với cùng tốc độ, sẽ lấy ngay từ cache thay vì gọi API.
-  2. **Pre-fetch âm thanh (Tải trước âm thanh):** Bổ sung logic tải ngầm âm thanh của **câu tiếp theo** (Next Sentence) trong khi người dùng đang thu âm/nhại lại câu hiện tại. Như vậy khi họ bấm "Câu tiếp theo", âm thanh đã có sẵn và phát ngay lập tức (Zero delay).
+  - [x] Cài đặt cơ chế **Tự động lưu (Auto-save)** ghi chú xuống `localStorage` của trình duyệt theo từng ID bài học (ví dụ: `audio-note-abc123`).
+  - [x] Khi người dùng truy cập lại bài nghe, tự động khôi phục (hydrate) nội dung ghi chú cũ.
+  - [x] Thêm các thuộc tính trợ năng: `role="textbox"`, `aria-multiline="true"`, và `aria-label` cho trình soạn thảo.
 
-## 2. Tối ưu tốc độ Đăng nhập lần đầu [Hoàn tất]
-- **Nguyên nhân (Triệu chứng: Đăng nhập lần đầu bị chậm):** 
-  - Trong Server Action `login`, sau khi gọi xác thực `signInWithPassword`, hệ thống query bảng `profiles`, và có một đoạn logic kiểm tra: nếu `role` trong JWT (metadata) khác với `role` trong DB, nó sẽ gọi thêm hàm `supabase.auth.updateUser` để đồng bộ. Quá trình này cần thêm một round-trip API đến máy chủ Supabase.
-  - Ngoài ra, Component `Header.tsx` đang gọi lại hàm `getAuthUser` (cũng là một roundtrip lên server) thông qua `useEffect` mỗi khi chuyển trang (kể cả ngay sau khi đăng nhập và redirect).
+## 3. Bổ sung Phân trang (Pagination) cho danh sách Bài Nghe
+- **Vấn đề:** Bỏ quên phân trang dẫn đến không hiển thị bài tiếp theo.
 - **Giải pháp:**
-  1. **Tránh gọi API thừa ở Header:** Sửa lại logic trong `Header.tsx` để giảm thiểu các lượt `fetchUser` không cần thiết ngay lúc mới đăng nhập (tận dụng Context hoặc local state truyền sẵn). Đã chuyển sang lấy user 1 lần duy nhất trên `RootLayout` (Server Component) với `Zero Client-side Fetching`.
-
-
----
-Vui lòng gõ **'OK'** để tôi tự động áp dụng các giải pháp này vào mã nguồn (Auto-Fix).
+  - [x] Thêm phân trang vào route `/student/lessons/audios/page.tsx`.
+  - [x] Xử lý số thứ tự thẻ (Card) chuẩn xác dựa trên `currentPage`.

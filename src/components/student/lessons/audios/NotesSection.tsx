@@ -1,6 +1,6 @@
 'use client';
 
-import { useState, useCallback } from 'react';
+import { useState, useCallback, useEffect, useRef } from 'react';
 import { AlignLeft, Bold, Italic, Underline, List, AlignJustify } from 'lucide-react';
 
 interface NotesSectionProps {
@@ -25,16 +25,35 @@ const TOOLBAR_BUTTONS: ToolbarButton[] = [
 
 export function NotesSection({ lessonId }: NotesSectionProps) {
     const [isFocused, setIsFocused] = useState(false);
+    const editorRef = useRef<HTMLDivElement>(null);
+    const storageKey = `audio-note-${lessonId}`;
+
+    // Load initial data
+    useEffect(() => {
+        const savedNote = localStorage.getItem(storageKey);
+        if (savedNote && editorRef.current) {
+            editorRef.current.innerHTML = savedNote;
+        }
+    }, [storageKey]);
 
     const execFormat = useCallback((command: FormatType) => {
         document.execCommand(command, false);
+        if (editorRef.current) {
+            editorRef.current.focus();
+        }
     }, []);
+
+    const handleInput = useCallback(() => {
+        if (editorRef.current) {
+            localStorage.setItem(storageKey, editorRef.current.innerHTML);
+        }
+    }, [storageKey]);
 
     return (
         <div className="bg-white rounded-2xl border border-gray-100 shadow-sm p-6">
             {/* Section header */}
             <div className="flex items-center gap-2 mb-4">
-                <AlignLeft className="w-5 h-5 text-[#f07b32]" strokeWidth={2.5} />
+                <AlignLeft className="w-5 h-5 text-[#f07b32]" strokeWidth={2.5} aria-hidden="true" />
                 <h2 className="font-bold text-gray-800 text-base">Ghi chú của bạn</h2>
             </div>
 
@@ -44,12 +63,17 @@ export function NotesSection({ lessonId }: NotesSectionProps) {
                     }`}
             >
                 {/* Toolbar */}
-                <div className="flex items-center gap-1 px-3 py-2 border-b border-gray-100 bg-gray-50/50">
+                <div 
+                    className="flex items-center gap-1 px-3 py-2 border-b border-gray-100 bg-gray-50/50"
+                    role="toolbar" 
+                    aria-label="Công cụ định dạng văn bản"
+                >
                     {TOOLBAR_BUTTONS.map((btn) => (
                         <button
                             key={btn.command}
                             type="button"
                             title={btn.label}
+                            aria-label={btn.label}
                             onMouseDown={(e) => {
                                 e.preventDefault(); // Keep focus in editor
                                 execFormat(btn.command);
@@ -63,11 +87,16 @@ export function NotesSection({ lessonId }: NotesSectionProps) {
 
                 {/* Editable area */}
                 <div
+                    ref={editorRef}
                     contentEditable
                     suppressContentEditableWarning
-                    data-placeholder="Nhập ghi chú của bạn vào đây..."
+                    role="textbox"
+                    aria-multiline="true"
+                    aria-label="Khu vực nhập ghi chú"
+                    data-placeholder="Nhập ghi chú của bạn vào đây (nội dung sẽ được tự động lưu)..."
                     onFocus={() => setIsFocused(true)}
                     onBlur={() => setIsFocused(false)}
+                    onInput={handleInput}
                     className={`
             min-h-[160px] p-4 text-sm text-gray-700 outline-none leading-relaxed
             [&_ul]:list-disc [&_ul]:ml-6 [&_ul]:my-2

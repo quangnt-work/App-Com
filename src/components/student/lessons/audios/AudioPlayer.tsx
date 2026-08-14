@@ -146,17 +146,39 @@ export function AudioPlayer({ src }: AudioPlayerProps) {
 
                 {/* Progress bar */}
                 <div className="flex-1">
-                    <div
-                        className="h-2 bg-gray-200 rounded-full cursor-pointer relative group"
-                        onClick={handleProgressClick}
-                    >
-                        <div
-                            className="h-2 bg-[#f07b32] rounded-full transition-all relative"
+                    <div className="relative h-2 flex items-center group">
+                        {/* Custom background track */}
+                        <div className="absolute inset-0 bg-gray-200 rounded-full pointer-events-none" />
+                        {/* Custom filled track */}
+                        <div 
+                            className="absolute left-0 h-2 bg-[#f07b32] rounded-full pointer-events-none transition-all"
                             style={{ width: `${progressPercent}%` }}
-                        >
-                            {/* Thumb */}
-                            <div className="absolute right-0 top-1/2 -translate-y-1/2 w-3.5 h-3.5 bg-[#f07b32] border-2 border-white rounded-full shadow-sm opacity-0 group-hover:opacity-100 transition-opacity" />
-                        </div>
+                        />
+                        {/* Native input range for accessibility & interaction */}
+                        <input
+                            type="range"
+                            min={0}
+                            max={duration || 100}
+                            step={0.1}
+                            value={currentTime}
+                            onChange={(e) => {
+                                const newTime = Number(e.target.value);
+                                setCurrentTime(newTime);
+                                if (audioRef.current) {
+                                    audioRef.current.currentTime = newTime;
+                                }
+                            }}
+                            className="absolute inset-0 w-full h-full opacity-0 cursor-pointer z-10"
+                            aria-label="Tiến trình bài nghe"
+                            aria-valuemin={0}
+                            aria-valuemax={duration || 100}
+                            aria-valuenow={currentTime}
+                        />
+                        {/* Thumb (hiển thị khi hover) */}
+                        <div 
+                            className="absolute top-1/2 -translate-y-1/2 w-3.5 h-3.5 bg-[#f07b32] border-2 border-white rounded-full shadow-sm opacity-0 group-hover:opacity-100 transition-opacity pointer-events-none z-0"
+                            style={{ left: `calc(${progressPercent}% - 7px)` }}
+                        />
                     </div>
                     {/* Times */}
                     <div className="flex justify-between text-xs text-gray-500 mt-1.5 font-mono">

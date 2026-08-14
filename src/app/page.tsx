@@ -7,7 +7,8 @@ import { createClient } from '@/lib/supabase/server'; // Import Supabase Server
 export default async function HomePage() {
   // Gọi Supabase server để check auth ngay từ phía máy chủ
   const supabase = await createClient();
-  const { data: { user } } = await supabase.auth.getUser();
+  const { data: { session } } = await supabase.auth.getSession();
+  const user = session?.user;
   const features = [
     { id: '1', title: 'Bài học', icon: <BookOpen size={40} />, href: '/student/lessons', buttonLabel: 'Khám phá' },
     { id: '2', title: 'Luyện tập cùng AI', icon: <Bot size={40} />, href: '/student/ai', buttonLabel: 'Bắt đầu' },

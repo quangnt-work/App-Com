@@ -5,7 +5,8 @@ import { BackButton } from "@/components/common/BackButton"
 
 export default async function AuthLayout({ children }: { children: React.ReactNode }) {
   const supabase = await createClient()
-  const { data: { user } } = await supabase.auth.getUser()
+  const { data: { session } } = await supabase.auth.getSession();
+  const user = session?.user;
 
   const userData = user ? { 
     name: user.user_metadata?.full_name, 

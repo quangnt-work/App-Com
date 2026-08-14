@@ -154,7 +154,8 @@ export default function RoleplayRoomPage({ params }: { params: Promise<{ id: str
   const saveHistory = async (finalMessages: RoleplayMessageData[], finalCompletedIds: string[]) => {
     try {
       const supabase = createClient();
-      const { data: { user } } = await supabase.auth.getUser();
+      const { data: { session } } = await supabase.auth.getSession();
+      const user = session?.user;
       if (!user) return;
 
       await supabase.from('roleplay_history').insert({

@@ -8,7 +8,8 @@ import { HeroBanner } from '@/components/common/HeroBanner';
 export default async function AIPracticePage() {
   // Xác thực người dùng (giống cấu trúc các trang khác của bạn)
   const supabase = await createClient();
-  const { data: { user } } = await supabase.auth.getUser();
+  const { data: { session } } = await supabase.auth.getSession();
+  const user = session?.user;
 
   const features = [
     {

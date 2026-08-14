@@ -17,7 +17,8 @@ import { createClient } from '@/lib/supabase/server';
 export default async function SpeakingTopicsPage() {
   // Xác thực (giữ nguyên logic của bạn)
   const supabase = await createClient();
-  const { data: { user } } = await supabase.auth.getUser();
+  const { data: { session } } = await supabase.auth.getSession();
+  const user = session?.user;
 
   // Dữ liệu danh sách chủ đề theo thiết kế
   const topics: TopicCardProps[] = [

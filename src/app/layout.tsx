@@ -22,11 +22,15 @@ export const metadata: Metadata = {
   manifest: "/manifest.json",
 };
 
-export default function RootLayout({ children }: { children: React.ReactNode }) {
+import { getAuthUser } from "@/lib/actions/auth";
+
+export default async function RootLayout({ children }: { children: React.ReactNode }) {
+  const user = await getAuthUser();
+
   return (
     <html lang="vi">
       <body suppressHydrationWarning>
-        <Header />
+        <Header initialUser={user} />
         {children}
         <Toaster position="top-center" richColors /> {/* <-- Thêm dòng này */}
         <Footer/>

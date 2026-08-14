@@ -15,31 +15,15 @@ interface UserData {
   role: string;
 }
 
-export const Header = () => {
-  const [user, setUser] = useState<UserData | null>(null);
-  const [loading, setLoading] = useState(true);
+export const Header = ({ initialUser }: { initialUser?: UserData | null }) => {
+  const [user, setUser] = useState<UserData | null>(initialUser || null);
   const router = useRouter();
-  const pathname = usePathname();
   const [isPending, startTransition] = useTransition();
 
+  // Đồng bộ lại khi initialUser từ layout thay đổi (ví dụ router.refresh)
   useEffect(() => {
-    let isMounted = true;
-    const fetchUser = async () => {
-      try {
-        const userData = await getAuthUser();
-        if (isMounted) {
-          setUser(userData);
-          setLoading(false);
-        }
-      } catch (error) {
-        if (isMounted) setLoading(false);
-      }
-    };
-
-    fetchUser();
-
-    return () => { isMounted = false; };
-  }, [pathname]); // Fetch lại khi route thay đổi (sau khi login/logout)
+    setUser(initialUser || null);
+  }, [initialUser]);
 
   const isLoggedIn = !!user;
 
@@ -77,11 +61,7 @@ export const Header = () => {
 
         {/* Right: Auth Actions */}
         <div className="flex items-center gap-3">
-          {loading ? (
-            <div className="flex items-center justify-center p-2 text-slate-400">
-              <Loader2 size={20} className="animate-spin" />
-            </div>
-          ) : !isLoggedIn ? (
+          {!isLoggedIn ? (
             <div className="flex items-center gap-2">
               <Link
                 href="/login"

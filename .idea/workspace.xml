@@ -5,17 +5,6 @@
   </component>
   <component name="ChangeListManager">
     <list default="true" id="14f236b2-fe28-40fe-b621-04c9b69c8367" name="Changes" comment="">
-      <change beforePath="$PROJECT_DIR$/.idea/workspace.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/workspace.xml" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/src/app/(student)/student/ai/immersive/roleplay/[id]/page.tsx" beforeDir="false" afterPath="$PROJECT_DIR$/src/app/(student)/student/ai/immersive/roleplay/[id]/page.tsx" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/src/app/(student)/student/ai/immersive/shadowing/[id]/page.tsx" beforeDir="false" afterPath="$PROJECT_DIR$/src/app/(student)/student/ai/immersive/shadowing/[id]/page.tsx" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/src/app/api/tts/route.ts" beforeDir="false" afterPath="$PROJECT_DIR$/src/app/api/tts/route.ts" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/src/components/admin/lessons/grammars/grammar-editor/GrammarForm.tsx" beforeDir="false" afterPath="$PROJECT_DIR$/src/components/admin/lessons/grammars/grammar-editor/GrammarForm.tsx" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/src/components/admin/lessons/videos/VideoForm.tsx" beforeDir="false" afterPath="$PROJECT_DIR$/src/components/admin/lessons/videos/VideoForm.tsx" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/src/components/student/ai/grammar/QuizQuestion.tsx" beforeDir="false" afterPath="$PROJECT_DIR$/src/components/student/ai/grammar/QuizQuestion.tsx" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/src/components/student/ai/grammar/QuizResult.tsx" beforeDir="false" afterPath="$PROJECT_DIR$/src/components/student/ai/grammar/QuizResult.tsx" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/src/components/student/lessons/audios/AudioPlayer.tsx" beforeDir="false" afterPath="$PROJECT_DIR$/src/components/student/lessons/audios/AudioPlayer.tsx" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/src/components/student/lessons/grammars/grammar-detail/GrammarViewer.tsx" beforeDir="false" afterPath="$PROJECT_DIR$/src/components/student/lessons/grammars/grammar-detail/GrammarViewer.tsx" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/src/types/database.type.ts" beforeDir="false" afterPath="$PROJECT_DIR$/src/types/database.type.ts" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/tasks-agent/plan.md" beforeDir="false" afterPath="$PROJECT_DIR$/tasks-agent/plan.md" afterDir="false" />
     </list>
     <option name="SHOW_DIALOG" value="false" />
@@ -175,7 +164,7 @@
       <workItem from="1786459430511" duration="8051000" />
       <workItem from="1786525771185" duration="2144000" />
       <workItem from="1786678489738" duration="348000" />
-      <workItem from="1786712642584" duration="720000" />
+      <workItem from="1786712642584" duration="1091000" />
     </task>
     <servers />
   </component>

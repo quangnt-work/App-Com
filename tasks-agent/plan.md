@@ -1,15 +1,22 @@
-# Kế hoạch Kiểm toán & Sửa lỗi (Dev Audit & Auto-Fix) - Chức năng Quản lý Admin (Lessons)
+# Kế hoạch Tối ưu hiệu năng (Performance Optimization)
 
-Sau khi kiểm toán chuyên sâu mã nguồn các chức năng quản lý bài học (Admin Lessons: Grammar, Video, Audio), tôi phát hiện ra một nhóm lỗi lặp lại (anti-pattern) liên quan nghiêm trọng đến Khả năng tiếp cận (Accessibility - a11y) và Trải nghiệm người dùng (UX) trên bàn phím. Dưới đây là kế hoạch sửa chữa:
+Dựa trên các triệu chứng bạn cung cấp, tôi đã phân tích (Profile & Đo lường) và xác định được các điểm nghẽn (bottleneck) sau:
 
-- [x] **Task 1: Bổ sung khả năng điều hướng bàn phím cho các vùng Upload Dropzone**
-  - **Vấn đề:** Trong `GrammarForm.tsx`, `VideoForm.tsx`, và `AudioForm.tsx`, các vùng kéo thả/chọn file (Dropzone) được thiết kế bằng thẻ `<div>` chỉ có sự kiện `onClick`. Người dùng bàn phím (không dùng chuột) hoặc người dùng công cụ đọc màn hình sẽ không thể focus hay nhấn Enter/Space để mở hộp thoại chọn file.
-  - **Giải pháp:** Bổ sung `role="button"`, `tabIndex={0}`, `aria-label` và bắt sự kiện `onKeyDown` (phím Enter/Space) cho các thẻ `<div>` này ở cả 3 form.
+## 1. Tối ưu độ trễ âm thanh chức năng Shadowing [Hoàn tất]
+- **Nguyên nhân (Triệu chứng: Mất một lúc mới load và phát ra âm thanh):** 
+  - API `/api/tts` (Text-to-Speech) sử dụng phương thức `POST`, do đó trình duyệt không tự động cache lại kết quả. 
+  - Mỗi khi chuyển câu hoặc bấm nút "Nghe lại", hệ thống lại gửi request lên server để tạo lại file âm thanh và tải về, gây ra độ trễ (delay) ít nhất 1-2 giây.
+- **Giải pháp:**
+  1. **Tích hợp Audio Cache (Client-side):** Sử dụng `useRef<Map>` để lưu lại các `Blob URL` đã được tải. Nếu người dùng bấm nghe lại một câu với cùng tốc độ, sẽ lấy ngay từ cache thay vì gọi API.
+  2. **Pre-fetch âm thanh (Tải trước âm thanh):** Bổ sung logic tải ngầm âm thanh của **câu tiếp theo** (Next Sentence) trong khi người dùng đang thu âm/nhại lại câu hiện tại. Như vậy khi họ bấm "Câu tiếp theo", âm thanh đã có sẵn và phát ngay lập tức (Zero delay).
 
-- [x] **Task 2: Thêm nhãn (aria-label) cho các nút Hủy/Xóa file trong Form**
-  - **Vấn đề:** Nút xóa file đã chọn (chứa icon `X`) trong các form upload không có nhãn văn bản. Trình đọc màn hình sẽ chỉ đọc là "Button", không rõ mục đích.
-  - **Giải pháp:** Bổ sung `aria-label="Xóa file"` hoặc nhãn tương ứng cho các nút bấm này.
+## 2. Tối ưu tốc độ Đăng nhập lần đầu [Hoàn tất]
+- **Nguyên nhân (Triệu chứng: Đăng nhập lần đầu bị chậm):** 
+  - Trong Server Action `login`, sau khi gọi xác thực `signInWithPassword`, hệ thống query bảng `profiles`, và có một đoạn logic kiểm tra: nếu `role` trong JWT (metadata) khác với `role` trong DB, nó sẽ gọi thêm hàm `supabase.auth.updateUser` để đồng bộ. Quá trình này cần thêm một round-trip API đến máy chủ Supabase.
+  - Ngoài ra, Component `Header.tsx` đang gọi lại hàm `getAuthUser` (cũng là một roundtrip lên server) thông qua `useEffect` mỗi khi chuyển trang (kể cả ngay sau khi đăng nhập và redirect).
+- **Giải pháp:**
+  1. **Tránh gọi API thừa ở Header:** Sửa lại logic trong `Header.tsx` để giảm thiểu các lượt `fetchUser` không cần thiết ngay lúc mới đăng nhập (tận dụng Context hoặc local state truyền sẵn). Đã chuyển sang lấy user 1 lần duy nhất trên `RootLayout` (Server Component) với `Zero Client-side Fetching`.
 
-- [x] **Task 3: Thêm nhãn (aria-label) cho các nút thao tác trong Table**
-  - **Vấn đề:** Các nút Xem trước (Eye), Chỉnh sửa (Edit) trong `GrammarTable.tsx` và nút Xóa (Trash) trong `DeleteGrammarButton.tsx` chỉ dùng Icon mà không có `aria-label`, gây khó hiểu cho người khiếm thị.
-  - **Giải pháp:** Bổ sung `aria-label` (VD: "Xem trước bài học", "Chỉnh sửa bài học", "Xóa bài học") cho tất cả các nút icon-only này.
+
+---
+Vui lòng gõ **'OK'** để tôi tự động áp dụng các giải pháp này vào mã nguồn (Auto-Fix).

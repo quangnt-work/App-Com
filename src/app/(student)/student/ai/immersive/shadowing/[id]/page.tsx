@@ -109,7 +109,9 @@ export default function ShadowingRoomPage({ params }: { params: Promise<{ id: st
 
   // Removed old redirect effect, covered by loadData
 
-  // Cleanup speech synthesis on unmount
+  const audioCache = useRef<Map<string, string>>(new Map());
+
+  // Cleanup speech synthesis and Blob URLs on unmount
   useEffect(() => {
     return () => {
       window.speechSynthesis.cancel();
@@ -117,60 +119,70 @@ export default function ShadowingRoomPage({ params }: { params: Promise<{ id: st
         audioRef.current.pause();
         audioRef.current = null;
       }
+      // Cleanup cached blobs
+      audioCache.current.forEach(url => URL.revokeObjectURL(url));
+      audioCache.current.clear();
     };
   }, []);
 
-  const playAudio = useCallback(async (text: string, dbAudioUrl?: string) => {
-    // Dừng âm thanh đang phát nếu có
-    if (audioRef.current) {
+  const playAudio = useCallback(async (text: string, dbAudioUrl?: string, isPrefetch = false) => {
+    const rateNumber = SPEED_CONFIG[speed].rate;
+    const cacheKey = `${text}-${rateNumber}`;
+
+    // Nếu không phải prefetch, dừng âm đang phát
+    if (!isPrefetch && audioRef.current) {
       audioRef.current.pause();
     }
     
-    // Ưu tiên file mp3 lưu trên Storage
-    if (dbAudioUrl) {
-       try {
-         const audio = new Audio(dbAudioUrl);
-         // Chỉnh tốc độ
-         audio.playbackRate = SPEED_CONFIG[speed].rate;
-         audioRef.current = audio;
-         await audio.play();
-       } catch (e) {
-         console.error(e);
-       }
-       return;
+    let finalUrl = dbAudioUrl;
+
+    if (!finalUrl) {
+      if (audioCache.current.has(cacheKey)) {
+        finalUrl = audioCache.current.get(cacheKey);
+      } else {
+        let toastId;
+        if (!isPrefetch) {
+           toastId = toast.loading('Đang tải giọng chuẩn...');
+        }
+        try {
+          const edgeRate = rateNumber >= 1 
+             ? `+${Math.round((rateNumber - 1) * 100)}%` 
+             : `${Math.round((rateNumber - 1) * 100)}%`;
+             
+          const res = await fetch('/api/tts', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({ text, rate: edgeRate, voice: 'ru-RU-DmitryNeural' })
+          });
+          
+          if (!res.ok) throw new Error('TTS failed');
+          
+          const blob = await res.blob();
+          finalUrl = URL.createObjectURL(blob);
+          audioCache.current.set(cacheKey, finalUrl);
+
+          if (!isPrefetch && toastId) toast.success('Đang phát âm thanh 🔊', { id: toastId });
+        } catch (error) {
+          if (!isPrefetch && toastId) toast.error('Lỗi tải giọng đọc mẫu', { id: toastId });
+          return;
+        }
+      }
     }
-    
-    // Fallback: Nếu không có file mp3 thì tự sinh bằng API
-    toast.promise(
-      async () => {
-        const rateNumber = SPEED_CONFIG[speed].rate;
-        const edgeRate = rateNumber >= 1 
-           ? `+${Math.round((rateNumber - 1) * 100)}%` 
-           : `${Math.round((rateNumber - 1) * 100)}%`;
-           
-        const res = await fetch('/api/tts', {
-          method: 'POST',
-          headers: { 'Content-Type': 'application/json' },
-          body: JSON.stringify({ text, rate: edgeRate, voice: 'ru-RU-DmitryNeural' })
-        });
-        
-        if (!res.ok) throw new Error('TTS failed');
-        
-        const blob = await res.blob();
-        const url = URL.createObjectURL(blob);
-        const audio = new Audio(url);
+
+    if (!isPrefetch && finalUrl) {
+      try {
+        const audio = new Audio(finalUrl);
+        // Only set playbackRate if it's dbAudioUrl (since EdgeTTS already applied rate)
+        if (dbAudioUrl) audio.playbackRate = rateNumber;
         audioRef.current = audio;
         await audio.play();
-      },
-      {
-        loading: 'Đang tải giọng chuẩn...',
-        success: 'Đang phát âm thanh 🔊',
-        error: 'Lỗi tải giọng đọc mẫu',
+      } catch (e) {
+        console.error(e);
       }
-    );
+    }
   }, [speed]);
 
-  // Reset state when moving to a new sentence
+  // Reset state when moving to a new sentence and Auto-play
   useEffect(() => {
     setCurrentEvaluation(null);
     resetTranscript();
@@ -179,11 +191,20 @@ export default function ShadowingRoomPage({ params }: { params: Promise<{ id: st
     const timer = setTimeout(() => {
       if (currentSentence) {
         playAudio(currentSentence.ru, (currentSentence as ShadowingSentence & { audio_url?: string }).audio_url);
+
+        // PREFETCH NEXT SENTENCE
+        const nextIndex = currentPosition + 1;
+        if (nextIndex < totalSentences && sentences[nextIndex]) {
+          const nextSentence = sentences[nextIndex];
+          if (!(nextSentence as any).audio_url) {
+            playAudio(nextSentence.ru, undefined, true);
+          }
+        }
       }
     }, 500);
 
     return () => clearTimeout(timer);
-  }, [currentIndex, currentSentence, playAudio, resetTranscript, setCurrentEvaluation]);
+  }, [currentIndex, currentSentence, playAudio, resetTranscript, setCurrentEvaluation, currentPosition, totalSentences, sentences]);
 
   // Evaluate when recording stops and we have a transcript
   useEffect(() => {

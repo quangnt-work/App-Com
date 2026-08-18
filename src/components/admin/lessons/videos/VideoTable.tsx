@@ -2,6 +2,7 @@
 "use client";
 
 import Link from "next/link";
+import Image from "next/image";
 import { Button } from "@/components/ui/button";
 import { Edit, PlayCircle, Link2 } from "lucide-react";
 import DeleteVideoButton from "./DeleteVideoButton";
@@ -72,11 +73,12 @@ export default function VideoTable({ data }: VideoTableProps) {
                             <TableCell className="py-4 px-6">
                                 <div className="flex items-center gap-3">
                                     {lesson.thumbnail ? (
-                                        // eslint-disable-next-line @next/next/no-img-element
-                                        <img
+                                        <Image
                                             src={lesson.thumbnail}
                                             alt={lesson.title}
-                                            className="w-14 h-9 object-cover rounded-lg shrink-0 border border-gray-100"
+                                            width={56}
+                                            height={36}
+                                            className="object-cover rounded-lg shrink-0 border border-gray-100"
                                         />
                                     ) : (
                                         <div className="w-14 h-9 rounded-lg bg-rose-50 flex items-center justify-center shrink-0">

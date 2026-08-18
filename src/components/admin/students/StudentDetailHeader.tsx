@@ -1,6 +1,7 @@
 // src/components/admin/students/StudentDetailHeader.tsx
 import { BackButton } from "@/components/common/BackButton";
 import { Mail, Calendar, GraduationCap } from "lucide-react";
+import Image from "next/image";
 
 interface StudentDetailHeaderProps {
   profile: {
@@ -35,10 +36,9 @@ export function StudentDetailHeader({ profile }: StudentDetailHeaderProps) {
 
       <div className="flex flex-col md:flex-row items-center md:items-start gap-6">
         {/* Avatar */}
-        <div className="w-24 h-24 bg-orange-50 text-[#ea580c] rounded-full flex items-center justify-center border-4 border-orange-100 flex-shrink-0 overflow-hidden shadow-sm">
+        <div className="relative w-24 h-24 bg-orange-50 text-[#ea580c] rounded-full flex items-center justify-center border-4 border-orange-100 flex-shrink-0 overflow-hidden shadow-sm">
           {profile.avatar_url ? (
-            // eslint-disable-next-line @next/next/no-img-element
-            <img src={profile.avatar_url} alt={displayName} className="w-full h-full object-cover" />
+            <Image src={profile.avatar_url} alt={displayName} fill sizes="96px" className="object-cover" />
           ) : (
             <span className="font-bold text-3xl select-none">{initials}</span>
           )}

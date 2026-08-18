@@ -1,0 +1,5 @@
+- [x] Task 1: Thêm `src/app/(student)/student/loading.tsx` sử dụng Skeleton component để chống UI blocking.
+- [x] Task 2: Refactor thẻ `<img>` thành `<Image>` trong `src/components/student/lessons/videos/VideoLessonCard.tsx`.
+- [x] Task 3: Refactor thẻ `<img>` thành `<Image>` trong `src/components/admin/students/StudentDetailHeader.tsx`.
+- [x] Task 4: Refactor thẻ `<img>` thành `<Image>` trong `src/components/admin/lessons/videos/VideoTable.tsx`.
+- [x] Task 5: Sửa lỗi TypeScript tại `src/app/(admin)/admin/exams/[id]/page.tsx` cho trường `exam_type`.

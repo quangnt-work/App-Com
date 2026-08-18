@@ -3,6 +3,7 @@ import { Metadata } from "next";
 import ExamForm from "@/components/admin/exams/exam-editor/ExamForm";
 import { getExamDetail, getExamQuestions } from "@/actions/ExamActions";
 import { notFound } from "next/navigation";
+import { ExamInput } from "@/lib/schemas/exam";
 
 export const metadata: Metadata = {
   title: "Chỉnh sửa đề thi | Admin Dashboard",
@@ -26,20 +27,20 @@ export default async function EditExamPage({ params }: EditExamPageProps) {
   }
 
   const dbData = examDetailRes.data;
-  const initialData = {
+  const initialData: Partial<ExamInput> & { id: string } = {
     id: dbData.id,
     title: dbData.title,
-    exam_type: dbData.exam_type as any,
+    exam_type: dbData.exam_type as ExamInput["exam_type"],
     duration: dbData.duration,
-    level: dbData.level as any,
+    level: dbData.level as ExamInput["level"],
     description: dbData.description || undefined,
     status: dbData.status === "published",
-    questions: (questionsRes.data || []) as any,
+    questions: (questionsRes.data || []) as ExamInput["questions"],
   };
 
   return (
     <main>
-      <ExamForm initialData={initialData as any} isEditing={true} />
+      <ExamForm initialData={initialData} isEditing={true} />
     </main>
   );
 }

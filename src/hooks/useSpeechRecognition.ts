@@ -33,6 +33,7 @@ export function useSpeechRecognition(lang: string = 'ru-RU'): SpeechRecognitionH
       const SpeechRecognition = (window as any).SpeechRecognition || (window as any).webkitSpeechRecognition;
       
       if (!SpeechRecognition) {
+        // eslint-disable-next-line react-hooks/set-state-in-effect
         setIsSupported(false);
         return;
       }
@@ -86,7 +87,7 @@ export function useSpeechRecognition(lang: string = 'ru-RU'): SpeechRecognitionH
       if (recognitionRef.current) {
         try {
           recognitionRef.current.stop();
-        } catch (e) {}
+        } catch (_e) {}
       }
       if (streamRef.current) {
         streamRef.current.getTracks().forEach(track => track.stop());

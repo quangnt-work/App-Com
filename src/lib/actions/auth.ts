@@ -1,7 +1,6 @@
 'use server'
 
 import { createClient } from '@/lib/supabase/server'
-import { redirect } from 'next/navigation'
 import { revalidatePath } from 'next/cache'
 import { LoginSchema, LoginInput, RegisterSchema, RegisterInput } from '../schemas/auth'
 
@@ -33,7 +32,7 @@ export async function signup(data: RegisterInput) {
 
   const email = generateInternalEmail(username)
 
-  const { data: authData, error } = await supabase.auth.signUp({
+  const { error } = await supabase.auth.signUp({
     email,
     password: password,
     options: {
@@ -91,7 +90,6 @@ export async function login(data: LoginInput) {
   if (!profile || profileError) {
     console.warn('⚠️ User chưa có profile trong bảng profiles, dùng role mặc định từ JWT.')
     
-    const role = user.user_metadata?.role || 'student'
     if (user.user_metadata?.role !== 'student') {
       await supabase.auth.updateUser({ data: { role: 'student' } })
     }
@@ -138,7 +136,7 @@ export async function getAuthUser() {
       name: String(user.user_metadata?.full_name || user.email),
       role: String(user.user_metadata?.role || 'student')
     }
-  } catch (error) {
+  } catch (_error) {
     return null
   }
 }

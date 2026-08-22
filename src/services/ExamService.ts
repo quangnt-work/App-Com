@@ -1,6 +1,5 @@
 // src/services/ExamService.ts
 import { ExamRepository } from "@/repositories/ExamRepository";
-import { createClient } from "@/lib/supabase/server";
 import { ExamInput } from "@/lib/schemas/exam";
 import { requireAdmin } from "@/lib/auth";
 
@@ -26,7 +25,7 @@ export const ExamService = {
   async upsert(payload: ExamInput, id?: string) {
     await requireAdmin();
     
-    const flatQuestions: any[] = [];
+    const flatQuestions: Record<string, unknown>[] = [];
     if (payload.questions) {
       for (const q of payload.questions) {
         if (q.question_type === 'reading_group') {

@@ -38,7 +38,7 @@ export async function generateContentWithFallback(
   
   let attempts = 0;
   // Ensure the preferred model is tried first, then fallbacks
-  let modelsToTry = [preferredModel, ...FALLBACK_MODELS.filter(m => m !== preferredModel)];
+  const modelsToTry = [preferredModel, ...FALLBACK_MODELS.filter(m => m !== preferredModel)];
   let lastError: any = null;
 
   while (attempts < maxRetries) {
@@ -95,7 +95,7 @@ export function parseAIResponse<T = any>(text: string | null | undefined, fallba
 
   try {
     return JSON.parse(jsonMatch[0]) as T;
-  } catch (error) {
+  } catch (_error) {
     console.error("Lỗi Parse JSON từ AI:", jsonMatch[0]);
     throw new Error("AI trả về dữ liệu không hợp lệ, không thể phân tích.");
   }

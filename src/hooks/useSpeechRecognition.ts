@@ -26,6 +26,7 @@ export function useSpeechRecognition(lang: string = 'ru-RU'): SpeechRecognitionH
   const mediaRecorderRef = useRef<MediaRecorder | null>(null);
   const audioChunksRef = useRef<Blob[]>([]);
   const streamRef = useRef<MediaStream | null>(null);
+  const isStartingRef = useRef(false);
 
   useEffect(() => {
     if (typeof window !== 'undefined') {
@@ -43,6 +44,7 @@ export function useSpeechRecognition(lang: string = 'ru-RU'): SpeechRecognitionH
 
       recognition.onstart = () => {
         setIsRecording(true);
+        isStartingRef.current = false;
         setError(null);
       };
 
@@ -69,10 +71,12 @@ export function useSpeechRecognition(lang: string = 'ru-RU'): SpeechRecognitionH
         console.error('Speech recognition error', event.error);
         setError(`Lỗi ghi âm: ${event.error}`);
         setIsRecording(false);
+        isStartingRef.current = false;
       };
 
       recognition.onend = () => {
         setIsRecording(false);
+        isStartingRef.current = false;
       };
 
       recognitionRef.current = recognition;
@@ -95,6 +99,9 @@ export function useSpeechRecognition(lang: string = 'ru-RU'): SpeechRecognitionH
       setError('Trình duyệt của bạn không hỗ trợ nhận diện giọng nói.');
       return;
     }
+    
+    if (isStartingRef.current || isRecording) return;
+    isStartingRef.current = true;
     
     setTranscript('');
     setInterimTranscript('');
@@ -136,8 +143,9 @@ export function useSpeechRecognition(lang: string = 'ru-RU'): SpeechRecognitionH
     } catch (err) {
       console.error('Could not start recording', err);
       setError('Không thể truy cập Microphone.');
+      isStartingRef.current = false;
     }
-  }, [isSupported, audioUrl]);
+  }, [isSupported, audioUrl, isRecording]);
 
   const stopRecording = useCallback(() => {
     if (!isSupported) return;

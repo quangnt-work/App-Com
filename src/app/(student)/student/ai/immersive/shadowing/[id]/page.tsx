@@ -100,6 +100,7 @@ export default function ShadowingRoomPage({ params }: { params: Promise<{ id: st
   const {
     isRecording,
     transcript,
+    interimTranscript,
     audioUrl,
     startRecording,
     stopRecording,
@@ -208,10 +209,11 @@ export default function ShadowingRoomPage({ params }: { params: Promise<{ id: st
 
   // Evaluate when recording stops and we have a transcript
   useEffect(() => {
-    if (!isRecording && transcript && currentSentence && !currentEvaluation) {
-      handleEvaluation(transcript, currentSentence.ru);
+    const fullTranscript = (transcript + ' ' + interimTranscript).trim();
+    if (!isRecording && fullTranscript && currentSentence && !currentEvaluation) {
+      handleEvaluation(fullTranscript, currentSentence.ru);
     }
-  }, [isRecording, transcript, currentSentence, currentEvaluation, handleEvaluation]);
+  }, [isRecording, transcript, interimTranscript, currentSentence, currentEvaluation, handleEvaluation]);
 
 
   const toggleRecording = useCallback(() => {

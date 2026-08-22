@@ -61,6 +61,7 @@ export default function RoleplayRoomPage({ params }: { params: Promise<{ id: str
   const {
     isRecording,
     transcript,
+    interimTranscript,
     startRecording,
     stopRecording,
     resetTranscript,
@@ -113,18 +114,19 @@ export default function RoleplayRoomPage({ params }: { params: Promise<{ id: str
     messagesEndRef.current?.scrollIntoView({ behavior: 'smooth' });
   }, [messages, isTyping]);
 
-  // Update input with transcript
+  // Update input with full transcript
   useEffect(() => {
-    if (transcript) {
-      setInput(transcript);
+    const fullTranscript = (transcript + ' ' + interimTranscript).trim();
+    if (fullTranscript) {
+      setInput(fullTranscript);
     }
-  }, [transcript]);
+  }, [transcript, interimTranscript]);
 
   // Fix: Auto-send when recording stops (instead of setTimeout race condition)
   useEffect(() => {
-    if (prevRecordingRef.current && !isRecording && transcript.trim()) {
+    if (prevRecordingRef.current && !isRecording && input.trim()) {
       // Recording just stopped and we have a transcript → auto-send
-      handleSend(transcript.trim());
+      handleSend(input.trim());
     }
     prevRecordingRef.current = isRecording;
     // eslint-disable-next-line react-hooks/exhaustive-deps

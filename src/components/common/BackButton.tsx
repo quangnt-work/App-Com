@@ -18,6 +18,13 @@ export function BackButton() {
       return
     }
 
+    // Xử lý các trang AI Immersive của học viên
+    if (pathname.match(/^\/student\/ai\/immersive\/(roleplay|shadowing)\/[^\/]+$/)) {
+      const parentPath = pathname.substring(0, pathname.lastIndexOf('/'))
+      router.push(parentPath)
+      return
+    }
+
     // Điều hướng thẳng về dashboard từ các danh sách chính
     if (
       pathname === '/admin/exams' ||
@@ -27,6 +34,11 @@ export function BackButton() {
       pathname === '/admin/materials'
     ) {
       router.push('/admin/dashboard')
+    } else if (
+      pathname === '/student/ai/immersive/roleplay' ||
+      pathname === '/student/ai/immersive/shadowing'
+    ) {
+      router.push('/student/ai/immersive')
     } else {
       router.back()
     }

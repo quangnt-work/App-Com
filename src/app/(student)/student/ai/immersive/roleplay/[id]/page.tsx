@@ -160,7 +160,7 @@ export default function RoleplayRoomPage({ params }: { params: Promise<{ id: str
       const user = session?.user;
       if (!user) return;
 
-      await supabase.from('roleplay_history').insert({
+      const { error } = await supabase.from('roleplay_history').insert({
         user_id: user.id,
         scenario_id: topic.id,
         topic_title: topic.title,
@@ -170,8 +170,14 @@ export default function RoleplayRoomPage({ params }: { params: Promise<{ id: str
         hints_used: hintsUsed,
         elapsed_seconds: elapsedSeconds
       });
+
+      if (error) {
+        console.error("Lỗi Supabase khi lưu lịch sử Roleplay:", error);
+        toast.error("Không thể lưu lịch sử học tập. Có lỗi kết nối CSDL.");
+      }
     } catch (err) {
-      console.error("Lỗi khi lưu lịch sử Roleplay:", err);
+      console.error("Lỗi catch khi lưu lịch sử Roleplay:", err);
+      toast.error("Không thể lưu lịch sử học tập.");
     }
   };
 

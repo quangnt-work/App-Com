@@ -50,22 +50,10 @@ export interface RoleplayHistoryRecord {
   id: string;
   scenarioId: string;
   topicTitle: string;
-  level?: string;
   date: string;
   completedObjectives: number;
   totalObjectives: number;
   hintsUsed: number;
   elapsedSeconds: number;
   messages: any[]; // The chat history array
-}
-
-export interface ShadowingHistoryRecord {
-  id: string;
-  topicId: string;
-  topicTitle: string;
-  level?: string;
-  date: string;
-  score: number;
-  totalSentences: number;
-  completedSentences: number;
 }

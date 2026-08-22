@@ -5,16 +5,18 @@ import { UserProfileCard } from '@/components/student/profile/UserProfileCard';
 import { ProgressChart } from '@/components/student/profile/ProgressChart';
 import { HistoryTable } from '@/components/student/profile/HistoryTable';
 import { RoleplayHistoryTable } from '@/components/student/profile/RoleplayHistoryTable';
-import { UserProfile, TestRecord, ChartDataPoint, RoleplayHistoryRecord } from '@/types/profile';
+import { ShadowingHistoryTable } from '@/components/student/profile/ShadowingHistoryTable';
+import { UserProfile, TestRecord, ChartDataPoint, RoleplayHistoryRecord, ShadowingHistoryRecord } from '@/types/profile';
 
 interface ProfileClientProps {
   profile: UserProfile;
   history: TestRecord[];
   chartData: ChartDataPoint[];
   roleplayHistory: RoleplayHistoryRecord[];
+  shadowingHistory: ShadowingHistoryRecord[];
 }
 
-export function ProfileClient({ profile, history, chartData, roleplayHistory }: ProfileClientProps) {
+export function ProfileClient({ profile, history, chartData, roleplayHistory, shadowingHistory }: ProfileClientProps) {
 
   useEffect(() => {
     // Push a dummy state so the current entry has something to intercept
@@ -29,7 +31,7 @@ export function ProfileClient({ profile, history, chartData, roleplayHistory }: 
     return () => window.removeEventListener('popstate', handlePopState);
   }, []);
 
-  const [activeTab, setActiveTab] = useState<'exam' | 'roleplay'>('roleplay');
+  const [activeTab, setActiveTab] = useState<'exam' | 'ai'>('ai');
 
   return (
     <div className="min-h-screen bg-[#f8f9fc] p-4 md:p-8 font-sans">
@@ -58,10 +60,10 @@ export function ProfileClient({ profile, history, chartData, roleplayHistory }: 
                   Bài kiểm tra
                 </button>
                 <button 
-                  onClick={() => setActiveTab('roleplay')}
-                  className={`px-4 py-2 rounded-lg text-sm font-semibold transition-all ${activeTab === 'roleplay' ? 'bg-white shadow-sm text-[#f07b32]' : 'text-gray-500 hover:text-gray-700'}`}
+                  onClick={() => setActiveTab('ai')}
+                  className={`px-4 py-2 rounded-lg text-sm font-semibold transition-all ${activeTab === 'ai' ? 'bg-white shadow-sm text-[#f07b32]' : 'text-gray-500 hover:text-gray-700'}`}
                 >
-                  Nhập vai AI
+                  Lịch sử AI
                 </button>
               </div>
             </div>
@@ -75,7 +77,10 @@ export function ProfileClient({ profile, history, chartData, roleplayHistory }: 
                 <HistoryTable records={history} />
               </>
             ) : (
-              <RoleplayHistoryTable records={roleplayHistory} />
+              <div className="space-y-6">
+                <ShadowingHistoryTable records={shadowingHistory} />
+                <RoleplayHistoryTable records={roleplayHistory} />
+              </div>
             )}
 
           </div>

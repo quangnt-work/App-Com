@@ -215,6 +215,46 @@ export default function ShadowingRoomPage({ params }: { params: Promise<{ id: st
     }
   }, [isRecording, transcript, interimTranscript, currentSentence, currentEvaluation, handleEvaluation]);
 
+  const hasSavedHistory = useRef(false);
+  useEffect(() => {
+    async function saveHistory() {
+      if (!isFinished || hasSavedHistory.current || !topic) return;
+      hasSavedHistory.current = true;
+      try {
+        const supabase = createClient();
+        const { data: { session: authSession } } = await supabase.auth.getSession();
+        if (!authSession?.user) return;
+        
+        const validScores = session.scores.filter(s => s !== undefined && s !== null);
+        const totalScore = validScores.reduce((acc, curr) => acc + curr, 0);
+        const avgScore = validScores.length > 0 ? (totalScore / validScores.length) * 10 : 0; // Convert 10 scale to 100 scale
+
+        const { error } = await supabase.from('shadowing_history').insert({
+          user_id: authSession.user.id,
+          topic_id: topic.id,
+          topic_title: topic.title,
+          score: Math.round(avgScore),
+          total_sentences: totalSentences,
+          completed_sentences: validScores.length
+        });
+
+        if (error) {
+          console.error("Lỗi Supabase khi lưu lịch sử Shadowing:", error);
+          toast.error("Không thể lưu lịch sử học tập. Có lỗi kết nối CSDL.");
+        }
+      } catch (err) {
+        console.error("Lỗi catch khi lưu lịch sử Shadowing:", err);
+        toast.error("Không thể lưu lịch sử học tập.");
+      }
+    }
+    
+    if (isFinished) {
+      saveHistory();
+    } else {
+      hasSavedHistory.current = false;
+    }
+  }, [isFinished, topic, session.scores, totalSentences]);
+
 
   const toggleRecording = useCallback(() => {
     if (!isSupported) {

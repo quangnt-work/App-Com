@@ -1,12 +1,15 @@
 // src/app/(student)/student/ai/immersive/shadowing/page.tsx
 import React from 'react';
 import Link from 'next/link';
-import { Mic2, ArrowRight } from 'lucide-react';
+import { Mic2, ArrowRight, CheckCircle } from 'lucide-react';
 import { createClient } from '@/lib/supabase/server';
+import { getLevelBadgeClass } from '@/lib/utils';
 import shadowingData from '@/data/shadowing.json';
 
 export default async function ShadowingListPage() {
   const supabase = await createClient();
+  const { data: { session } } = await supabase.auth.getSession();
+  const user = session?.user;
 
   const { data: dbTopics, error } = await supabase
     .from('shadowing_topics')
@@ -17,6 +20,14 @@ export default async function ShadowingListPage() {
     console.error('Error loading shadowing topics:', error);
   }
 
+  // Lấy lịch sử để kiểm tra chủ đề nào đã học
+  const { data: historyData } = await supabase
+    .from('shadowing_history')
+    .select('topic_id')
+    .eq('user_id', user?.id || '');
+
+  const completedTopicIds = new Set((historyData || []).map(h => h.topic_id));
+
   // Kết hợp data cũ từ JSON và data mới từ DB
   const validDbTopics = (dbTopics || []).map((t: any) => ({
     id: t.id,
@@ -24,7 +35,8 @@ export default async function ShadowingListPage() {
     level: t.level,
     description: t.description,
     sentenceCount: t.shadowing_sentences?.length || 0,
-    source: 'db'
+    source: 'db',
+    isDone: completedTopicIds.has(t.id)
   }));
 
   const getLevelString = (level: number) => {
@@ -43,7 +55,8 @@ export default async function ShadowingListPage() {
     level: typeof t.level === 'number' ? getLevelString(t.level) : t.level,
     description: (t as any).description,
     sentenceCount: t.sentences?.length || 0,
-    source: 'json'
+    source: 'json',
+    isDone: completedTopicIds.has(t.id)
   }));
 
   const allTopics = [...validJsonTopics, ...validDbTopics];
@@ -78,10 +91,15 @@ export default async function ShadowingListPage() {
                 <div className="bg-white p-6 rounded-2xl border border-gray-100 shadow-sm hover:border-blue-200 hover:shadow-md transition-all group flex items-center justify-between">
                   <div>
                     <div className="flex items-center gap-2 mb-2">
-                      <span className="bg-blue-100 text-blue-700 text-xs font-bold px-2 py-1 rounded-md">
+                      <span className={`text-xs font-bold px-2 py-1 rounded-md ${getLevelBadgeClass(topic.level)}`}>
                         Cấp độ {topic.level}
                       </span>
                       <span className="text-gray-400 text-sm">{topic.sentenceCount} câu</span>
+                      {topic.isDone && (
+                        <span className="bg-green-100 text-green-700 text-xs font-bold px-2 py-1 rounded-md flex items-center gap-1">
+                          <CheckCircle size={12} /> Đã làm
+                        </span>
+                      )}
                     </div>
                     <h3 className="text-xl font-bold text-gray-800 group-hover:text-blue-600 transition-colors line-clamp-1">
                       {idx + 1}. {topic.title}

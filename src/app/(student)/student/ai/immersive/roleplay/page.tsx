@@ -2,28 +2,39 @@
 
 import React, { useState, useEffect } from 'react';
 import Link from 'next/link';
-import { Drama, ArrowRight, CheckCircle2, Sparkles, Loader2 } from 'lucide-react';
+import { Drama, ArrowRight, CheckCircle2, Sparkles, Loader2, CheckCircle } from 'lucide-react';
 import roleplayData from '@/data/roleplay.json';
+import { getLevelBadgeClass } from '@/lib/utils';
 import { createClient } from '@/lib/supabase/client';
 
 export default function RoleplayListPage() {
   const [dynamicScenarios, setDynamicScenarios] = useState<any[]>([]);
+  const [completedScenarios, setCompletedScenarios] = useState<Set<string>>(new Set());
   const [isLoading, setIsLoading] = useState(true);
 
   useEffect(() => {
-    const fetchScenarios = async () => {
+    const fetchData = async () => {
       const supabase = createClient();
-      const { data, error } = await supabase
-        .from('roleplay_scenarios')
-        .select('id, title, level, context, objectives')
-        .order('created_at', { ascending: false });
       
-      if (data && !error) {
-        setDynamicScenarios(data);
+      const { data: { session } } = await supabase.auth.getSession();
+      const user = session?.user;
+
+      const [scenariosResult, historyResult] = await Promise.all([
+        supabase.from('roleplay_scenarios').select('id, title, level, context, objectives').order('created_at', { ascending: false }),
+        supabase.from('roleplay_history').select('scenario_id').eq('user_id', user?.id || '')
+      ]);
+      
+      if (scenariosResult.data && !scenariosResult.error) {
+        setDynamicScenarios(scenariosResult.data);
       }
+      
+      if (historyResult.data) {
+        setCompletedScenarios(new Set(historyResult.data.map(h => h.scenario_id)));
+      }
+      
       setIsLoading(false);
     };
-    fetchScenarios();
+    fetchData();
   }, []);
 
   const getLevelString = (level: number) => {
@@ -42,12 +53,14 @@ export default function RoleplayListPage() {
     level: typeof t.level === 'number' ? getLevelString(t.level) : t.level,
     context: t.context,
     objectives: t.objectives,
-    source: 'json'
+    source: 'json',
+    isDone: completedScenarios.has(t.id)
   }));
 
   const validDbScenarios = dynamicScenarios.map(t => ({
     ...t,
-    source: 'db'
+    source: 'db',
+    isDone: completedScenarios.has(t.id)
   }));
 
   const allScenarios = [...validJsonScenarios, ...validDbScenarios];
@@ -87,11 +100,16 @@ export default function RoleplayListPage() {
                     <div className="absolute top-0 right-0 w-16 h-16 bg-gradient-to-bl from-orange-100 to-transparent opacity-50 rounded-bl-full pointer-events-none" />
                   )}
                   <div className="flex items-center gap-2 mb-4">
-                    <span className="text-xs font-bold px-3 py-1 rounded-md bg-orange-100 text-orange-700">
+                    <span className={`text-xs font-bold px-3 py-1 rounded-md ${getLevelBadgeClass(t.level)}`}>
                       Cấp độ {t.level}
                     </span>
                     <span className="text-gray-400 text-sm">{t.objectives?.length || 0} mục tiêu</span>
-                    {t.source === 'db' && (
+                    {t.isDone && (
+                      <span className="bg-green-100 text-green-700 text-xs font-bold px-2 py-1 rounded-md flex items-center gap-1">
+                        <CheckCircle size={12} /> Đã làm
+                      </span>
+                    )}
+                    {t.source === 'db' && !t.isDone && (
                        <span className="text-xs font-bold px-2 py-0.5 rounded-md bg-blue-100 text-blue-600 ml-auto flex items-center gap-1">
                          <Sparkles size={12} /> MỚI
                        </span>

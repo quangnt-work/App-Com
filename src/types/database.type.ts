@@ -673,6 +673,47 @@ export type Database = {
         }
         Relationships: []
       }
+      shadowing_history: {
+        Row: {
+          id: string
+          user_id: string
+          topic_id: string
+          topic_title: string
+          score: number
+          total_sentences: number
+          completed_sentences: number
+          created_at: string
+        }
+        Insert: {
+          id?: string
+          user_id: string
+          topic_id: string
+          topic_title: string
+          score: number
+          total_sentences: number
+          completed_sentences: number
+          created_at?: string
+        }
+        Update: {
+          id?: string
+          user_id?: string
+          topic_id?: string
+          topic_title?: string
+          score?: number
+          total_sentences?: number
+          completed_sentences?: number
+          created_at?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "shadowing_history_topic_id_fkey"
+            columns: ["topic_id"]
+            isOneToOne: false
+            referencedRelation: "shadowing_topics"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       submission_question_results: {
         Row: {
           admin_explanation: string | null

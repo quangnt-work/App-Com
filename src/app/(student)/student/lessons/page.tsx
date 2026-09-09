@@ -41,7 +41,7 @@ export default async function StudentCategoryPage() {
   ];
 
   return (
-    <div className="min-h-screen bg-[#f8f9fc] flex flex-col font-sans">
+    <div className="min-h-screen bg-[#F8FAFC] flex flex-col font-sans">
       <main className="flex-1 container mx-auto px-4 py-8 max-w-[1200px]">
 
         {/* Banner Title "BÀI HỌC" */}

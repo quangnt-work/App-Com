@@ -21,12 +21,12 @@ export default async function AudioLessonsPage({ searchParams }: AudioLessonsPag
   const totalPages = Math.ceil((count || 0) / pageSize);
 
   return (
-    <div className="min-h-screen bg-[#f8f9fc] flex flex-col font-sans">
+    <div className="min-h-screen bg-[#F8FAFC] flex flex-col font-sans">
       <main className="flex-1 container mx-auto px-4 py-8 max-w-[1200px]">
 
-        {/* Banner Cam — đồng bộ style grammars */}
-        <div className="relative bg-[#f07b32] text-white rounded-[2rem] p-10 flex items-center gap-4 mb-12 shadow-sm overflow-hidden">
-          <div className="bg-white/20 p-3 rounded-2xl backdrop-blur-sm">
+        {/* Banner Bài Nghe */}
+        <div className="relative bg-gradient-to-r from-blue-700 via-blue-600 to-indigo-700 text-white rounded-[2rem] p-10 flex items-center gap-5 mb-12 shadow-xl shadow-blue-900/10 overflow-hidden">
+          <div className="bg-white/15 p-3.5 rounded-2xl backdrop-blur-md border border-white/20 shadow-inner">
             <Headphones size={32} strokeWidth={2.5} />
           </div>
           <div>
@@ -34,7 +34,7 @@ export default async function AudioLessonsPage({ searchParams }: AudioLessonsPag
               Bài Nghe
             </h1>
             {count != null && (
-              <p className="text-white/80 text-sm mt-1">{count} bài nghe</p>
+              <p className="text-blue-100/90 text-sm mt-1">{count} bài nghe</p>
             )}
           </div>
           {/* Icon trang trí mờ */}

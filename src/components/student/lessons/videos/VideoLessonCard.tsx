@@ -11,7 +11,7 @@ interface VideoLessonCardProps {
 
 export function VideoLessonCard({ lesson, index }: VideoLessonCardProps) {
   return (
-    <div className="bg-white border border-gray-100 rounded-2xl overflow-hidden flex flex-col hover:shadow-lg hover:-translate-y-1 transition-all duration-300 group h-full">
+    <div className="bg-white border border-slate-200/70 rounded-2xl overflow-hidden flex flex-col hover:border-blue-300 hover:shadow-xl hover:shadow-blue-900/5 hover:-translate-y-1 transition-all duration-300 group h-full">
       {/* Thumbnail / Preview area */}
       <div className="relative aspect-video w-full bg-gradient-to-br from-rose-50 to-red-100 overflow-hidden flex items-center justify-center">
         {lesson.thumbnail ? (
@@ -52,12 +52,12 @@ export function VideoLessonCard({ lesson, index }: VideoLessonCardProps) {
       {/* Nội dung Card */}
       <div className="p-5 flex flex-col flex-1">
         {/* Badge loại */}
-        <span className="text-[10px] font-semibold text-rose-500 bg-rose-50 px-2 py-0.5 rounded-full w-fit mb-2">
+        <span className="text-[10px] font-semibold text-blue-700 bg-blue-50 px-2.5 py-0.5 rounded-full border border-blue-200/50 w-fit mb-2">
           🎬 Video
         </span>
 
         {/* Tiêu đề */}
-        <h3 className="font-bold text-gray-800 text-base md:text-lg line-clamp-2 min-h-[56px] mb-2">
+        <h3 className="font-bold text-gray-800 text-base md:text-lg line-clamp-2 min-h-[56px] mb-2 group-hover:text-blue-600 transition-colors">
           {lesson.title}
         </h3>
 
@@ -72,7 +72,7 @@ export function VideoLessonCard({ lesson, index }: VideoLessonCardProps) {
         <div className="mt-auto pt-4 border-t border-gray-100">
           <Link
             href={`/student/lessons/videos/${lesson.id}`}
-            className="flex items-center justify-center w-full py-2.5 bg-rose-50 text-rose-600 font-semibold rounded-xl hover:bg-rose-500 hover:text-white transition-colors text-sm"
+            className="flex items-center justify-center w-full py-2.5 bg-blue-50 text-blue-600 font-semibold rounded-xl hover:bg-gradient-to-r hover:from-blue-600 hover:to-indigo-600 hover:text-white hover:shadow-md hover:shadow-blue-500/20 transition-all text-sm"
           >
             Xem video <ExternalLink className="w-3.5 h-3.5 ml-1.5" />
           </Link>

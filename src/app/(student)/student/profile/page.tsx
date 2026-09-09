@@ -3,6 +3,8 @@ import { createClient } from '@/lib/supabase/server';
 import { redirect } from 'next/navigation';
 import { ProfileClient } from '@/components/student/profile/ProfileClient';
 import { UserProfile, TestRecord, ChartDataPoint, TestCategory } from '@/types/profile';
+import roleplayJson from '@/data/roleplay.json';
+import shadowingJson from '@/data/shadowing.json';
 
 export const metadata = {
   title: "Hồ sơ cá nhân | Hệ thống học tập",
@@ -131,19 +133,79 @@ export default async function ProfilePage() {
     .eq('user_id', user.id)
     .order('created_at', { ascending: false });
 
-  const roleplayHistory = (roleplayData || []).map((r: any) => ({
-    id: r.id,
-    scenarioId: r.scenario_id,
-    topicTitle: r.topic_title,
-    date: new Date(r.created_at).toLocaleDateString('vi-VN', {
-      day: '2-digit', month: '2-digit', year: 'numeric', hour: '2-digit', minute: '2-digit'
-    }),
-    completedObjectives: (r.completed_objectives || []).length,
-    totalObjectives: r.total_objectives,
-    hintsUsed: r.hints_used,
-    elapsedSeconds: r.elapsed_seconds,
-    messages: r.messages || []
-  }));
+  // Fetch db scenarios to get levels
+  const { data: dbScenarios } = await supabase
+    .from('roleplay_scenarios')
+    .select('id, level');
 
-  return <ProfileClient profile={profile} history={history} chartData={chartData} roleplayHistory={roleplayHistory} />;
+  const getLevelString = (level: number | string) => {
+    if (typeof level === 'string') return level;
+    switch(level) {
+      case 1: return 'A1';
+      case 2: return 'A2';
+      case 3: return 'B1';
+      case 4: return 'B2';
+      default: return 'C1';
+    }
+  };
+
+  const roleplayHistory = (roleplayData || []).map((r: any) => {
+    // Find level in DB first
+    let level = dbScenarios?.find(s => s.id === r.scenario_id)?.level;
+    // Fallback to JSON
+    if (!level) {
+      const jsonTopic = roleplayJson.find((t: any) => t.id === r.scenario_id);
+      if (jsonTopic) level = getLevelString(jsonTopic.level);
+    }
+    return {
+      id: r.id,
+      scenarioId: r.scenario_id,
+      topicTitle: r.topic_title,
+      level: level || 'A1',
+      date: new Date(r.created_at).toLocaleDateString('vi-VN', {
+        day: '2-digit', month: '2-digit', year: 'numeric', hour: '2-digit', minute: '2-digit'
+      }),
+      completedObjectives: (r.completed_objectives || []).length,
+      totalObjectives: r.total_objectives,
+      hintsUsed: r.hints_used,
+      elapsedSeconds: r.elapsed_seconds,
+      messages: r.messages || []
+    };
+  });
+
+  // Fetch shadowing history
+  const { data: shadowingData } = await supabase
+    .from('shadowing_history')
+    .select('*')
+    .eq('user_id', user.id)
+    .order('created_at', { ascending: false });
+
+  // Fetch db topics to get levels
+  const { data: dbTopics } = await supabase
+    .from('shadowing_topics')
+    .select('id, level');
+
+  const shadowingHistory = (shadowingData || []).map((s: any) => {
+    // Find level in DB first
+    let level = dbTopics?.find(t => t.id === s.topic_id)?.level;
+    // Fallback to JSON
+    if (!level) {
+      const jsonTopic = shadowingJson.find((t: any) => t.id === s.topic_id);
+      if (jsonTopic) level = getLevelString(jsonTopic.level);
+    }
+    return {
+      id: s.id,
+      topicId: s.topic_id,
+      topicTitle: s.topic_title,
+      level: level || 'A1',
+      date: new Date(s.created_at).toLocaleDateString('vi-VN', {
+        day: '2-digit', month: '2-digit', year: 'numeric', hour: '2-digit', minute: '2-digit'
+      }),
+      score: s.score,
+      totalSentences: s.total_sentences,
+      completedSentences: s.completed_sentences
+    };
+  });
+
+  return <ProfileClient profile={profile} history={history} chartData={chartData} roleplayHistory={roleplayHistory} shadowingHistory={shadowingHistory} />;
 }

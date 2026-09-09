@@ -121,7 +121,7 @@ export function LessonNotes({ isFullscreen, lessonId }: LessonNotesProps) {
         ctx.lineCap = "round";
         ctx.lineJoin = "round";
         ctx.lineWidth = 4;
-        ctx.strokeStyle = "#F28422";
+        ctx.strokeStyle = "#2563eb";
       }
     }
   }, [isExpanded, mode]);
@@ -130,7 +130,7 @@ export function LessonNotes({ isFullscreen, lessonId }: LessonNotesProps) {
     return (
       <button
         onClick={() => setIsExpanded(true)}
-        className="absolute bottom-6 right-6 z-[100] bg-[#F28422] text-white p-4 rounded-full shadow-2xl hover:bg-[#d9731b] transition-all hover:scale-110 border-2 border-white"
+        className="absolute bottom-6 right-6 z-[100] bg-blue-600 text-white p-4 rounded-full shadow-2xl hover:bg-blue-700 transition-all hover:scale-110 border-2 border-white"
         title="Mở ghi chú"
       >
         <PenTool size={24} />
@@ -142,13 +142,13 @@ export function LessonNotes({ isFullscreen, lessonId }: LessonNotesProps) {
     <div className={`flex flex-col bg-white border border-gray-200 shadow-sm overflow-hidden transition-all duration-300 ${isFullscreen ? 'absolute bottom-6 right-6 w-[400px] h-[500px] z-[100] shadow-2xl rounded-2xl' : 'w-full h-full rounded-3xl'}`}>
       
       {/* Header */}
-      <div className="bg-[#5B4A82] text-white p-4 flex items-center justify-between">
+      <div className="bg-gradient-to-r from-blue-700 via-blue-600 to-indigo-700 text-white p-4 flex items-center justify-between">
         <h3 className="font-bold uppercase tracking-wider text-sm flex items-center gap-2">
           <PenTool size={16} /> Ghi chú bài học
         </h3>
         <div className="flex gap-2">
           {isFullscreen && (
-            <button onClick={() => setIsExpanded(false)} className="hover:text-orange-300 transition-colors bg-white/20 p-1 rounded-md">
+            <button onClick={() => setIsExpanded(false)} className="hover:text-blue-200 transition-colors bg-white/20 p-1 rounded-md">
               <Minimize2 size={16} />
             </button>
           )}
@@ -159,13 +159,13 @@ export function LessonNotes({ isFullscreen, lessonId }: LessonNotesProps) {
       <div className="flex border-b border-gray-100 bg-gray-50 p-2 gap-2">
         <button
           onClick={() => setMode("type")}
-          className={`flex-1 flex items-center justify-center gap-2 py-2 rounded-xl text-sm font-semibold transition-colors ${mode === "type" ? "bg-white text-[#5B4A82] shadow-sm" : "text-gray-500 hover:bg-gray-200"}`}
+          className={`flex-1 flex items-center justify-center gap-2 py-2 rounded-xl text-sm font-semibold transition-colors ${mode === "type" ? "bg-white text-blue-600 shadow-sm" : "text-gray-500 hover:bg-gray-200"}`}
         >
           <Keyboard size={16} /> Bàn phím
         </button>
         <button
           onClick={() => setMode("draw")}
-          className={`flex-1 flex items-center justify-center gap-2 py-2 rounded-xl text-sm font-semibold transition-colors ${mode === "draw" ? "bg-white text-[#F28422] shadow-sm" : "text-gray-500 hover:bg-gray-200"}`}
+          className={`flex-1 flex items-center justify-center gap-2 py-2 rounded-xl text-sm font-semibold transition-colors ${mode === "draw" ? "bg-white text-blue-600 shadow-sm" : "text-gray-500 hover:bg-gray-200"}`}
         >
           <PenTool size={16} /> Vẽ tay
         </button>

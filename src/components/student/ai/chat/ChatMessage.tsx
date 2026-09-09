@@ -40,8 +40,8 @@ export function ChatMessage({ message, autoPlay = false }: ChatMessageProps) {
       <div 
         className={`p-4 rounded-3xl max-w-[75%] leading-relaxed ${
           isModel 
-            ? 'bg-white text-gray-800 rounded-bl-sm shadow-sm border border-gray-100' // Bong bóng chat của AI (Màu trắng, đuôi nhọn bên trái)
-            : 'bg-[#f07b32] text-white rounded-br-sm shadow-md' // Bong bóng chat của User (Màu cam, đuôi nhọn bên phải)
+            ? 'bg-white text-slate-800 rounded-bl-xs shadow-xs border border-slate-200/80' // Bong bóng chat của AI
+            : 'bg-gradient-to-r from-indigo-600 to-violet-600 text-white rounded-br-xs shadow-sm shadow-indigo-500/20' // Bong bóng chat của User
         }`}
       >
         {/* Nội dung tin nhắn */}
@@ -51,7 +51,7 @@ export function ChatMessage({ message, autoPlay = false }: ChatMessageProps) {
         {isModel && (
           <button 
             onClick={() => playAudio(message.content)}
-            className="mt-3 flex items-center gap-1.5 text-sm font-medium text-blue-600 hover:text-blue-800 transition-colors bg-blue-50 hover:bg-blue-100 px-3 py-1.5 rounded-xl border border-blue-100 w-fit"
+            className="mt-3 flex items-center gap-1.5 text-xs font-semibold text-indigo-600 hover:text-indigo-800 transition-colors bg-indigo-50 hover:bg-indigo-100 px-3 py-1.5 rounded-xl border border-indigo-100 w-fit"
           >
             <Volume2 size={16} /> Nghe phát âm
           </button>

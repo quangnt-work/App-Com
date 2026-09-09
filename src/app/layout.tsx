@@ -29,9 +29,9 @@ export default async function RootLayout({ children }: { children: React.ReactNo
   const user = await getAuthUser();
 
   return (
-    <html lang="vi">
+    <html lang="vi" suppressHydrationWarning>
       <body suppressHydrationWarning>
-        <NextTopLoader color="#F28422" showSpinner={false} speed={200} />
+        <NextTopLoader color="#3B82F6" showSpinner={false} speed={200} />
         <Header initialUser={user} />
         {children}
         <Toaster position="top-center" richColors /> {/* <-- Thêm dòng này */}

@@ -36,14 +36,14 @@ export function QuestBoard({
   onRevealHint,
 }: QuestBoardProps) {
   return (
-    <div className="w-full lg:w-1/3 bg-white rounded-3xl shadow-sm border border-gray-100 p-6 flex flex-col">
-      <h3 className="font-extrabold text-gray-800 text-lg mb-4 border-b pb-4 flex items-center justify-between">
+    <div className="w-full lg:w-1/3 bg-white rounded-3xl shadow-sm border border-slate-200/80 p-6 flex flex-col">
+      <h3 className="font-extrabold text-slate-800 text-lg mb-4 border-b border-slate-100 pb-4 flex items-center justify-between">
         Bảng Nhiệm Vụ
-        <span className="text-sm bg-orange-100 text-[#f07b32] px-2 py-1 rounded-lg">
+        <span className="text-sm bg-indigo-50 text-indigo-700 border border-indigo-100/80 font-bold px-2 py-1 rounded-lg">
           {completedObjectives.length} / {objectives.length}
         </span>
       </h3>
-      <p className="text-sm text-gray-500 mb-6 italic">{context}</p>
+      <p className="text-sm text-slate-500 mb-6 italic">{context}</p>
 
       <div className="flex-1 overflow-y-auto space-y-3">
         {objectives.map((obj) => {
@@ -52,17 +52,17 @@ export function QuestBoard({
 
           return (
             <div key={obj.id} className={`p-3 rounded-2xl border transition-all ${
-              isDone ? 'bg-green-50 border-green-200' : 'bg-gray-50 border-gray-100'
+              isDone ? 'bg-emerald-50/70 border-emerald-200/70' : 'bg-slate-50 border-slate-200/70'
             }`}>
               <div className="flex items-start gap-3">
                 <div className="mt-0.5 shrink-0">
                   {isDone
-                    ? <CheckCircle2 className="text-green-500" size={18} />
-                    : <Circle className="text-gray-300" size={18} />
+                    ? <CheckCircle2 className="text-emerald-500" size={18} />
+                    : <Circle className="text-slate-300" size={18} />
                   }
                 </div>
                 <div className="flex-1 min-w-0">
-                  <div className={`text-sm font-medium ${isDone ? 'text-green-800 line-through decoration-green-300' : 'text-gray-600'}`}>
+                  <div className={`text-sm font-medium ${isDone ? 'text-emerald-800 line-through decoration-emerald-300' : 'text-slate-600'}`}>
                     {obj.description}
                   </div>
 
@@ -73,7 +73,7 @@ export function QuestBoard({
                         🇻🇳 {obj.hint_vi}
                       </div>
                       {hintLevel === 'ru' && (
-                        <div className="text-xs text-blue-700 bg-blue-50 px-2.5 py-1.5 rounded-lg border border-blue-100 font-medium">
+                        <div className="text-xs text-indigo-700 bg-indigo-50 px-2.5 py-1.5 rounded-lg border border-indigo-100 font-medium">
                           🇷🇺 {obj.hint_ru}
                         </div>
                       )}
@@ -88,7 +88,7 @@ export function QuestBoard({
                     disabled={hintLevel === 'ru'}
                     className={`shrink-0 w-7 h-7 rounded-lg flex items-center justify-center transition-all ${
                       hintLevel === 'ru'
-                        ? 'bg-gray-100 text-gray-300 cursor-not-allowed'
+                        ? 'bg-slate-100 text-slate-300 cursor-not-allowed'
                         : 'bg-amber-50 text-amber-500 hover:bg-amber-100 border border-amber-200'
                     }`}
                     title={!hintLevel ? 'Gợi ý tiếng Việt' : hintLevel === 'vi' ? 'Gợi ý tiếng Nga' : 'Đã hiện hết'}
@@ -104,13 +104,13 @@ export function QuestBoard({
 
       {/* Hints used counter */}
       {hintsUsed > 0 && (
-        <div className="mt-4 pt-3 border-t border-dashed text-xs text-amber-600 font-medium text-center">
+        <div className="mt-4 pt-3 border-t border-slate-100 border-dashed text-xs text-amber-600 font-medium text-center">
           💡 Đã dùng {hintsUsed} gợi ý {hintsUsed > 3 && '(ảnh hưởng số ⭐)'}
         </div>
       )}
 
       {isAllCompleted && (
-        <div className="mt-4 bg-green-500 text-white p-4 rounded-2xl text-center font-bold animate-bounce">
+        <div className="mt-4 bg-gradient-to-r from-emerald-500 to-teal-600 text-white p-4 rounded-2xl text-center font-bold shadow-md shadow-emerald-500/20 animate-bounce">
           🎉 Hoàn Thành Kịch Bản!
         </div>
       )}

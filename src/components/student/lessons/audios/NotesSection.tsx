@@ -53,13 +53,13 @@ export function NotesSection({ lessonId }: NotesSectionProps) {
         <div className="bg-white rounded-2xl border border-gray-100 shadow-sm p-6">
             {/* Section header */}
             <div className="flex items-center gap-2 mb-4">
-                <AlignLeft className="w-5 h-5 text-[#f07b32]" strokeWidth={2.5} aria-hidden="true" />
+                <AlignLeft className="w-5 h-5 text-blue-600" strokeWidth={2.5} aria-hidden="true" />
                 <h2 className="font-bold text-gray-800 text-base">Ghi chú của bạn</h2>
             </div>
 
             {/* Editor wrapper */}
             <div
-                className={`border rounded-xl overflow-hidden transition-colors ${isFocused ? 'border-[#f07b32] ring-2 ring-orange-100' : 'border-gray-200'
+                className={`border rounded-xl overflow-hidden transition-colors ${isFocused ? 'border-blue-500 ring-2 ring-blue-100' : 'border-gray-200'
                     }`}
             >
                 {/* Toolbar */}

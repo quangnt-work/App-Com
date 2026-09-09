@@ -81,20 +81,20 @@ export default function AIChatPage() {
   ];
 
   return (
-    <div className="min-h-screen bg-[#f8f9fc] font-sans">
+    <div className="min-h-screen bg-[#F8FAFC] font-sans">
       <main className="container mx-auto px-4 py-10 max-w-[1000px]">
         
         {/* Banner GIAO TIẾP AI */}
-        <div className="bg-[#f07b32] text-white rounded-[2rem] p-10 flex items-center justify-between gap-6 mb-12 shadow-sm relative overflow-hidden">
+        <div className="bg-gradient-to-r from-indigo-700 via-violet-600 to-purple-700 text-white rounded-[2rem] p-10 flex items-center justify-between gap-6 mb-12 shadow-xl shadow-indigo-950/10 relative overflow-hidden">
             <div className="relative z-10 max-w-2xl">
               <h1 className="text-3xl md:text-4xl lg:text-5xl font-extrabold tracking-wide uppercase mb-4">
                 Giao tiếp AI
               </h1>
-                <p className="text-white/90 text-sm md:text-base font-medium">
+                <p className="text-purple-100/90 text-sm md:text-base font-medium">
                 Luyện tập trò chuyện tiếng Nga cùng trí tuệ nhân tạo
                 </p>
             </div>
-            <div className="relative z-10 hidden md:flex items-center justify-center w-24 h-24 lg:w-28 lg:h-28 rounded-full border-2 lg:border-4 border-white/20 bg-white/10 backdrop-blur-sm">
+            <div className="relative z-10 hidden md:flex items-center justify-center w-24 h-24 lg:w-28 lg:h-28 rounded-full border-2 lg:border-4 border-white/30 bg-white/15 backdrop-blur-md shadow-inner">
                 <MessageCircle size={48} strokeWidth={2.5} />
             </div>
         </div>

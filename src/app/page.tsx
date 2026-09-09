@@ -10,10 +10,46 @@ export default async function HomePage() {
   const { data: { session } } = await supabase.auth.getSession();
   const user = session?.user;
   const features = [
-    { id: '1', title: 'Bài học', icon: <BookOpen size={40} />, href: '/student/lessons', buttonLabel: 'Khám phá' },
-    { id: '2', title: 'Luyện tập cùng AI', icon: <Bot size={40} />, href: '/student/ai', buttonLabel: 'Bắt đầu' },
-    { id: '3', title: 'Kiểm tra', icon: <ClipboardCheck size={40} />, href: '/student/exams', buttonLabel: 'Vào thi' },
-    { id: '4', title: 'Tài liệu', icon: <FolderDown size={40} />, href: '/student/documents', buttonLabel: 'Tải xuống' },
+    { 
+      id: '1', 
+      title: 'Bài học', 
+      icon: <BookOpen size={40} />, 
+      href: '/student/lessons', 
+      buttonLabel: 'Khám phá',
+      iconStyles: 'bg-blue-50 text-blue-600 group-hover:bg-blue-600 group-hover:text-white',
+      cardHover: 'hover:border-blue-200 hover:shadow-blue-500/10',
+      buttonStyles: 'bg-gradient-to-r from-blue-600 to-indigo-600 hover:from-blue-700 hover:to-indigo-700 shadow-blue-500/25'
+    },
+    { 
+      id: '2', 
+      title: 'Luyện tập cùng AI', 
+      icon: <Bot size={40} />, 
+      href: '/student/ai', 
+      buttonLabel: 'Bắt đầu',
+      iconStyles: 'bg-indigo-50 text-indigo-600 group-hover:bg-indigo-600 group-hover:text-white',
+      cardHover: 'hover:border-indigo-200 hover:shadow-indigo-500/10',
+      buttonStyles: 'bg-gradient-to-r from-indigo-600 to-violet-600 hover:from-indigo-700 hover:to-violet-700 shadow-indigo-500/25'
+    },
+    { 
+      id: '3', 
+      title: 'Kiểm tra', 
+      icon: <ClipboardCheck size={40} />, 
+      href: '/student/exams', 
+      buttonLabel: 'Vào thi',
+      iconStyles: 'bg-amber-50 text-amber-600 group-hover:bg-amber-600 group-hover:text-white',
+      cardHover: 'hover:border-amber-200 hover:shadow-orange-500/10',
+      buttonStyles: 'bg-gradient-to-r from-amber-500 to-orange-600 hover:from-amber-600 hover:to-orange-700 shadow-orange-500/25'
+    },
+    { 
+      id: '4', 
+      title: 'Tài liệu', 
+      icon: <FolderDown size={40} />, 
+      href: '/student/documents', 
+      buttonLabel: 'Tải xuống',
+      iconStyles: 'bg-emerald-50 text-emerald-600 group-hover:bg-emerald-600 group-hover:text-white',
+      cardHover: 'hover:border-emerald-200 hover:shadow-emerald-500/10',
+      buttonStyles: 'bg-gradient-to-r from-teal-600 to-emerald-600 hover:from-teal-700 hover:to-emerald-700 shadow-emerald-500/25'
+    },
   ];
 
   return (
@@ -24,9 +60,9 @@ export default async function HomePage() {
             {features.map((item) => (
               <div 
                 key={item.id}
-                className="group h-full bg-white rounded-[2rem] p-10 shadow-xl shadow-slate-200/50 border border-white hover:border-blue-100 hover:translate-y-[-8px] transition-all duration-300 flex flex-col items-center text-center"
+                className={`group h-full bg-white rounded-[2rem] p-10 shadow-xl shadow-slate-200/50 border border-slate-100 ${item.cardHover} hover:translate-y-[-8px] transition-all duration-300 flex flex-col items-center text-center`}
               >
-                <div className="w-24 h-24 bg-blue-50 text-blue-600 rounded-full flex items-center justify-center mb-8 group-hover:bg-blue-600 group-hover:text-white transition-colors duration-300">
+                <div className={`w-24 h-24 rounded-full flex items-center justify-center mb-8 transition-colors duration-300 ${item.iconStyles}`}>
                   {item.icon}
                 </div>
                 
@@ -37,7 +73,7 @@ export default async function HomePage() {
                 {/* Thay thế button = Link để không cần dùng "use client" */}
                 <Link 
                   href={user ? item.href : "/login"} // Nếu chưa đăng nhập, trỏ về trang login
-                  className="mt-auto w-full flex items-center justify-center bg-[#F4A460] hover:bg-[#E69138] text-white font-bold py-4 rounded-2xl shadow-lg shadow-orange-200 transition-all uppercase tracking-widest text-sm"
+                  className={`mt-auto w-full flex items-center justify-center text-white font-bold py-4 rounded-2xl shadow-lg transition-all uppercase tracking-widest text-sm ${item.buttonStyles}`}
                 >
                   {item.buttonLabel}
                 </Link>

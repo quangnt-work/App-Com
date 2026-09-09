@@ -160,7 +160,7 @@ export default function RoleplayRoomPage({ params }: { params: Promise<{ id: str
       const user = session?.user;
       if (!user) return;
 
-      await supabase.from('roleplay_history').insert({
+      const { error } = await supabase.from('roleplay_history').insert({
         user_id: user.id,
         scenario_id: topic.id,
         topic_title: topic.title,
@@ -170,8 +170,14 @@ export default function RoleplayRoomPage({ params }: { params: Promise<{ id: str
         hints_used: hintsUsed,
         elapsed_seconds: elapsedSeconds
       });
+
+      if (error) {
+        console.error("Lỗi Supabase khi lưu lịch sử Roleplay:", error);
+        toast.error("Không thể lưu lịch sử học tập. Có lỗi kết nối CSDL.");
+      }
     } catch (err) {
-      console.error("Lỗi khi lưu lịch sử Roleplay:", err);
+      console.error("Lỗi catch khi lưu lịch sử Roleplay:", err);
+      toast.error("Không thể lưu lịch sử học tập.");
     }
   };
 
@@ -315,15 +321,15 @@ export default function RoleplayRoomPage({ params }: { params: Promise<{ id: str
   // ─── Practice UI ────────────────────────────────────────────────────────────
 
   return (
-    <div className="min-h-screen bg-[#f8f9fc] flex flex-col font-sans">
+    <div className="min-h-screen bg-[#F8FAFC] flex flex-col font-sans">
       <main className="flex-1 container mx-auto px-4 py-8 max-w-[1200px]">
 
         {/* Header */}
         <div className="flex items-center justify-between mb-6">
           <div className="flex items-center gap-4">
-            <div className="font-bold text-gray-800 text-xl">{topic.title}</div>
+            <div className="font-bold text-slate-800 text-xl">{topic.title}</div>
             {isStarted && (
-              <div className="flex items-center gap-1.5 text-sm font-medium text-gray-400 bg-gray-100 px-3 py-1.5 rounded-lg">
+              <div className="flex items-center gap-1.5 text-sm font-medium text-slate-400 bg-slate-100 px-3 py-1.5 rounded-lg">
                 <Timer size={14} /> {formatTime(elapsedSeconds)}
               </div>
             )}
@@ -337,7 +343,7 @@ export default function RoleplayRoomPage({ params }: { params: Promise<{ id: str
                 setIsFinished(true); 
               }}
               disabled={isTyping}
-              className="bg-red-50 text-red-500 font-bold px-4 py-2 rounded-xl border border-red-200 hover:bg-red-100 transition-colors disabled:opacity-50"
+              className="bg-rose-50 text-rose-600 font-bold px-4 py-2 rounded-xl border border-rose-200 hover:bg-rose-100 transition-colors disabled:opacity-50"
             >
               Kết thúc kịch bản
             </button>
@@ -359,33 +365,33 @@ export default function RoleplayRoomPage({ params }: { params: Promise<{ id: str
           />
 
           {/* CHAT AREA */}
-          <div className="w-full lg:w-2/3 flex flex-col bg-white rounded-3xl shadow-sm border border-gray-100 overflow-hidden">
+          <div className="w-full lg:w-2/3 flex flex-col bg-white rounded-3xl shadow-sm border border-slate-200/80 overflow-hidden">
             {/* Chat Header */}
-            <div className="bg-gray-50 p-4 border-b border-gray-100 flex items-center gap-3">
-              <div className="w-10 h-10 bg-orange-100 text-[#f07b32] rounded-full flex items-center justify-center font-bold shrink-0">
+            <div className="bg-slate-50 p-4 border-b border-slate-100 flex items-center gap-3">
+              <div className="w-10 h-10 bg-indigo-50 border border-indigo-100/80 text-indigo-600 rounded-full flex items-center justify-center font-bold shrink-0">
                 AI
               </div>
               <div>
-                <div className="font-bold text-gray-800">{topic.ai_role}</div>
-                <div className="text-xs text-green-500 font-medium flex items-center gap-1">
-                  <span className="w-2 h-2 rounded-full bg-green-500 inline-block"></span> Sẵn sàng giao tiếp
+                <div className="font-bold text-slate-800">{topic.ai_role}</div>
+                <div className="text-xs text-emerald-600 font-medium flex items-center gap-1">
+                  <span className="w-2 h-2 rounded-full bg-emerald-500 inline-block"></span> Sẵn sàng giao tiếp
                 </div>
               </div>
             </div>
 
             {/* Messages */}
-            <div className="flex-1 p-6 overflow-y-auto bg-slate-50">
+            <div className="flex-1 p-6 overflow-y-auto bg-slate-50/50">
               {!isStarted ? (
                 <div className="h-full flex flex-col items-center justify-center text-center">
-                  <div className="w-20 h-20 bg-orange-100 rounded-full flex items-center justify-center mb-6 shadow-inner text-4xl">🎭</div>
-                  <h3 className="text-2xl font-extrabold mb-3 text-gray-800">Sẵn sàng nhập vai?</h3>
-                  <p className="text-gray-500 mb-4 max-w-sm">
+                  <div className="w-20 h-20 bg-indigo-50 border border-indigo-100/80 rounded-full flex items-center justify-center mb-6 shadow-inner text-4xl">🎭</div>
+                  <h3 className="text-2xl font-extrabold mb-3 text-slate-800">Sẵn sàng nhập vai?</h3>
+                  <p className="text-slate-500 mb-4 max-w-sm">
                     Nói chuyện với <strong>{topic.ai_role}</strong> và hoàn thành các nhiệm vụ. Bấm 💡 nếu cần gợi ý!
                   </p>
-                  <p className="text-xs text-gray-400 mb-8">⏱ Hoàn thành nhanh + ít gợi ý = nhiều ⭐</p>
+                  <p className="text-xs text-slate-400 mb-8">⏱ Hoàn thành nhanh + ít gợi ý = nhiều ⭐</p>
                   <button
                     onClick={startRoleplay}
-                    className="bg-[#f07b32] text-white px-8 py-3 rounded-2xl font-bold hover:bg-[#d46522] transition-colors"
+                    className="bg-gradient-to-r from-indigo-600 to-violet-600 hover:from-indigo-700 hover:to-violet-700 text-white px-8 py-3 rounded-2xl font-bold shadow-md shadow-indigo-500/25 transition-all"
                   >
                     🚀 Bắt đầu
                   </button>
@@ -404,11 +410,11 @@ export default function RoleplayRoomPage({ params }: { params: Promise<{ id: str
                   ))}
                   {isTyping && (
                     <div className="flex justify-start mb-6">
-                      <div className="p-4 bg-white rounded-2xl rounded-bl-sm border border-gray-100 shadow-sm flex items-center gap-2">
-                        <span className="text-xs text-gray-400 mr-1">AI đang gõ...</span>
-                        <span className="w-2 h-2 bg-gray-300 rounded-full animate-bounce" />
-                        <span className="w-2 h-2 bg-gray-300 rounded-full animate-bounce delay-100" />
-                        <span className="w-2 h-2 bg-gray-300 rounded-full animate-bounce delay-200" />
+                      <div className="p-4 bg-white rounded-2xl rounded-bl-sm border border-slate-200/70 shadow-xs flex items-center gap-2">
+                        <span className="text-xs text-slate-400 mr-1">AI đang gõ...</span>
+                        <span className="w-2 h-2 bg-slate-300 rounded-full animate-bounce" />
+                        <span className="w-2 h-2 bg-slate-300 rounded-full animate-bounce delay-100" />
+                        <span className="w-2 h-2 bg-slate-300 rounded-full animate-bounce delay-200" />
                       </div>
                     </div>
                   )}
@@ -419,7 +425,7 @@ export default function RoleplayRoomPage({ params }: { params: Promise<{ id: str
 
             {/* Input Area */}
             {isStarted && (
-              <div className="p-4 bg-white border-t border-gray-100 flex items-center gap-3">
+              <div className="p-4 bg-white border-t border-slate-100 flex items-center gap-3">
                 <div className="flex-1 relative">
                   <input
                     type="text"
@@ -428,13 +434,13 @@ export default function RoleplayRoomPage({ params }: { params: Promise<{ id: str
                     onChange={(e) => setInput(e.target.value)}
                     onKeyDown={(e) => e.key === 'Enter' && handleSend(input)}
                     placeholder={isRecording ? '🔴 Đang nghe...' : 'Gõ hoặc bấm Mic để nói...'}
-                    className="w-full p-4 pr-14 rounded-2xl bg-gray-50 border border-transparent focus:bg-white focus:border-[#f07b32] focus:ring-2 focus:ring-orange-100 transition-all outline-none text-gray-700"
+                    className="w-full p-4 pr-14 rounded-2xl bg-slate-50 border border-slate-200/70 focus:bg-white focus:border-indigo-500 focus:ring-2 focus:ring-indigo-100 transition-all outline-none text-slate-700"
                   />
                   <button
                     aria-label="Gửi tin nhắn"
                     onClick={() => handleSend(input)}
                     disabled={isTyping || !input.trim() || isRecording}
-                    className="absolute right-3 top-1/2 -translate-y-1/2 w-10 h-10 bg-[#f07b32] text-white rounded-xl flex items-center justify-center hover:bg-[#e26a24] disabled:opacity-50 transition-colors"
+                    className="absolute right-3 top-1/2 -translate-y-1/2 w-10 h-10 bg-indigo-600 text-white rounded-xl flex items-center justify-center hover:bg-indigo-700 disabled:opacity-50 transition-colors shadow-xs"
                   >
                     <Send size={18} className="ml-0.5" />
                   </button>
@@ -446,8 +452,8 @@ export default function RoleplayRoomPage({ params }: { params: Promise<{ id: str
                   disabled={isTyping}
                   className={`w-14 h-14 rounded-2xl flex items-center justify-center transition-all disabled:opacity-50 ${
                     isRecording
-                      ? 'bg-red-500 text-white shadow-lg animate-pulse'
-                      : 'bg-gray-50 text-gray-500 border hover:text-[#f07b32] hover:bg-orange-50 hover:border-orange-200'
+                      ? 'bg-rose-500 text-white shadow-lg shadow-rose-200 animate-pulse'
+                      : 'bg-slate-50 text-slate-500 border border-slate-200 hover:text-indigo-600 hover:bg-indigo-50 hover:border-indigo-200'
                   }`}
                 >
                   {isRecording ? <Square size={22} fill="white" /> : <Mic size={24} />}

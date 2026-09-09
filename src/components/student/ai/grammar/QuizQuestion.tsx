@@ -38,18 +38,18 @@ export function QuizQuestion({ question, selectedIndex, onSelect, isAnswered }: 
           const isSelected = selectedIndex === index;
           const isCorrect = index === question.correctIndex;
 
-          let optionClass = 'bg-white border-gray-200 hover:border-[#f07b32] hover:bg-orange-50/50 cursor-pointer';
+          let optionClass = 'bg-white border-slate-200/80 hover:border-indigo-400 hover:bg-indigo-50/30 cursor-pointer shadow-xs';
 
           if (isAnswered) {
             if (isCorrect) {
-              optionClass = 'bg-emerald-50 border-emerald-300 ring-1 ring-emerald-200';
+              optionClass = 'bg-emerald-50 border-emerald-400 ring-1 ring-emerald-200/70';
             } else if (isSelected && !isCorrect) {
-              optionClass = 'bg-red-50 border-red-300 ring-1 ring-red-200';
+              optionClass = 'bg-rose-50 border-rose-400 ring-1 ring-rose-200/70';
             } else {
-              optionClass = 'bg-gray-50 border-gray-100 opacity-60';
+              optionClass = 'bg-slate-50 border-slate-200/60 opacity-60';
             }
           } else if (isSelected) {
-            optionClass = 'bg-orange-50 border-[#f07b32] ring-2 ring-orange-200';
+            optionClass = 'bg-indigo-50 border-indigo-500 ring-2 ring-indigo-200';
           }
 
           return (
@@ -62,9 +62,9 @@ export function QuizQuestion({ question, selectedIndex, onSelect, isAnswered }: 
               {/* Label A/B/C/D */}
               <div className={`w-10 h-10 rounded-xl flex items-center justify-center text-sm font-bold flex-shrink-0 transition-colors duration-200
                 ${isAnswered && isCorrect ? 'bg-emerald-500 text-white' :
-                  isAnswered && isSelected && !isCorrect ? 'bg-red-500 text-white' :
-                  isSelected ? 'bg-[#f07b32] text-white' :
-                  'bg-gray-100 text-gray-500'}`}
+                  isAnswered && isSelected && !isCorrect ? 'bg-rose-500 text-white' :
+                  isSelected ? 'bg-indigo-600 text-white shadow-xs' :
+                  'bg-slate-100 text-slate-500'}`}
               >
                 {String.fromCharCode(65 + index)}
               </div>
@@ -72,8 +72,8 @@ export function QuizQuestion({ question, selectedIndex, onSelect, isAnswered }: 
               {/* Option text */}
               <span className={`flex-1 text-base md:text-lg font-medium
                 ${isAnswered && isCorrect ? 'text-emerald-800' :
-                  isAnswered && isSelected && !isCorrect ? 'text-red-800 line-through' :
-                  'text-gray-700'}`}
+                  isAnswered && isSelected && !isCorrect ? 'text-rose-800 line-through' :
+                  'text-slate-700'}`}
               >
                 {option}
               </span>
@@ -83,7 +83,7 @@ export function QuizQuestion({ question, selectedIndex, onSelect, isAnswered }: 
                 <CheckCircle2 size={24} className="text-emerald-500 flex-shrink-0" />
               )}
               {isAnswered && isSelected && !isCorrect && (
-                <XCircle size={24} className="text-red-500 flex-shrink-0" />
+                <XCircle size={24} className="text-rose-500 flex-shrink-0" />
               )}
             </button>
           );

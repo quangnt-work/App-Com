@@ -36,7 +36,7 @@ export default function DocumentsPage({
   const currentDocuments = allDocuments.slice(startIndex, endIndex);
 
   return (
-    <div className="min-h-screen bg-[#f8f9fc] flex flex-col font-sans">
+    <div className="min-h-screen bg-[#F8FAFC] flex flex-col font-sans">
       <main className="flex-1 container mx-auto px-4 py-8 max-w-[1200px]">
         
         {/* Banner TÀI LIỆU (Tái sử dụng) */}
@@ -44,6 +44,7 @@ export default function DocumentsPage({
           title="Tài Liệu Tiếng Nga"
           description="Khám phá kho tài liệu phong phú giúp bạn học tiếng Nga hiệu quả hơn mỗi ngày."
           icon={FolderOpen}
+          gradient="from-teal-700 via-emerald-600 to-teal-800"
         />
 
         {/* Lưới Thẻ Tài liệu */}

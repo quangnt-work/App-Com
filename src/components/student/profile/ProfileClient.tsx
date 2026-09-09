@@ -5,16 +5,18 @@ import { UserProfileCard } from '@/components/student/profile/UserProfileCard';
 import { ProgressChart } from '@/components/student/profile/ProgressChart';
 import { HistoryTable } from '@/components/student/profile/HistoryTable';
 import { RoleplayHistoryTable } from '@/components/student/profile/RoleplayHistoryTable';
-import { UserProfile, TestRecord, ChartDataPoint, RoleplayHistoryRecord } from '@/types/profile';
+import { ShadowingHistoryTable } from '@/components/student/profile/ShadowingHistoryTable';
+import { UserProfile, TestRecord, ChartDataPoint, RoleplayHistoryRecord, ShadowingHistoryRecord } from '@/types/profile';
 
 interface ProfileClientProps {
   profile: UserProfile;
   history: TestRecord[];
   chartData: ChartDataPoint[];
   roleplayHistory: RoleplayHistoryRecord[];
+  shadowingHistory: ShadowingHistoryRecord[];
 }
 
-export function ProfileClient({ profile, history, chartData, roleplayHistory }: ProfileClientProps) {
+export function ProfileClient({ profile, history, chartData, roleplayHistory, shadowingHistory }: ProfileClientProps) {
 
   useEffect(() => {
     // Push a dummy state so the current entry has something to intercept
@@ -29,10 +31,10 @@ export function ProfileClient({ profile, history, chartData, roleplayHistory }: 
     return () => window.removeEventListener('popstate', handlePopState);
   }, []);
 
-  const [activeTab, setActiveTab] = useState<'exam' | 'roleplay'>('roleplay');
+  const [activeTab, setActiveTab] = useState<'exam' | 'ai'>('ai');
 
   return (
-    <div className="min-h-screen bg-[#f8f9fc] p-4 md:p-8 font-sans">
+    <div className="min-h-screen bg-[#F8FAFC] p-4 md:p-8 font-sans">
       <div className="max-w-[1400px] mx-auto">
 
         {/* Layout Grid: 1 cột cho Mobile, 4 cột cho Desktop */}
@@ -47,21 +49,21 @@ export function ProfileClient({ profile, history, chartData, roleplayHistory }: 
           <div className="xl:col-span-3 space-y-6 w-full overflow-hidden">
 
             {/* Header Thống kê & Bộ lọc */}
-            <div className="bg-white p-4 rounded-2xl shadow-sm border border-gray-100 flex items-center justify-between">
-              <h2 className="text-xl font-bold text-gray-800">Thống kê học tập</h2>
+            <div className="bg-white p-4 rounded-2xl shadow-sm border border-slate-200/80 flex items-center justify-between">
+              <h2 className="text-xl font-bold text-slate-800">Thống kê học tập</h2>
               
-              <div className="flex bg-gray-100 p-1 rounded-xl">
+              <div className="flex bg-slate-100 p-1 rounded-xl">
                 <button 
                   onClick={() => setActiveTab('exam')}
-                  className={`px-4 py-2 rounded-lg text-sm font-semibold transition-all ${activeTab === 'exam' ? 'bg-white shadow-sm text-blue-600' : 'text-gray-500 hover:text-gray-700'}`}
+                  className={`px-4 py-2 rounded-lg text-sm font-semibold transition-all ${activeTab === 'exam' ? 'bg-white shadow-sm text-blue-600' : 'text-slate-500 hover:text-slate-700'}`}
                 >
                   Bài kiểm tra
                 </button>
                 <button 
-                  onClick={() => setActiveTab('roleplay')}
-                  className={`px-4 py-2 rounded-lg text-sm font-semibold transition-all ${activeTab === 'roleplay' ? 'bg-white shadow-sm text-[#f07b32]' : 'text-gray-500 hover:text-gray-700'}`}
+                  onClick={() => setActiveTab('ai')}
+                  className={`px-4 py-2 rounded-lg text-sm font-semibold transition-all ${activeTab === 'ai' ? 'bg-white shadow-sm text-indigo-600' : 'text-slate-500 hover:text-slate-700'}`}
                 >
-                  Nhập vai AI
+                  Lịch sử AI
                 </button>
               </div>
             </div>
@@ -75,7 +77,10 @@ export function ProfileClient({ profile, history, chartData, roleplayHistory }: 
                 <HistoryTable records={history} />
               </>
             ) : (
-              <RoleplayHistoryTable records={roleplayHistory} />
+              <div className="space-y-6">
+                <ShadowingHistoryTable records={shadowingHistory} />
+                <RoleplayHistoryTable records={roleplayHistory} />
+              </div>
             )}
 
           </div>

@@ -215,6 +215,46 @@ export default function ShadowingRoomPage({ params }: { params: Promise<{ id: st
     }
   }, [isRecording, transcript, interimTranscript, currentSentence, currentEvaluation, handleEvaluation]);
 
+  const hasSavedHistory = useRef(false);
+  useEffect(() => {
+    async function saveHistory() {
+      if (!isFinished || hasSavedHistory.current || !topic) return;
+      hasSavedHistory.current = true;
+      try {
+        const supabase = createClient();
+        const { data: { session: authSession } } = await supabase.auth.getSession();
+        if (!authSession?.user) return;
+        
+        const validScores = session.scores.filter(s => s !== undefined && s !== null);
+        const totalScore = validScores.reduce((acc, curr) => acc + curr, 0);
+        const avgScore = validScores.length > 0 ? (totalScore / validScores.length) * 10 : 0; // Convert 10 scale to 100 scale
+
+        const { error } = await supabase.from('shadowing_history').insert({
+          user_id: authSession.user.id,
+          topic_id: topic.id,
+          topic_title: topic.title,
+          score: Math.round(avgScore),
+          total_sentences: totalSentences,
+          completed_sentences: validScores.length
+        });
+
+        if (error) {
+          console.error("Lỗi Supabase khi lưu lịch sử Shadowing:", error);
+          toast.error("Không thể lưu lịch sử học tập. Có lỗi kết nối CSDL.");
+        }
+      } catch (err) {
+        console.error("Lỗi catch khi lưu lịch sử Shadowing:", err);
+        toast.error("Không thể lưu lịch sử học tập.");
+      }
+    }
+    
+    if (isFinished) {
+      saveHistory();
+    } else {
+      hasSavedHistory.current = false;
+    }
+  }, [isFinished, topic, session.scores, totalSentences]);
+
 
   const toggleRecording = useCallback(() => {
     if (!isSupported) {
@@ -233,9 +273,9 @@ export default function ShadowingRoomPage({ params }: { params: Promise<{ id: st
   // Render Guards
   if (isLoading) {
     return (
-      <div className="min-h-screen bg-[#f8f9fc] flex items-center justify-center font-sans">
-        <div className="flex flex-col items-center gap-4 text-gray-500">
-          <Loader2 size={40} className="animate-spin text-blue-600" />
+      <div className="min-h-screen bg-[#F8FAFC] flex items-center justify-center font-sans">
+        <div className="flex flex-col items-center gap-4 text-slate-500">
+          <Loader2 size={40} className="animate-spin text-indigo-600" />
           <p className="font-medium">Đang tải bài học...</p>
         </div>
       </div>
@@ -247,7 +287,7 @@ export default function ShadowingRoomPage({ params }: { params: Promise<{ id: st
   // Finished State
   if (isFinished) {
     return (
-      <div className="min-h-screen bg-[#f8f9fc] flex flex-col font-sans">
+      <div className="min-h-screen bg-[#F8FAFC] flex flex-col font-sans">
         <main className="flex-1 container mx-auto px-4 py-8 max-w-[800px]">
           <ShadowingResult
             topicTitle={topic.title}
@@ -264,16 +304,16 @@ export default function ShadowingRoomPage({ params }: { params: Promise<{ id: st
 
   // Practice UI
   return (
-    <div className="min-h-screen bg-[#f8f9fc] flex flex-col font-sans">
+    <div className="min-h-screen bg-[#F8FAFC] flex flex-col font-sans">
       <main className="flex-1 container mx-auto px-4 py-8 max-w-[800px]">
 
         {/* Top Bar: Combo + Progress + Speed */}
         <div className="flex items-center justify-between mb-8 flex-wrap gap-3">
           <div className="flex gap-3">
-            <div className="bg-orange-100 text-orange-600 font-bold px-4 py-2 rounded-xl">
+            <div className="bg-amber-50 text-amber-700 border border-amber-200/60 font-bold px-4 py-2 rounded-xl">
               🔥 Combo: {session.combo}
             </div>
-            <div className="bg-blue-100 text-blue-700 font-bold px-4 py-2 rounded-xl">
+            <div className="bg-indigo-50 text-indigo-700 border border-indigo-200/60 font-bold px-4 py-2 rounded-xl">
               Câu {currentPosition + 1} / {totalSentences}
             </div>
           </div>
@@ -281,36 +321,34 @@ export default function ShadowingRoomPage({ params }: { params: Promise<{ id: st
         </div>
 
         {/* Main Card */}
-        <div className="bg-white rounded-3xl p-8 md:p-12 shadow-xl border border-gray-100 text-center relative overflow-hidden">
+        <div className="bg-white rounded-3xl p-8 md:p-12 shadow-xl shadow-indigo-500/5 border border-slate-200/80 text-center relative overflow-hidden">
 
           {/* Blind Mode Badge */}
           {!showHint && !currentEvaluation && (
-            <div className="absolute top-4 right-4 text-xs font-bold bg-red-100 text-red-600 px-3 py-1 rounded-full flex items-center gap-1">
+            <div className="absolute top-4 right-4 text-xs font-bold bg-rose-50 text-rose-600 border border-rose-200/60 px-3 py-1 rounded-full flex items-center gap-1">
               <EyeOff size={14} /> BLIND MODE
             </div>
           )}
-
-          {/* Removed Adaptive Badge as it's full blind mode now */}
 
           {/* Sentence Display */}
           <div className="mb-10 min-h-[160px] flex flex-col items-center justify-center">
             {showHint || currentEvaluation ? (
               <div className="animate-in fade-in zoom-in duration-300">
-                <h2 className="text-4xl md:text-5xl font-extrabold text-gray-800 mb-6 tracking-tight">
+                <h2 className="text-4xl md:text-5xl font-extrabold text-slate-800 mb-6 tracking-tight">
                   {currentSentence.ru}
                 </h2>
-                <p className="text-xl text-blue-600 font-medium">
+                <p className="text-xl text-indigo-600 font-medium">
                   {currentSentence.vi}
                 </p>
               </div>
             ) : (
               <div className="animate-in fade-in duration-300">
-                <div className="w-24 h-24 bg-gray-100 rounded-full flex items-center justify-center mx-auto mb-4 border-4 border-dashed border-gray-300">
-                  <EyeOff size={40} className="text-gray-400" />
+                <div className="w-24 h-24 bg-slate-100 rounded-full flex items-center justify-center mx-auto mb-4 border-4 border-dashed border-slate-300">
+                  <EyeOff size={40} className="text-slate-400" />
                 </div>
-                <p className="text-gray-500 font-medium">Lắng nghe Audio và lặp lại nhé.</p>
+                <p className="text-slate-500 font-medium">Lắng nghe Audio và lặp lại nhé.</p>
                 {failuresOnCurrent > 0 && (
-                  <p className="text-orange-500 text-sm mt-2 font-medium">
+                  <p className="text-amber-600 text-sm mt-2 font-medium">
                     Bạn đã thử {failuresOnCurrent}/3 lần.
                   </p>
                 )}
@@ -326,7 +364,7 @@ export default function ShadowingRoomPage({ params }: { params: Promise<{ id: st
             <button
               aria-label="Nghe câu mẫu"
               onClick={() => playAudio(currentSentence.ru, (currentSentence as ShadowingSentence & { audio_url?: string }).audio_url)}
-              className="w-16 h-16 rounded-full bg-blue-50 text-blue-600 flex items-center justify-center hover:bg-blue-100 transition-colors"
+              className="w-16 h-16 rounded-full bg-indigo-50 text-indigo-600 flex items-center justify-center hover:bg-indigo-100 hover:text-indigo-700 transition-colors"
               title={`Nghe lại (${SPEED_CONFIG[speed].label})`}
             >
               <Volume2 size={28} />
@@ -338,10 +376,10 @@ export default function ShadowingRoomPage({ params }: { params: Promise<{ id: st
               disabled={isEvaluating}
               className={`w-20 h-20 rounded-full flex items-center justify-center transition-all
                 ${isEvaluating
-                  ? 'bg-gray-300 text-gray-500 cursor-not-allowed'
+                  ? 'bg-slate-300 text-slate-500 cursor-not-allowed'
                   : isRecording
-                    ? 'bg-red-500 text-white shadow-[0_0_20px_rgba(239,68,68,0.5)] animate-pulse'
-                    : 'bg-blue-600 text-white hover:bg-blue-700 shadow-lg hover:shadow-blue-200'
+                    ? 'bg-rose-500 text-white shadow-[0_0_20px_rgba(244,63,94,0.5)] animate-pulse'
+                    : 'bg-indigo-600 text-white hover:bg-indigo-700 shadow-lg shadow-indigo-500/25'
                 }`}
               title={isEvaluating ? 'Đang chấm...' : isRecording ? 'Dừng ghi âm' : 'Bấm để đọc'}
             >
@@ -357,20 +395,20 @@ export default function ShadowingRoomPage({ params }: { params: Promise<{ id: st
 
           {/* Evaluation Result */}
           {currentEvaluation && (
-            <div className="p-6 bg-gray-50 rounded-2xl mb-8 animate-in slide-in-from-bottom-4">
+            <div className="p-6 bg-slate-50 border border-slate-200/70 rounded-2xl mb-8 animate-in slide-in-from-bottom-4">
               {/* Source badge */}
               <div className="flex items-center justify-between mb-3">
-                <div className="text-sm text-gray-500">Hệ thống nghe được:</div>
+                <div className="text-sm text-slate-500">Hệ thống nghe được:</div>
                 <span className={`text-xs font-bold px-2 py-0.5 rounded-md ${
                   currentEvaluation.evaluated_by === 'ai'
-                    ? 'bg-purple-100 text-purple-600'
-                    : 'bg-gray-200 text-gray-600'
+                    ? 'bg-purple-100 text-purple-700 border border-purple-200/60'
+                    : 'bg-slate-200 text-slate-700 border border-slate-300/60'
                 }`}>
                   {currentEvaluation.evaluated_by === 'ai' ? '🤖 AI' : '📊 WER Offline'}
                 </span>
               </div>
 
-              <div className="text-xl font-medium text-gray-800 mb-4">
+              <div className="text-xl font-medium text-slate-800 mb-4">
                 &ldquo;{currentEvaluation.transcript}&rdquo;
               </div>
 
@@ -383,26 +421,26 @@ export default function ShadowingRoomPage({ params }: { params: Promise<{ id: st
 
               {/* Score */}
               <div className={`text-2xl font-bold mb-2 ${
-                currentEvaluation.score >= 8 ? 'text-green-500' : 'text-red-500'
+                currentEvaluation.score >= 8 ? 'text-emerald-600' : 'text-rose-500'
               }`}>
                 Điểm: {currentEvaluation.score}/10
               </div>
 
               {/* Feedback */}
-              <p className="text-gray-600 text-sm mb-4">{currentEvaluation.feedback}</p>
+              <p className="text-slate-600 text-sm mb-4">{currentEvaluation.feedback}</p>
 
               {/* Playback of User's voice */}
               {audioUrl && (
-                <div className="mt-4 p-4 bg-white rounded-xl border border-gray-100 shadow-sm flex flex-col items-center">
-                  <div className="text-sm font-bold text-gray-600 mb-2">🎧 Nghe lại giọng bạn</div>
+                <div className="mt-4 p-4 bg-white rounded-xl border border-slate-200/80 shadow-sm flex flex-col items-center">
+                  <div className="text-sm font-bold text-slate-600 mb-2">🎧 Nghe lại giọng bạn</div>
                   <audio src={audioUrl} controls className="h-10 w-full max-w-[300px]" />
                 </div>
               )}
 
               {/* Pronunciation Tips (AI only) */}
               {currentEvaluation.pronunciation_tips && (
-                <div className="mt-4 p-3 bg-blue-50 rounded-xl border border-blue-100">
-                  <p className="text-blue-700 text-sm">
+                <div className="mt-4 p-3 bg-indigo-50/80 rounded-xl border border-indigo-100">
+                  <p className="text-indigo-800 text-sm">
                     <span className="font-bold">💡 Mẹo phát âm:</span> {currentEvaluation.pronunciation_tips}
                   </p>
                 </div>
@@ -415,7 +453,7 @@ export default function ShadowingRoomPage({ params }: { params: Promise<{ id: st
             aria-label="Câu tiếp theo"
             onClick={handleNext}
             disabled={isRecording || isEvaluating}
-            className="mx-auto flex items-center gap-2 bg-gray-900 text-white px-8 py-4 rounded-xl font-bold hover:bg-gray-800 transition-colors disabled:opacity-50"
+            className="mx-auto flex items-center gap-2 bg-indigo-600 text-white px-8 py-4 rounded-xl font-bold hover:bg-indigo-700 transition-all shadow-md shadow-indigo-500/20 hover:shadow-lg hover:shadow-indigo-500/30 disabled:opacity-50"
           >
             {currentPosition === totalSentences - 1 ? 'Hoàn thành' : 'Câu tiếp theo'}
             <ArrowRight size={20} />

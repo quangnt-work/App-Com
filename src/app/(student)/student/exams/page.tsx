@@ -62,7 +62,7 @@ export default async function ExamsPage() {
   });
 
   return (
-    <div className="min-h-screen bg-[#f8f9fc] flex flex-col font-sans">
+    <div className="min-h-screen bg-[#F8FAFC] flex flex-col font-sans">
       <main className="flex-1 container mx-auto px-4 py-8 max-w-[1200px]">
         
         {/* Banner KIỂM TRA */}
@@ -70,6 +70,7 @@ export default async function ExamsPage() {
           title="KIỂM TRA"
           description="Đánh giá năng lực tiếng Nga của bạn thông qua các bài kiểm tra đa dạng."
           icon={FileText}
+          gradient="from-amber-600 via-orange-600 to-rose-600"
         />
 
         {/* Lưới Thẻ Bài Kiểm Tra (3 cột theo thiết kế) */}
@@ -80,7 +81,7 @@ export default async function ExamsPage() {
             ))}
           </div>
         ) : (
-          <div className="text-center py-20 text-gray-500 bg-white rounded-2xl shadow-sm border border-gray-100">
+          <div className="text-center py-20 text-slate-500 bg-white rounded-2xl shadow-sm border border-slate-200/80">
             Hiện tại chưa có bài kiểm tra nào được phát hành.
           </div>
         )}
@@ -88,12 +89,12 @@ export default async function ExamsPage() {
         {/* Phân trang (Mockup theo ảnh) */}
         {exams.length > 0 && (
           <div className="mt-16 flex justify-center gap-2">
-            <button className="w-10 h-10 flex items-center justify-center rounded-lg border border-gray-200 text-gray-400 hover:bg-gray-50 bg-white">
+            <button className="w-10 h-10 flex items-center justify-center rounded-lg border border-slate-200 text-slate-400 hover:bg-slate-50 bg-white">
               <span className="sr-only">Trang trước</span>
               &lt;
             </button>
-            <button className="w-10 h-10 flex items-center justify-center rounded-lg bg-[#f07b32] text-white font-bold shadow-sm">1</button>
-            <button className="w-10 h-10 flex items-center justify-center rounded-lg border border-gray-200 text-gray-400 hover:bg-gray-50 bg-white">
+            <button className="w-10 h-10 flex items-center justify-center rounded-lg bg-gradient-to-r from-amber-500 to-orange-600 text-white font-bold shadow-sm shadow-orange-500/20">1</button>
+            <button className="w-10 h-10 flex items-center justify-center rounded-lg border border-slate-200 text-slate-400 hover:bg-slate-50 bg-white">
               <span className="sr-only">Trang sau</span>
               &gt;
             </button>

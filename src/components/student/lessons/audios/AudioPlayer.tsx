@@ -138,7 +138,7 @@ export function AudioPlayer({ src }: AudioPlayerProps) {
                 {/* Play / Pause */}
                 <button
                     onClick={togglePlay}
-                    className="w-12 h-12 rounded-full bg-[#f07b32] text-white flex items-center justify-center shrink-0 hover:bg-[#e06c25] transition-colors shadow-md shadow-orange-200"
+                    className="w-12 h-12 rounded-full bg-blue-600 text-white flex items-center justify-center shrink-0 hover:bg-blue-700 transition-colors shadow-md shadow-blue-500/25"
                     aria-label={isPlaying ? 'Tạm dừng' : 'Phát'}
                 >
                     {isPlaying ? <Pause className="w-5 h-5" fill="white" /> : <Play className="w-5 h-5 ml-0.5" fill="white" />}
@@ -151,7 +151,7 @@ export function AudioPlayer({ src }: AudioPlayerProps) {
                         <div className="absolute inset-0 bg-gray-200 rounded-full pointer-events-none" />
                         {/* Custom filled track */}
                         <div 
-                            className="absolute left-0 h-2 bg-[#f07b32] rounded-full pointer-events-none transition-all"
+                            className="absolute left-0 h-2 bg-blue-600 rounded-full pointer-events-none transition-all"
                             style={{ width: `${progressPercent}%` }}
                         />
                         {/* Native input range for accessibility & interaction */}
@@ -176,7 +176,7 @@ export function AudioPlayer({ src }: AudioPlayerProps) {
                         />
                         {/* Thumb (hiển thị khi hover) */}
                         <div 
-                            className="absolute top-1/2 -translate-y-1/2 w-3.5 h-3.5 bg-[#f07b32] border-2 border-white rounded-full shadow-sm opacity-0 group-hover:opacity-100 transition-opacity pointer-events-none z-0"
+                            className="absolute top-1/2 -translate-y-1/2 w-3.5 h-3.5 bg-blue-600 border-2 border-white rounded-full shadow-sm opacity-0 group-hover:opacity-100 transition-opacity pointer-events-none z-0"
                             style={{ left: `calc(${progressPercent}% - 7px)` }}
                         />
                     </div>
@@ -210,7 +210,7 @@ export function AudioPlayer({ src }: AudioPlayerProps) {
                         step={0.01}
                         value={isMuted ? 0 : volume}
                         onChange={handleVolumeChange}
-                        className="w-24 h-1.5 accent-[#f07b32] cursor-pointer"
+                        className="w-24 h-1.5 accent-blue-600 cursor-pointer"
                         aria-label="Âm lượng"
                     />
                 </div>
@@ -221,7 +221,7 @@ export function AudioPlayer({ src }: AudioPlayerProps) {
                         <span className="text-xs text-gray-500">Tốc độ phát:</span>
                         <button
                             onClick={() => setShowRateMenu((v) => !v)}
-                            className="flex items-center gap-1 border border-gray-200 rounded-lg px-3 py-1.5 text-sm font-medium hover:border-[#f07b32] hover:text-[#f07b32] transition-colors bg-white"
+                            className="flex items-center gap-1 border border-gray-200 rounded-lg px-3 py-1.5 text-sm font-medium hover:border-blue-500 hover:text-blue-600 transition-colors bg-white"
                             aria-label="Mở menu chọn tốc độ phát"
                             aria-expanded={showRateMenu}
                         >
@@ -238,7 +238,7 @@ export function AudioPlayer({ src }: AudioPlayerProps) {
                                 <button
                                     key={r.value}
                                     onClick={() => handleRateChange(r.value)}
-                                    className={`w-full text-left px-4 py-2 text-sm hover:bg-orange-50 hover:text-[#f07b32] transition-colors ${r.value === playbackRate ? 'text-[#f07b32] font-semibold bg-orange-50' : 'text-gray-700'
+                                    className={`w-full text-left px-4 py-2 text-sm hover:bg-blue-50 hover:text-blue-600 transition-colors ${r.value === playbackRate ? 'text-blue-600 font-semibold bg-blue-50' : 'text-gray-700'
                                         }`}
                                 >
                                     {r.label}

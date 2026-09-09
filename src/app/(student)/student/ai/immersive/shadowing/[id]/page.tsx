@@ -64,7 +64,7 @@ export default function ShadowingRoomPage({ params }: { params: Promise<{ id: st
       } catch (err) {
         console.error(err);
         toast.error('Không tìm thấy bài học này.');
-        router.push('/student/ai/immersive/shadowing');
+        router.replace('/student/ai/immersive/shadowing');
       } finally {
         setIsLoading(false);
       }

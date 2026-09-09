@@ -94,7 +94,7 @@ export default function RoleplayRoomPage({ params }: { params: Promise<{ id: str
       if (data && !error) {
         setTopic(data as unknown as RoleplayScenario);
       } else {
-        router.push('/student/ai/immersive/roleplay');
+        router.replace('/student/ai/immersive/roleplay');
       }
       setIsTopicLoaded(true);
     };

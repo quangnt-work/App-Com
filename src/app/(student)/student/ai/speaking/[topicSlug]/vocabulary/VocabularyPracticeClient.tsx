@@ -123,7 +123,7 @@ export default function VocabularyPracticeClient({ vocabularies, topicName }: Pr
 
   const handleNext = () => {
     if (isLastWord) {
-      router.push(`/student/ai/speaking/${topicName}`);
+      router.replace(`/student/ai/speaking/${topicName}`);
     } else {
       setCurrentIndex(prev => prev + 1);
       setEvaluation(null);

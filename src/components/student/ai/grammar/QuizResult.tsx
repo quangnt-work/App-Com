@@ -120,7 +120,7 @@ export function QuizResult({ result, topicTitle, onRetry }: QuizResultProps) {
       {/* CTA Buttons */}
       <div className="flex gap-3">
         <button
-          onClick={() => router.push('/student/ai/grammar')}
+          onClick={() => router.replace('/student/ai/grammar')}
           className="flex-1 bg-white border border-slate-200/80 text-slate-700 py-4 rounded-2xl font-bold text-base hover:bg-slate-50 transition-colors flex items-center justify-center gap-2"
         >
           <ArrowLeft size={18} />

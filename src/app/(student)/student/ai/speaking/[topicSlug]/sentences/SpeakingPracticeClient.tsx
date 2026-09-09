@@ -125,7 +125,7 @@ export default function SpeakingPracticeClient({ sentences, topicName }: Props) 
 
   const handleNext = () => {
     if (isLastSentence) {
-      router.push(`/student/ai/speaking/${topicName}`); 
+      router.replace(`/student/ai/speaking/${topicName}`); 
     } else {
       setCurrentIndex(prev => prev + 1);
       setEvaluation(null); 

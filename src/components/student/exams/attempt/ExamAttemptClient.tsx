@@ -30,14 +30,18 @@ export function ExamAttemptClient({ exam, questions, user }: any) {
     window.history.pushState(null, '', window.location.href);
 
     const handlePopState = (e: PopStateEvent) => {
-      if (isExamDoneRef.current) return; // Exam done, allow navigation
+      if (isExamDoneRef.current || (typeof window !== 'undefined' && (window as any).__isExamFinished)) {
+        // Sau khi hoàn thành bài thi, bấm back luôn đưa về danh sách bài kiểm tra
+        window.location.replace('/student/exams');
+        return;
+      }
       e.preventDefault();
       window.history.pushState(null, '', window.location.href);
       setShowConfirm(true);
     };
 
     const handleBeforeUnload = (e: BeforeUnloadEvent) => {
-      if (isExamDoneRef.current) return; // Exam done, don't block navigation
+      if (isExamDoneRef.current || (typeof window !== 'undefined' && (window as any).__isExamFinished)) return;
       e.preventDefault();
       e.returnValue = '';
       return '';
@@ -47,6 +51,9 @@ export function ExamAttemptClient({ exam, questions, user }: any) {
     window.addEventListener('beforeunload', handleBeforeUnload);
 
     return () => {
+      if (typeof window !== 'undefined') {
+        (window as any).__isExamFinished = false;
+      }
       window.removeEventListener('popstate', handlePopState);
       window.removeEventListener('beforeunload', handleBeforeUnload);
     };
@@ -84,6 +91,9 @@ export function ExamAttemptClient({ exam, questions, user }: any) {
 
       if (result.success) {
         isExamDoneRef.current = true; // Disable navigation guards
+        if (typeof window !== 'undefined') {
+          (window as any).__isExamFinished = true;
+        }
         toast.success('AI đã chấm xong bài của bạn!');
         setExamResult({
           score: result.score ?? 0,

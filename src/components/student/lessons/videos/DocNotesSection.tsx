@@ -78,14 +78,14 @@ export function DocNotesSection({ lessonTitle }: DocNotesSectionProps) {
         <div className="bg-white rounded-2xl border border-gray-100 shadow-sm overflow-hidden">
             {/* Header */}
             <div className="flex items-center gap-2 p-6 pb-4">
-                <PenLine className="w-5 h-5 text-[#f07b32]" strokeWidth={2.5} />
+                <PenLine className="w-5 h-5 text-blue-600" strokeWidth={2.5} />
                 <h2 className="font-bold text-gray-800 text-base">Ghi chú</h2>
             </div>
 
             <div className="px-6 pb-6 space-y-4 text-sm">
                 {/* Editor Container */}
                 <div
-                    className={`border rounded-xl bg-slate-50/50 transition-colors flex flex-col ${isFocused ? 'border-[#f07b32] ring-2 ring-orange-100' : 'border-gray-200'
+                    className={`border rounded-xl bg-slate-50/50 transition-colors flex flex-col ${isFocused ? 'border-blue-500 ring-2 ring-blue-100' : 'border-gray-200'
                         }`}
                 >
                     {/* Toolbar */}
@@ -172,7 +172,7 @@ export function DocNotesSection({ lessonTitle }: DocNotesSectionProps) {
                 <div className="flex justify-end pt-2">
                     <button
                         onClick={handleExportDocx}
-                        className="flex items-center gap-2 bg-[#f07b32] hover:bg-[#e06c25] text-white px-5 py-2.5 rounded-lg text-sm font-medium transition-colors shadow-sm shadow-orange-200 shrink-0"
+                        className="flex items-center gap-2 bg-gradient-to-r from-blue-600 to-indigo-600 hover:from-blue-700 hover:to-indigo-700 text-white px-5 py-2.5 rounded-xl text-sm font-semibold transition-all shadow-md shadow-blue-500/20 shrink-0"
                     >
                         <Download className="w-4 h-4" />
                         Xuất ghi chú

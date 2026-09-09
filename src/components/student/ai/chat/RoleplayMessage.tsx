@@ -34,8 +34,8 @@ export function RoleplayMessage({ role, content, replyVi, correction, autoPlayAu
         <div
           className={`p-4 rounded-3xl leading-relaxed ${
             isModel
-              ? 'bg-white text-gray-800 rounded-bl-sm shadow-sm border border-gray-100'
-              : 'bg-[#f07b32] text-white rounded-br-sm shadow-md'
+              ? 'bg-white text-slate-800 rounded-bl-xs shadow-xs border border-slate-200/80'
+              : 'bg-gradient-to-r from-indigo-600 to-violet-600 text-white rounded-br-xs shadow-sm shadow-indigo-500/20'
           }`}
         >
           <p className="whitespace-pre-wrap">{content}</p>
@@ -46,7 +46,7 @@ export function RoleplayMessage({ role, content, replyVi, correction, autoPlayAu
               <button
                 aria-label="Nghe đoạn thoại"
                 onClick={() => playAudio(content)}
-                className="flex items-center gap-1.5 text-sm font-medium text-blue-600 hover:text-blue-800 transition-colors bg-blue-50 hover:bg-blue-100 px-3 py-1.5 rounded-xl border border-blue-100"
+                className="flex items-center gap-1.5 text-xs font-semibold text-indigo-600 hover:text-indigo-800 transition-colors bg-indigo-50 hover:bg-indigo-100 px-3 py-1.5 rounded-xl border border-indigo-100"
               >
                 <Volume2 size={14} /> Nghe
               </button>
@@ -54,10 +54,10 @@ export function RoleplayMessage({ role, content, replyVi, correction, autoPlayAu
                 <button
                   aria-label={showTranslation ? 'Ẩn dịch' : 'Xem dịch'}
                   onClick={() => setShowTranslation(!showTranslation)}
-                  className={`flex items-center gap-1.5 text-sm font-medium transition-colors px-3 py-1.5 rounded-xl border ${
+                  className={`flex items-center gap-1.5 text-xs font-semibold transition-colors px-3 py-1.5 rounded-xl border ${
                     showTranslation
-                      ? 'text-green-700 bg-green-100 border-green-200'
-                      : 'text-gray-500 bg-gray-50 hover:bg-gray-100 border-gray-200'
+                      ? 'text-teal-700 bg-teal-50 border-teal-200/80'
+                      : 'text-slate-500 bg-slate-50 hover:bg-slate-100 border-slate-200'
                   }`}
                 >
                   <Languages size={14} /> {showTranslation ? 'Ẩn dịch' : 'Xem dịch'}
@@ -69,7 +69,7 @@ export function RoleplayMessage({ role, content, replyVi, correction, autoPlayAu
 
         {/* Translation (collapsible) */}
         {isModel && showTranslation && replyVi && (
-          <div className="mt-2 ml-2 p-3 bg-green-50 border border-green-100 rounded-2xl text-sm text-green-800 animate-in fade-in slide-in-from-top-2 duration-200">
+          <div className="mt-2 ml-2 p-3 bg-teal-50/70 border border-teal-100 rounded-2xl text-sm text-teal-800 animate-in fade-in slide-in-from-top-2 duration-200">
             🇻🇳 {replyVi}
           </div>
         )}

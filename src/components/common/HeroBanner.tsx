@@ -5,6 +5,7 @@ interface HeroBannerProps {
   title: string;
   description: string;
   icon: LucideIcon;
+  gradient?: string;
   // Cho phép ghi đè class nếu cần thiết (ví dụ: đổi màu nền)
   className?: string; 
 }
@@ -13,10 +14,15 @@ export function HeroBanner({
   title, 
   description, 
   icon: Icon,
-  className = "bg-[#f07b32]" // Mặc định là màu cam của brand
+  gradient,
+  className = ""
 }: HeroBannerProps) {
+  const bgClass = gradient 
+    ? `bg-gradient-to-r ${gradient} shadow-xl` 
+    : (className || "bg-gradient-to-r from-blue-700 via-blue-600 to-indigo-700 shadow-xl shadow-blue-900/10");
+
   return (
-    <div className={`text-white rounded-[2rem] p-10 flex items-center justify-between gap-6 mb-12 shadow-sm relative overflow-hidden ${className}`}>
+    <div className={`text-white rounded-[2rem] p-10 flex items-center justify-between gap-6 mb-12 shadow-sm relative overflow-hidden ${bgClass} ${gradient && className ? className : ''}`}>
       <div className="relative z-10 max-w-2xl">
         <h1 className="text-3xl md:text-4xl lg:text-5xl font-extrabold tracking-wide uppercase mb-4">
           {title}
@@ -27,7 +33,7 @@ export function HeroBanner({
       </div>
       
       {/* Icon trang trí bên phải */}
-      <div className="relative z-10 hidden md:flex items-center justify-center w-24 h-24 lg:w-28 lg:h-28 rounded-full border-2 lg:border-4 border-white/20 bg-white/10 backdrop-blur-sm">
+      <div className="relative z-10 hidden md:flex items-center justify-center w-24 h-24 lg:w-28 lg:h-28 rounded-full border-2 lg:border-4 border-white/30 bg-white/15 backdrop-blur-md shadow-inner">
         <Icon size={48} strokeWidth={2.5} />
       </div>
       

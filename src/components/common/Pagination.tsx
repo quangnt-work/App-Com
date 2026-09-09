@@ -85,7 +85,7 @@ export function Pagination({ totalPages }: PaginationProps) {
             href={createPageURL(page)}
             className={`w-10 h-10 flex items-center justify-center rounded-lg border transition-colors font-medium ${
               currentPage === page
-                ? 'bg-[#f07b32] text-white border-[#f07b32] shadow-sm' // Trạng thái đang chọn
+                ? 'bg-blue-600 text-white border-blue-600 shadow-md shadow-blue-500/20 font-bold' // Trạng thái đang chọn
                 : 'bg-white text-gray-600 border-gray-200 hover:bg-gray-50' // Trạng thái bình thường
             }`}
           >

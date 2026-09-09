@@ -71,7 +71,7 @@ export const Header = ({ initialUser }: { initialUser?: UserData | null }) => {
               </Link>
               <Link
                 href="/register"
-                className="text-sm font-bold bg-blue-700 text-white px-4 py-2 rounded-full hover:bg-blue-800 transition-all shadow-md"
+                className="text-sm font-bold bg-gradient-to-r from-blue-600 to-indigo-600 hover:from-blue-700 hover:to-indigo-700 text-white px-5 py-2 rounded-full transition-all shadow-md shadow-blue-500/20 hover:shadow-lg hover:shadow-blue-500/30 hover:-translate-y-0.5"
               >
                 Đăng ký
               </Link>

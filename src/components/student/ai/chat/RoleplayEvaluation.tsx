@@ -71,41 +71,41 @@ export function RoleplayEvaluation({
   }
 
   return (
-    <div className="min-h-screen bg-[#f8f9fc] flex flex-col font-sans">
+    <div className="min-h-screen bg-[#F8FAFC] flex flex-col font-sans">
       <main className="flex-1 container mx-auto px-4 py-8 max-w-[800px]">
-        <div className="bg-white rounded-3xl p-8 md:p-12 shadow-xl border border-gray-100 text-center animate-in fade-in zoom-in duration-500">
+        <div className="bg-white rounded-3xl p-8 md:p-12 shadow-xl border border-slate-200/80 text-center animate-in fade-in zoom-in duration-500">
           {/* Stars */}
           <div className="flex justify-center gap-2 mb-6">
             {[1, 2, 3].map(i => (
               <Star
                 key={i}
                 size={48}
-                className={i <= stars ? 'text-yellow-400 fill-yellow-400' : 'text-gray-200'}
+                className={i <= stars ? 'text-amber-400 fill-amber-400' : 'text-slate-200'}
                 strokeWidth={1.5}
               />
             ))}
           </div>
 
-          <h2 className="text-3xl md:text-4xl font-extrabold text-gray-800 mb-2">{title}</h2>
-          <p className="text-gray-400 text-sm mb-6">{topicTitle}</p>
+          <h2 className="text-3xl md:text-4xl font-extrabold text-slate-800 mb-2">{title}</h2>
+          <p className="text-slate-400 text-sm mb-6">{topicTitle}</p>
 
           {/* Stats Grid */}
           <div className="grid grid-cols-3 gap-3 mb-8 max-w-md mx-auto">
-            <div className="bg-orange-50 rounded-2xl p-4 text-center">
-              <div className="text-2xl font-black text-[#f07b32]">{completedObjectives.length}/{objectives.length}</div>
-              <div className="text-xs font-semibold text-orange-400 uppercase tracking-wider mt-1">Nhiệm vụ</div>
+            <div className="bg-indigo-50 border border-indigo-100/80 rounded-2xl p-4 text-center">
+              <div className="text-2xl font-black text-indigo-600">{completedObjectives.length}/{objectives.length}</div>
+              <div className="text-xs font-semibold text-indigo-400 uppercase tracking-wider mt-1">Nhiệm vụ</div>
             </div>
-            <div className="bg-blue-50 rounded-2xl p-4 text-center">
-              <div className="text-2xl font-black text-blue-600">{formatTime(elapsedSeconds)}</div>
-              <div className="text-xs font-semibold text-blue-400 uppercase tracking-wider mt-1">Thời gian</div>
+            <div className="bg-sky-50 border border-sky-100/80 rounded-2xl p-4 text-center">
+              <div className="text-2xl font-black text-sky-600">{formatTime(elapsedSeconds)}</div>
+              <div className="text-xs font-semibold text-sky-400 uppercase tracking-wider mt-1">Thời gian</div>
             </div>
-            <div className="bg-purple-50 rounded-2xl p-4 text-center">
+            <div className="bg-purple-50 border border-purple-100/80 rounded-2xl p-4 text-center">
               <div className="text-2xl font-black text-purple-600">{hintsUsed}</div>
               <div className="text-xs font-semibold text-purple-400 uppercase tracking-wider mt-1">Gợi ý</div>
             </div>
           </div>
 
-          <p className="text-gray-500 text-lg mb-10 max-w-md mx-auto leading-relaxed">{message}</p>
+          <p className="text-slate-500 text-lg mb-10 max-w-md mx-auto leading-relaxed">{message}</p>
 
           {hintsUsed > 0 && (
             <p className="text-sm text-amber-600 mb-6">
@@ -116,13 +116,13 @@ export function RoleplayEvaluation({
           <div className="flex flex-col sm:flex-row justify-center gap-3">
             <button
               onClick={onRestart}
-              className="px-6 py-3 bg-gray-100 text-gray-700 font-bold rounded-xl hover:bg-gray-200 transition-colors flex items-center justify-center gap-2"
+              className="px-6 py-3 bg-slate-100 text-slate-700 font-bold rounded-xl hover:bg-slate-200 transition-colors flex items-center justify-center gap-2"
             >
               <RotateCcw size={18} /> Chơi lại
             </button>
             <button
               onClick={() => router.replace('/student/ai/immersive/roleplay')}
-              className="px-6 py-3 bg-[#f07b32] text-white font-bold rounded-xl hover:bg-[#e26a24] transition-colors"
+              className="px-6 py-3 bg-gradient-to-r from-indigo-600 to-violet-600 hover:from-indigo-700 hover:to-violet-700 text-white font-bold rounded-xl shadow-md shadow-indigo-500/25 transition-all"
             >
               Chọn kịch bản khác
             </button>

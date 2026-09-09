@@ -169,11 +169,11 @@ export default function GrammarQuizPage({ params }: { params: Promise<{ topicSlu
 
   if (!topic) {
     return (
-      <div className="min-h-screen flex flex-col items-center justify-center bg-gray-50">
-        <h1 className="text-2xl font-bold text-gray-800 mb-4">Chủ đề này không tồn tại</h1>
+      <div className="min-h-screen flex flex-col items-center justify-center bg-[#F8FAFC]">
+        <h1 className="text-2xl font-bold text-slate-800 mb-4">Chủ đề này không tồn tại</h1>
         <button
           onClick={() => router.push('/student/ai/grammar')}
-          className="text-white bg-[#f07b32] px-6 py-2 rounded-xl"
+          className="text-white bg-gradient-to-r from-indigo-600 to-violet-600 hover:from-indigo-700 hover:to-violet-700 px-6 py-2 rounded-xl font-medium shadow-md shadow-indigo-500/20 transition-all"
         >
           Quay lại danh sách
         </button>
@@ -185,7 +185,7 @@ export default function GrammarQuizPage({ params }: { params: Promise<{ topicSlu
 
   if (result) {
     return (
-      <div className="min-h-screen bg-[#f8f9fc] font-sans">
+      <div className="min-h-screen bg-[#F8FAFC] font-sans">
         <main className="container mx-auto px-4 py-8 max-w-[680px]">
           <QuizResult result={result} topicTitle={topic.title} onRetry={handleRetry} />
         </main>
@@ -196,27 +196,27 @@ export default function GrammarQuizPage({ params }: { params: Promise<{ topicSlu
   // ─── Main UI ────────────────────────────────────────────────────────────
 
   return (
-    <div className="min-h-screen bg-[#f8f9fc] font-sans">
+    <div className="min-h-screen bg-[#F8FAFC] font-sans">
       <main className="container mx-auto px-4 py-8 max-w-[780px]">
 
         {/* Quiz Container */}
-        <div className="bg-white rounded-3xl shadow-sm border overflow-hidden">
+        <div className="bg-white rounded-3xl shadow-sm border border-slate-200/80 overflow-hidden">
 
           {/* Header */}
-          <div className="p-5 md:p-6 border-b flex items-center justify-between bg-white">
+          <div className="p-5 md:p-6 border-b border-slate-100 flex items-center justify-between bg-white">
             <div className="flex items-center gap-3">
-              <div className="p-2 bg-orange-50 text-[#f07b32] rounded-xl">
+              <div className="p-2 bg-indigo-50 text-indigo-600 rounded-xl">
                 <BookOpenCheck size={22} />
               </div>
               <div>
-                <h1 className="font-bold text-lg text-gray-800">{topic.title}</h1>
-                <p className="text-xs text-gray-400">Ngữ pháp AI · 20 câu hỏi</p>
+                <h1 className="font-bold text-lg text-slate-800">{topic.title}</h1>
+                <p className="text-xs text-slate-400">Ngữ pháp AI · 20 câu hỏi</p>
               </div>
             </div>
             {isStarted && questions.length > 0 && (
               <button
                 onClick={() => router.push('/student/ai/grammar')}
-                className="text-sm text-gray-400 hover:text-gray-600 font-medium transition-colors"
+                className="text-sm text-slate-400 hover:text-slate-600 font-medium transition-colors"
               >
                 Thoát
               </button>
@@ -229,19 +229,19 @@ export default function GrammarQuizPage({ params }: { params: Promise<{ topicSlu
             {/* ── Chưa bắt đầu ── */}
             {!isStarted && (
               <div className="py-12 flex flex-col items-center justify-center text-center animate-in fade-in zoom-in duration-300">
-                <div className="w-28 h-28 bg-orange-100 rounded-full flex items-center justify-center mb-6 shadow-inner">
+                <div className="w-28 h-28 bg-indigo-50 border border-indigo-100/80 rounded-full flex items-center justify-center mb-6 shadow-inner">
                   <span className="text-5xl">📝</span>
                 </div>
-                <h3 className="text-2xl font-extrabold mb-3 text-gray-800">Sẵn sàng kiểm tra?</h3>
-                <p className="text-gray-500 mb-3 max-w-sm">
+                <h3 className="text-2xl font-extrabold mb-3 text-slate-800">Sẵn sàng kiểm tra?</h3>
+                <p className="text-slate-500 mb-3 max-w-sm">
                   AI sẽ tạo <strong>20 câu trắc nghiệm</strong> về ngữ pháp tiếng Nga theo chủ đề <strong>{topic.title}</strong>.
                 </p>
-                <p className="text-xs text-gray-400 mb-8 max-w-xs">
+                <p className="text-xs text-slate-400 mb-8 max-w-xs">
                   📊 Câu hỏi trải đều từ <strong>A1 → B2</strong>. Mỗi lần là bộ câu hỏi hoàn toàn mới!
                 </p>
                 <button
                   onClick={startQuiz}
-                  className="bg-[#f07b32] text-white px-10 py-4 rounded-2xl font-bold text-lg hover:shadow-lg hover:bg-[#e26a24] transition-all flex items-center gap-2"
+                  className="bg-gradient-to-r from-indigo-600 to-violet-600 hover:from-indigo-700 hover:to-violet-700 text-white px-10 py-4 rounded-2xl font-bold text-lg shadow-md shadow-indigo-500/25 hover:shadow-lg hover:shadow-indigo-500/35 transition-all flex items-center gap-2"
                 >
                   🚀 Bắt đầu làm bài
                 </button>
@@ -251,11 +251,11 @@ export default function GrammarQuizPage({ params }: { params: Promise<{ topicSlu
             {/* ── Loading ── */}
             {isLoading && (
               <div className="py-20 flex flex-col items-center justify-center text-center animate-in fade-in duration-300">
-                <div className="w-20 h-20 bg-orange-50 rounded-full flex items-center justify-center mb-6">
-                  <Loader2 size={36} className="animate-spin text-[#f07b32]" />
+                <div className="w-20 h-20 bg-indigo-50 rounded-full flex items-center justify-center mb-6">
+                  <Loader2 size={36} className="animate-spin text-indigo-600" />
                 </div>
-                <h3 className="text-xl font-bold text-gray-700 mb-2">AI đang tạo câu hỏi...</h3>
-                <p className="text-sm text-gray-400">Vui lòng đợi trong giây lát</p>
+                <h3 className="text-xl font-bold text-slate-700 mb-2">AI đang tạo câu hỏi...</h3>
+                <p className="text-sm text-slate-400">Vui lòng đợi trong giây lát</p>
               </div>
             )}
 
@@ -284,7 +284,7 @@ export default function GrammarQuizPage({ params }: { params: Promise<{ topicSlu
                   <div className="flex justify-end pt-2 animate-in fade-in slide-in-from-bottom-2 duration-200">
                     <button
                       onClick={handleNext}
-                      className="bg-[#f07b32] hover:bg-[#d46522] text-white px-8 py-3.5 rounded-2xl font-bold text-base transition-all flex items-center gap-2"
+                      className="bg-gradient-to-r from-indigo-600 to-violet-600 hover:from-indigo-700 hover:to-violet-700 text-white px-8 py-3.5 rounded-2xl font-bold text-base shadow-md shadow-indigo-500/25 transition-all flex items-center gap-2"
                     >
                       {currentIndex + 1 >= questions.length ? (
                         <>Xem kết quả</>

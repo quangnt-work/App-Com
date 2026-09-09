@@ -60,9 +60,9 @@ export default function AIChatInterfacePage({ params }: { params: Promise<{ topi
 
   if (!topic) {
     return (
-      <div className="min-h-screen flex flex-col items-center justify-center bg-gray-50">
-        <h1 className="text-2xl font-bold text-gray-800 mb-4">Chủ đề này không tồn tại</h1>
-        <button onClick={() => router.push('/student/ai/chat')} className="text-white bg-[#f07b32] px-6 py-2 rounded-xl">
+      <div className="min-h-screen flex flex-col items-center justify-center bg-[#F8FAFC]">
+        <h1 className="text-2xl font-bold text-slate-800 mb-4">Chủ đề này không tồn tại</h1>
+        <button onClick={() => router.push('/student/ai/chat')} className="text-white bg-gradient-to-r from-indigo-600 to-violet-600 hover:from-indigo-700 hover:to-violet-700 px-6 py-2 rounded-xl font-medium shadow-md shadow-indigo-500/20 transition-all">
           Quay lại danh sách
         </button>
       </div>
@@ -242,20 +242,20 @@ export default function AIChatInterfacePage({ params }: { params: Promise<{ topi
           </p>
         )}
         <div className="space-y-4">
-          <div className="p-4 bg-blue-50 border border-blue-100 rounded-xl">
-            <p className="font-bold text-blue-700 text-lg">Trình độ ước tính: {assessment.overall_level}</p>
+          <div className="p-4 bg-indigo-50 border border-indigo-100 rounded-xl">
+            <p className="font-bold text-indigo-700 text-lg">Trình độ ước tính: {assessment.overall_level}</p>
           </div>
-          <div className="bg-gray-50 p-4 rounded-xl border border-gray-100 space-y-2">
-            <p><strong className="text-gray-700">📚 Từ vựng:</strong> {assessment.vocabulary}</p>
-            <p><strong className="text-gray-700">🎙️ Ngữ điệu / Ngữ pháp:</strong> {assessment.intonation}</p>
+          <div className="bg-slate-50 p-4 rounded-xl border border-slate-200/70 space-y-2">
+            <p><strong className="text-slate-700">📚 Từ vựng:</strong> {assessment.vocabulary}</p>
+            <p><strong className="text-slate-700">🎙️ Ngữ điệu / Ngữ pháp:</strong> {assessment.intonation}</p>
           </div>
-          <div className="bg-orange-50 p-4 rounded-xl border border-orange-100">
-            <p className="italic text-gray-700">{assessment.general_feedback}</p>
+          <div className="bg-amber-50/60 p-4 rounded-xl border border-amber-200/60">
+            <p className="italic text-slate-700">{assessment.general_feedback}</p>
           </div>
         </div>
         <button
           onClick={() => router.push('/student/ai/chat')}
-          className="w-full mt-8 bg-[#f07b32] hover:bg-[#d46522] transition-colors text-white py-4 rounded-2xl font-bold text-lg"
+          className="w-full mt-8 bg-gradient-to-r from-indigo-600 to-violet-600 hover:from-indigo-700 hover:to-violet-700 shadow-md shadow-indigo-500/25 transition-all text-white py-4 rounded-2xl font-bold text-lg"
         >
           Hoàn thành luyện tập
         </button>
@@ -265,18 +265,18 @@ export default function AIChatInterfacePage({ params }: { params: Promise<{ topi
 
   // === GIAO DIỆN CHAT CHÍNH ===
   return (
-    <div className="max-w-4xl mx-auto h-[85vh] flex flex-col bg-white rounded-3xl shadow-sm border mt-6 overflow-hidden">
+    <div className="max-w-4xl mx-auto h-[85vh] flex flex-col bg-white rounded-3xl shadow-sm border border-slate-200/80 mt-6 overflow-hidden">
       {/* Header */}
-      <div className="p-5 border-b flex items-center justify-between bg-white shadow-sm z-10">
+      <div className="p-5 border-b border-slate-100 flex items-center justify-between bg-white shadow-xs z-10">
         <div className="flex items-center gap-3">
-          <div className="p-2 bg-green-50 text-green-600 rounded-xl">{topic.icon}</div>
-          <span className="font-bold text-lg text-gray-800">{topic.title}</span>
+          <div className="p-2 bg-indigo-50 text-indigo-600 rounded-xl">{topic.icon}</div>
+          <span className="font-bold text-lg text-slate-800">{topic.title}</span>
         </div>
         {isStarted && (
           <button
             onClick={endChat}
             disabled={isTyping || isTranscribing}
-            className="text-red-500 font-semibold px-4 py-2 hover:bg-red-50 rounded-xl transition-colors text-sm border border-red-200 disabled:opacity-50"
+            className="text-rose-600 font-semibold px-4 py-2 hover:bg-rose-50 rounded-xl transition-colors text-sm border border-rose-200 disabled:opacity-50"
           >
             {isTyping ? <Loader2 size={16} className="animate-spin inline mr-1" /> : null}
             Kết thúc & Đánh giá
@@ -285,23 +285,23 @@ export default function AIChatInterfacePage({ params }: { params: Promise<{ topi
       </div>
 
       {/* Body / Lịch sử Chat */}
-      <div className="flex-1 p-6 overflow-y-auto bg-slate-50">
+      <div className="flex-1 p-6 overflow-y-auto bg-slate-50/50">
         {!isStarted ? (
           <div className="h-full flex flex-col items-center justify-center text-center animate-in fade-in zoom-in duration-300">
-            <div className="w-28 h-28 bg-orange-100 rounded-full flex items-center justify-center mb-6 shadow-inner">
+            <div className="w-28 h-28 bg-indigo-50 border border-indigo-100/80 rounded-full flex items-center justify-center mb-6 shadow-inner text-indigo-600">
               <span className="text-5xl">🤖</span>
             </div>
-            <h3 className="text-2xl font-extrabold mb-3 text-gray-800">Xin chào!</h3>
-            <p className="text-gray-500 mb-8 max-w-sm">
+            <h3 className="text-2xl font-extrabold mb-3 text-slate-800">Xin chào!</h3>
+            <p className="text-slate-500 mb-8 max-w-sm">
               Sẵn sàng luyện tập phản xạ tiếng Nga về chủ đề <strong>{topic.title}</strong> chưa?
             </p>
-            <p className="text-xs text-gray-400 mb-6 max-w-xs">
+            <p className="text-xs text-slate-400 mb-6 max-w-xs">
               💡 Sử dụng nút <strong>Mic</strong> để ghi âm — AI sẽ đánh giá cả ngữ điệu khi kết thúc
             </p>
             <button
               onClick={startChat}
               disabled={isTyping}
-              className="bg-[#f07b32] text-white px-10 py-4 rounded-2xl font-bold text-lg hover:shadow-lg hover:bg-[#e26a24] transition-all flex items-center gap-2 disabled:opacity-60"
+              className="bg-gradient-to-r from-indigo-600 to-violet-600 hover:from-indigo-700 hover:to-violet-700 text-white px-10 py-4 rounded-2xl font-bold text-lg shadow-md shadow-indigo-500/25 hover:shadow-lg hover:shadow-indigo-500/35 transition-all flex items-center gap-2 disabled:opacity-60"
             >
               {isTyping ? (
                 <><Loader2 size={20} className="animate-spin" /> Đang kết nối...</>
@@ -317,13 +317,13 @@ export default function AIChatInterfacePage({ params }: { params: Promise<{ topi
             })}
             {(isTyping || isTranscribing) && (
               <div className="flex justify-start mb-6">
-                <div className="p-4 bg-white rounded-2xl rounded-bl-sm border border-gray-100 shadow-sm flex items-center gap-2">
-                  <span className="text-xs text-gray-400 mr-1">
+                <div className="p-4 bg-white rounded-2xl rounded-bl-sm border border-slate-200/70 shadow-xs flex items-center gap-2">
+                  <span className="text-xs text-slate-400 mr-1">
                     {isTranscribing ? 'Đang nhận diện giọng nói...' : 'AI đang soạn...'}
                   </span>
-                  <span className="w-2 h-2 bg-gray-300 rounded-full animate-bounce" />
-                  <span className="w-2 h-2 bg-gray-300 rounded-full animate-bounce delay-100" />
-                  <span className="w-2 h-2 bg-gray-300 rounded-full animate-bounce delay-200" />
+                  <span className="w-2 h-2 bg-slate-400 rounded-full animate-bounce" />
+                  <span className="w-2 h-2 bg-slate-400 rounded-full animate-bounce delay-100" />
+                  <span className="w-2 h-2 bg-slate-400 rounded-full animate-bounce delay-200" />
                 </div>
               </div>
             )}
@@ -334,7 +334,7 @@ export default function AIChatInterfacePage({ params }: { params: Promise<{ topi
 
       {/* Input Area */}
       {isStarted && (
-        <div className="p-4 bg-white border-t flex items-center gap-3">
+        <div className="p-4 bg-white border-t border-slate-100 flex items-center gap-3">
           <div className="flex-1 relative">
             <input
               type="text"
@@ -347,12 +347,12 @@ export default function AIChatInterfacePage({ params }: { params: Promise<{ topi
                   : isTranscribing ? 'Đang nhận diện...'
                     : 'Nhập tin nhắn tiếng Nga...'
               }
-              className="w-full p-4 pr-14 rounded-2xl bg-gray-50 border border-transparent focus:bg-white focus:border-[#f07b32] focus:ring-2 focus:ring-orange-100 transition-all outline-none text-gray-700"
+              className="w-full p-4 pr-14 rounded-2xl bg-slate-50 border border-slate-200/80 focus:bg-white focus:border-indigo-500 focus:ring-2 focus:ring-indigo-100 transition-all outline-none text-slate-700"
             />
             <button
               onClick={() => handleSend(input)}
               disabled={isTyping || !input.trim() || isRecording || isTranscribing}
-              className="absolute right-3 top-1/2 -translate-y-1/2 w-10 h-10 bg-[#f07b32] text-white rounded-xl flex items-center justify-center hover:bg-[#e26a24] disabled:opacity-50 disabled:bg-gray-300 transition-colors"
+              className="absolute right-3 top-1/2 -translate-y-1/2 w-10 h-10 bg-indigo-600 text-white rounded-xl flex items-center justify-center hover:bg-indigo-700 disabled:opacity-50 disabled:bg-slate-300 transition-colors shadow-xs"
             >
               <Send size={18} className="ml-0.5" />
             </button>
@@ -365,8 +365,8 @@ export default function AIChatInterfacePage({ params }: { params: Promise<{ topi
             title={isRecording ? 'Bấm để dừng ghi âm' : 'Bấm để ghi âm giọng nói'}
             className={`w-14 h-14 rounded-2xl flex items-center justify-center transition-all disabled:opacity-50
               ${isRecording
-                ? 'bg-red-500 text-white border-2 border-red-300 shadow-lg shadow-red-200 animate-pulse'
-                : 'bg-gray-50 border border-gray-200 text-gray-500 hover:text-[#f07b32] hover:bg-orange-50 hover:border-orange-200'
+                ? 'bg-rose-500 text-white border-2 border-rose-300 shadow-lg shadow-rose-200 animate-pulse'
+                : 'bg-slate-50 border border-slate-200 text-slate-500 hover:text-indigo-600 hover:bg-indigo-50 hover:border-indigo-200'
               }`}
           >
             {isRecording ? <Square size={22} fill="white" /> : <Mic size={24} />}

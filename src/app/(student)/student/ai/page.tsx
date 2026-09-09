@@ -45,7 +45,7 @@ export default async function AIPracticePage() {
   ];
 
   return (
-    <div className="min-h-screen bg-[#f8f9fc] flex flex-col font-sans">
+    <div className="min-h-screen bg-[#F8FAFC] flex flex-col font-sans">
       <main className="flex-1 container mx-auto px-4 py-8 max-w-[1400px]">
         
         {/* Banner "LUYỆN TẬP CÙNG AI" */}
@@ -53,6 +53,7 @@ export default async function AIPracticePage() {
           title="Luyện cùng AI"
           description="Nâng tầm kỹ năng tiếng Nga với trí tuệ nhân tạo thế hệ mới."
           icon={Bot}
+          className="bg-gradient-to-r from-indigo-700 via-violet-600 to-purple-700 shadow-xl shadow-indigo-950/10"
         />
 
         {/* Grid tính năng AI */}
@@ -64,6 +65,7 @@ export default async function AIPracticePage() {
               description={feature.description}
               icon={feature.icon}
               href={feature.href}
+              colorScheme="indigo"
             />
           ))}
         </div>

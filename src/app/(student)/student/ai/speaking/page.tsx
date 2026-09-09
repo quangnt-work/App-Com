@@ -97,11 +97,11 @@ export default async function SpeakingTopicsPage() {
   ];
 
   return (
-    <div className="min-h-screen bg-[#f8f9fc] flex flex-col font-sans">
+    <div className="min-h-screen bg-[#F8FAFC] flex flex-col font-sans">
       <main className="flex-1 container mx-auto px-4 py-8 max-w-[1200px]">
         
         {/* Hero Banner Căn giữa */}
-        <div className="bg-[#f07b32] text-white rounded-[2rem] p-10 flex items-center justify-between gap-6 mb-12 shadow-sm relative overflow-hidden">
+        <div className="bg-gradient-to-r from-indigo-700 via-violet-600 to-purple-700 text-white rounded-[2rem] p-10 flex items-center justify-between gap-6 mb-12 shadow-sm relative overflow-hidden">
             <div className="relative z-10 max-w-2xl">
                 <h1 className="text-3xl md:text-4xl lg:text-5xl font-extrabold tracking-wide uppercase mb-4">
                 Luyện nói cùng AI
@@ -110,7 +110,7 @@ export default async function SpeakingTopicsPage() {
                 Cải thiện khả năng phát âm và phản xạ giao tiếp tiếng Nga với trợ lý AI thông minh theo từng chủ đề.
                 </p>
             </div>
-            <div className="relative z-10 hidden md:flex items-center justify-center w-24 h-24 lg:w-28 lg:h-28 rounded-full border-2 lg:border-4 border-white/20 bg-white/10 backdrop-blur-sm">
+            <div className="relative z-10 hidden md:flex items-center justify-center w-24 h-24 lg:w-28 lg:h-28 rounded-full border-2 lg:border-4 border-white/30 bg-white/15 backdrop-blur-md shadow-inner">
                 <Mic size={48} strokeWidth={2.5} />
             </div>
         </div>

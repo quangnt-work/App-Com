@@ -25,7 +25,7 @@ export function TopicCard({
   return (
     <Link 
       href={href}
-      className={`group flex items-center p-4 bg-white rounded-2xl shadow-[0_2px_10px_rgba(0,0,0,0.04)] hover:shadow-md transition-all duration-300 border-l-[6px] ${borderColor}`}
+      className={`group flex items-center p-4 bg-white rounded-2xl border border-slate-200/80 shadow-xs hover:shadow-lg hover:shadow-slate-200/50 hover:-translate-y-0.5 transition-all duration-300 border-l-[6px] ${borderColor}`}
     >
       {/* Icon */}
       <div className={`w-12 h-12 flex-shrink-0 rounded-full flex items-center justify-center mr-4 ${iconBgColor} ${iconColor}`}>
@@ -34,16 +34,16 @@ export function TopicCard({
 
       {/* Content */}
       <div className="flex-1">
-        <h3 className="text-[17px] font-bold text-gray-800 group-hover:text-black transition-colors">
+        <h3 className="text-[17px] font-bold text-slate-800 group-hover:text-indigo-600 transition-colors">
           {title}
         </h3>
-        <p className="text-[13px] text-gray-400 mt-0.5 font-medium">
+        <p className="text-[13px] text-slate-400 mt-0.5 font-medium">
           {subtitle}
         </p>
       </div>
 
       {/* Arrow Icon */}
-      <div className="text-gray-300 group-hover:text-gray-500 group-hover:translate-x-1 transition-all">
+      <div className="text-slate-300 group-hover:text-indigo-500 group-hover:translate-x-1 transition-all">
         <ChevronRight size={20} strokeWidth={2.5} />
       </div>
     </Link>

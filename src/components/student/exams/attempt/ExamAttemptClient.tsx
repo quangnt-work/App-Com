@@ -1,6 +1,6 @@
 // src/components/student/exams/attempt/ExamAttemptClient.tsx
 'use client';
-import { useState, useEffect, useRef, useMemo } from 'react';
+import { useState, useEffect, useRef, useMemo, useCallback } from 'react';
 import { useRouter } from 'next/navigation';
 import { Clock, HelpCircle, AlertCircle, Loader2, Send, CheckCircle2, XCircle, Trophy, BookOpen, RotateCcw } from 'lucide-react';
 import { submitExam } from '@/actions/examSubmissions';
@@ -14,12 +14,64 @@ type ExamResult = {
   passed: boolean;
 };
 
+// Sub-component đếm ngược cô lập: chỉ re-render bản thân nó mỗi giây
+function ExamCountdownTimer({
+  totalSeconds,
+  onTimeUp,
+  onTick,
+}: {
+  totalSeconds: number;
+  onTimeUp: () => void;
+  onTick: (remaining: number) => void;
+}) {
+  const [seconds, setSeconds] = useState(totalSeconds);
+  const onTimeUpRef = useRef(onTimeUp);
+  onTimeUpRef.current = onTimeUp;
+  const onTickRef = useRef(onTick);
+  onTickRef.current = onTick;
+
+  useEffect(() => {
+    const timerId = setInterval(() => {
+      setSeconds((prev) => {
+        if (prev <= 1) {
+          clearInterval(timerId);
+          onTickRef.current(0);
+          onTimeUpRef.current();
+          return 0;
+        }
+        const next = prev - 1;
+        onTickRef.current(next);
+        return next;
+      });
+    }, 1000);
+
+    return () => clearInterval(timerId);
+  }, []);
+
+  const m = Math.floor(Math.max(0, seconds) / 60);
+  const s = Math.max(0, seconds) % 60;
+  const formatted = `${m.toString().padStart(2, '0')}:${s.toString().padStart(2, '0')}`;
+
+  return (
+    <div className="bg-red-50 text-red-600 px-5 py-3 rounded-2xl flex flex-col items-center min-w-[140px]">
+      <span className="text-xs font-bold uppercase tracking-wider mb-1 text-red-400">Thời gian còn lại</span>
+      <div className="flex items-center gap-2 font-mono text-2xl font-bold">
+        <Clock size={24} className="text-red-500" />
+        {formatted}
+      </div>
+    </div>
+  );
+}
+
 export function ExamAttemptClient({ exam, questions, user }: any) {
   const router = useRouter();
   const isExamDoneRef = useRef(false); // Track if exam has been submitted
 
   const totalSeconds = (exam.duration || 60) * 60;
-  const [timeLeft, setTimeLeft] = useState(totalSeconds);
+  const timeLeftRef = useRef(totalSeconds);
+  const handleTick = useCallback((remaining: number) => {
+    timeLeftRef.current = remaining;
+  }, []);
   const [answers, setAnswers] = useState<Record<string, string>>({});
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [showConfirm, setShowConfirm] = useState(false);
@@ -59,17 +111,6 @@ export function ExamAttemptClient({ exam, questions, user }: any) {
     };
   }, []);
 
-  useEffect(() => {
-    if (timeLeft <= 0) {
-      handleFinalSubmit();
-      return;
-    }
-    const timerId = setInterval(() => {
-      setTimeLeft((prev) => prev - 1);
-    }, 1000);
-    return () => clearInterval(timerId);
-  }, [timeLeft]);
-
   const handleAnswerChange = (questionId: string, value: string) => {
     setAnswers((prev) => ({ ...prev, [questionId]: value }));
   };
@@ -84,7 +125,7 @@ export function ExamAttemptClient({ exam, questions, user }: any) {
       const result = await submitExam({
         examId: exam.id,
         answers,
-        timeSpent: totalSeconds - Math.max(0, timeLeft)
+        timeSpent: totalSeconds - Math.max(0, timeLeftRef.current)
       });
 
       toast.dismiss('submit-toast');
@@ -112,12 +153,6 @@ export function ExamAttemptClient({ exam, questions, user }: any) {
       toast.error('Có lỗi xảy ra, vui lòng thử lại!');
       setIsSubmitting(false);
     }
-  };
-
-  const formatTime = (seconds: number) => {
-    const m = Math.floor(seconds / 60);
-    const s = seconds % 60;
-    return `${m.toString().padStart(2, '0')}:${s.toString().padStart(2, '0')}`;
   };
 
   const parseOptions = (options: any) => {
@@ -241,13 +276,11 @@ export function ExamAttemptClient({ exam, questions, user }: any) {
             </div>
 
             <div className="shrink-0">
-              <div className="bg-red-50 text-red-600 px-5 py-3 rounded-2xl flex flex-col items-center min-w-[140px]">
-                <span className="text-xs font-bold uppercase tracking-wider mb-1 text-red-400">Thời gian còn lại</span>
-                <div className="flex items-center gap-2 font-mono text-2xl font-bold">
-                  <Clock size={24} className="text-red-500" />
-                  {formatTime(Math.max(0, timeLeft))}
-                </div>
-              </div>
+              <ExamCountdownTimer
+                totalSeconds={totalSeconds}
+                onTimeUp={handleFinalSubmit}
+                onTick={handleTick}
+              />
             </div>
           </div>
 

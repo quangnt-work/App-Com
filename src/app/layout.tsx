@@ -1,19 +1,16 @@
 import type { Metadata } from "next";
-import { Geist, Geist_Mono } from "next/font/google";
-import "./globals.css";
-import { Toaster } from 'sonner'
+import { Plus_Jakarta_Sans } from "next/font/google";
+import NextTopLoader from 'nextjs-toploader';
+import { Toaster } from 'sonner';
 import { Header } from "@/components/layout/Header";
-import { createClient } from "@/lib/supabase/server";
-import { Footer } from "@/components/layout/Footer";
+import { getAuthUser } from "@/lib/actions/auth";
+import "./globals.css";
 
-const geistSans = Geist({
-  variable: "--font-geist-sans",
-  subsets: ["latin"],
-});
-
-const geistMono = Geist_Mono({
-  variable: "--font-geist-mono",
-  subsets: ["latin"],
+const plusJakartaSans = Plus_Jakarta_Sans({
+  variable: "--font-jakarta",
+  subsets: ["latin", "vietnamese"],
+  weight: ["400", "500", "600", "700", "800"],
+  display: "swap",
 });
 
 export const metadata: Metadata = {
@@ -22,14 +19,11 @@ export const metadata: Metadata = {
   manifest: "/manifest.json",
 };
 
-import NextTopLoader from 'nextjs-toploader';
-import { getAuthUser } from "@/lib/actions/auth";
-
 export default async function RootLayout({ children }: { children: React.ReactNode }) {
   const user = await getAuthUser();
 
   return (
-    <html lang="vi" suppressHydrationWarning>
+    <html lang="vi" className={plusJakartaSans.variable} suppressHydrationWarning>
       <body suppressHydrationWarning>
         <NextTopLoader color="#3B82F6" showSpinner={false} speed={200} />
         <Header initialUser={user} />
@@ -37,5 +31,5 @@ export default async function RootLayout({ children }: { children: React.ReactNo
         <Toaster position="top-center" richColors />
       </body>
     </html>
-  )
+  );
 }

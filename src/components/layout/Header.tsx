@@ -47,10 +47,10 @@ export const Header = ({ initialUser }: { initialUser?: UserData | null }) => {
         {/* Left: Quốc kỳ & Brand mobile */}
         <div className="flex items-center gap-2">
           <div className="relative w-7 h-4.5 md:w-8 md:h-5 shadow-xs border rounded-xs overflow-hidden">
-            <Image src="https://flagpedia.net/data/flags/h80/vn.png" alt="VN" fill className="object-cover" unoptimized />
+            <Image src="/Flag_of_Vietnam.jpg" alt="Việt Nam" fill sizes="32px" className="object-cover" />
           </div>
           <div className="relative w-7 h-4.5 md:w-8 md:h-5 shadow-xs border rounded-xs overflow-hidden">
-            <Image src="https://flagpedia.net/data/flags/h80/ru.png" alt="RU" fill className="object-cover" unoptimized />
+            <Image src="/flag_of_russian.jpg" alt="Nga" fill sizes="32px" className="object-cover" />
           </div>
           <span className="flex md:hidden text-xs font-black text-blue-900 ml-1 tracking-tight">RU·Learn</span>
         </div>

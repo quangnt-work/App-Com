@@ -2,15 +2,14 @@
 import React from 'react';
 import { FolderOpen, FileText, Languages, BookOpen, Headphones, ClipboardCheck, Users, GraduationCap, TableProperties } from 'lucide-react';
 import { DocumentCard, type DocumentItem } from '@/components/student/documents/DocumentCard';
-import { HeroBanner } from '@/components/common/HeroBanner';
 import { Pagination } from '@/components/common/Pagination';
 
-// Để page nhận được searchParams từ URL
-export default function DocumentsPage({
-  searchParams,
-}: {
-  searchParams: { page?: string };
-}) {
+interface DocumentsPageProps {
+  searchParams: Promise<{ page?: string }>;
+}
+
+export default async function DocumentsPage({ searchParams }: DocumentsPageProps) {
+  const params = await searchParams;
   // Dữ liệu mẫu (Giả định bạn có nhiều hơn 8 tài liệu để test phân trang)
   const allDocuments: DocumentItem[] = [
     { id: '1', title: "Sách giáo khoa tiếng Nga A1", size: "15 MB", type: "PDF Document", icon: <FileText size={24} />, downloadUrl: "#" },
@@ -28,7 +27,7 @@ export default function DocumentsPage({
 
   // Logic cắt dữ liệu cho phân trang
   const ITEMS_PER_PAGE = 8;
-  const currentPage = Number(searchParams?.page) || 1;
+  const currentPage = Number(params?.page) || 1;
   const totalPages = Math.ceil(allDocuments.length / ITEMS_PER_PAGE);
   
   const startIndex = (currentPage - 1) * ITEMS_PER_PAGE;

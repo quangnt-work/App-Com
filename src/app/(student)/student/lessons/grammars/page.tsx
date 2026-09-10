@@ -2,6 +2,7 @@ import { Inbox, BookOpen } from 'lucide-react'
 import { GrammarRepository } from '@/repositories/GrammarRepository';
 import { type Grammar } from '@/types/grammar'
 import { GrammarCard } from '@/components/student/lessons/grammars/GrammarCard';
+import { Pagination } from '@/components/common/Pagination';
 
 interface GrammarsPageProps {
   searchParams: Promise<{ page?: string }>;
@@ -65,23 +66,7 @@ export default async function LessonsPage({ searchParams }: GrammarsPageProps) {
           </div>
 
           {/* Phân trang */}
-          {totalPages > 1 && (
-            <div className="mt-6 flex justify-center gap-1.5">
-              {Array.from({ length: totalPages }, (_, i) => i + 1).map((page) => (
-                <a
-                  key={page}
-                  href={`?page=${page}`}
-                  className={`w-9 h-9 flex items-center justify-center rounded-xl text-xs font-semibold transition-all ${
-                    page === currentPage
-                      ? 'bg-gradient-to-r from-blue-600 to-indigo-600 text-white shadow-xs shadow-blue-500/20'
-                      : 'bg-white border border-slate-200 text-slate-600 hover:border-blue-400 hover:text-blue-600 shadow-2xs'
-                  }`}
-                >
-                  {page}
-                </a>
-              ))}
-            </div>
-          )}
+          {totalPages > 1 && <Pagination totalPages={totalPages} />}
         </>
       )}
     </div>

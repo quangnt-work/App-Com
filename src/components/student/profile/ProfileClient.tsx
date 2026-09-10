@@ -1,12 +1,24 @@
 // src/components/student/profile/ProfileClient.tsx
 'use client';
 import { useEffect, useState } from 'react';
+import dynamic from 'next/dynamic';
 import { UserProfileCard } from '@/components/student/profile/UserProfileCard';
-import { ProgressChart } from '@/components/student/profile/ProgressChart';
 import { HistoryTable } from '@/components/student/profile/HistoryTable';
 import { RoleplayHistoryTable } from '@/components/student/profile/RoleplayHistoryTable';
 import { ShadowingHistoryTable } from '@/components/student/profile/ShadowingHistoryTable';
 import { UserProfile, TestRecord, ChartDataPoint, RoleplayHistoryRecord, ShadowingHistoryRecord } from '@/types/profile';
+
+const ProgressChart = dynamic(
+  () => import('@/components/student/profile/ProgressChart').then(mod => mod.ProgressChart),
+  {
+    ssr: false,
+    loading: () => (
+      <div className="bg-white p-6 rounded-2xl shadow-sm border border-gray-100 mb-6 h-[380px] flex items-center justify-center animate-pulse">
+        <div className="text-slate-400 text-sm font-medium">Đang tải biểu đồ tiến độ...</div>
+      </div>
+    ),
+  }
+);
 
 interface ProfileClientProps {
   profile: UserProfile;

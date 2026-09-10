@@ -2,15 +2,8 @@
 import React from 'react';
 import { Bot, Mic, BookOpenCheck, MessageSquare, Book, Drama } from 'lucide-react';
 import { CategoryCard } from '@/components/student/features/CategoryCard';
-import { createClient } from '@/lib/supabase/server';
-import { HeroBanner } from '@/components/common/HeroBanner';
 
-export default async function AIPracticePage() {
-  // Xác thực người dùng (giống cấu trúc các trang khác của bạn)
-  const supabase = await createClient();
-  const { data: { session } } = await supabase.auth.getSession();
-  const user = session?.user;
-
+export default function AIPracticePage() {
   const features = [
     {
       title: "Luyện nói",

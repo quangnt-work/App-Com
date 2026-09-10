@@ -19,32 +19,54 @@ export default async function ProfilePage() {
     redirect('/login');
   }
 
-  // Fetch real profile
-  const { data: profileData } = await supabase
-    .from('profiles')
-    .select('*')
-    .eq('id', user.id)
-    .single();
-
-
-  // Fetch real history
-  const { data: submissions } = await supabase
-    .from('exam_submissions')
-    .select(`
-      id,
-      created_at,
-      score,
-      total_score,
-      exam_id,
-      exams (
-        title,
-        exam_type,
-        level,
-        duration
-      )
-    `)
-    .eq('user_id', user.id)
-    .order('created_at', { ascending: false });
+  // Chạy song song cả 6 truy vấn bằng Promise.all thay vì waterfall tuần tự
+  const [
+    { data: profileData },
+    { data: submissions },
+    { data: roleplayData },
+    { data: dbScenarios },
+    { data: shadowingData },
+    { data: dbTopics }
+  ] = await Promise.all([
+    supabase
+      .from('profiles')
+      .select('full_name, username, created_at')
+      .eq('id', user.id)
+      .single(),
+    supabase
+      .from('exam_submissions')
+      .select(`
+        id,
+        created_at,
+        score,
+        total_score,
+        exam_id,
+        exams (
+          title,
+          exam_type,
+          level,
+          duration
+        )
+      `)
+      .eq('user_id', user.id)
+      .order('created_at', { ascending: false }),
+    supabase
+      .from('roleplay_history')
+      .select('*')
+      .eq('user_id', user.id)
+      .order('created_at', { ascending: false }),
+    supabase
+      .from('roleplay_scenarios')
+      .select('id, level'),
+    supabase
+      .from('shadowing_history')
+      .select('id, topic_id, topic_title, created_at, score, total_sentences, completed_sentences')
+      .eq('user_id', user.id)
+      .order('created_at', { ascending: false }),
+    supabase
+      .from('shadowing_topics')
+      .select('id, level'),
+  ]);
 
   // Map to TestRecord and find highest passed level
   const LEVEL_ORDER: Record<string, number> = { A1: 1, A2: 2, B1: 3, B2: 4, C1: 5, C2: 6, all: 0 };
@@ -126,18 +148,6 @@ export default async function ProfilePage() {
     chartData.push(cp);
   }
 
-  // Fetch roleplay history
-  const { data: roleplayData } = await supabase
-    .from('roleplay_history')
-    .select('*')
-    .eq('user_id', user.id)
-    .order('created_at', { ascending: false });
-
-  // Fetch db scenarios to get levels
-  const { data: dbScenarios } = await supabase
-    .from('roleplay_scenarios')
-    .select('id, level');
-
   const getLevelString = (level: number | string) => {
     if (typeof level === 'string') return level;
     switch(level) {
@@ -172,18 +182,6 @@ export default async function ProfilePage() {
       messages: r.messages || []
     };
   });
-
-  // Fetch shadowing history
-  const { data: shadowingData } = await supabase
-    .from('shadowing_history')
-    .select('*')
-    .eq('user_id', user.id)
-    .order('created_at', { ascending: false });
-
-  // Fetch db topics to get levels
-  const { data: dbTopics } = await supabase
-    .from('shadowing_topics')
-    .select('id, level');
 
   const shadowingHistory = (shadowingData || []).map((s: any) => {
     // Find level in DB first

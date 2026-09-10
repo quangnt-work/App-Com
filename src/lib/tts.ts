@@ -7,6 +7,10 @@ let currentAudio: HTMLAudioElement | null = null;
 let currentObjectUrl: string | null = null;
 let currentSpeechToken = 0;
 
+// Bộ nhớ đệm in-memory cho âm thanh Edge-TTS (giữ tối đa 100 audio blobs)
+const audioBlobCache = new Map<string, Blob>();
+const MAX_CACHE_SIZE = 100;
+
 export function cancelSpeech(): void {
   currentSpeechToken++; // Vô hiệu hóa các tiến trình fetch/play cũ đang chờ
   window.speechSynthesis.cancel();
@@ -25,25 +29,37 @@ export async function speakRussian(text: string, rate: number = 1.0): Promise<vo
   // Cancel previous speech
   cancelSpeech();
   const token = currentSpeechToken;
+  const cleanText = text.trim();
+  const cacheKey = `${cleanText}_${rate.toFixed(2)}`;
 
   try {
-    // Edge-TTS rate string format (e.g. "+0%" or "+20%")
-    const edgeRate = rate >= 1 
-       ? `+${Math.round((rate - 1) * 100)}%` 
-       : `${Math.round((rate - 1) * 100)}%`;
+    let blob = audioBlobCache.get(cacheKey);
 
-    const res = await fetch('/api/tts', {
-      method: 'POST',
-      headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({ text, rate: edgeRate, voice: 'ru-RU-DmitryNeural' })
-    });
-    
-    if (token !== currentSpeechToken) return; // Bị hủy do có yêu cầu mới
+    if (!blob) {
+      // Edge-TTS rate string format (e.g. "+0%" or "+20%")
+      const edgeRate = rate >= 1 
+         ? `+${Math.round((rate - 1) * 100)}%` 
+         : `${Math.round((rate - 1) * 100)}%`;
 
-    if (!res.ok) throw new Error('TTS failed');
-    
-    const blob = await res.blob();
-    if (token !== currentSpeechToken) return; // Bị hủy do có yêu cầu mới
+      const res = await fetch('/api/tts', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ text: cleanText, rate: edgeRate, voice: 'ru-RU-DmitryNeural' })
+      });
+      
+      if (token !== currentSpeechToken) return; // Bị hủy do có yêu cầu mới
+      if (!res.ok) throw new Error('TTS failed');
+      
+      blob = await res.blob();
+      if (token !== currentSpeechToken) return;
+
+      // LRU eviction: xóa phần tử đầu tiên nếu vượt kích thước
+      if (audioBlobCache.size >= MAX_CACHE_SIZE) {
+        const firstKey = audioBlobCache.keys().next().value;
+        if (firstKey) audioBlobCache.delete(firstKey);
+      }
+      audioBlobCache.set(cacheKey, blob);
+    }
 
     const url = URL.createObjectURL(blob);
     currentObjectUrl = url;

@@ -37,6 +37,17 @@ export async function POST(request: Request) {
       return NextResponse.json({ error: "Quá nhiều yêu cầu. Vui lòng thử lại sau." }, { status: 429 });
     }
 
+    // 1. TỐI ƯU CACHE: Kiểm tra từ trong DB trước khi gọi AI (phản hồi siêu tốc ~20ms)
+    const { data: cachedWord } = await supabase
+      .from("dictionary_words")
+      .select("*")
+      .ilike("russian_word", trimmedWord)
+      .limit(1)
+      .maybeSingle();
+
+    if (cachedWord) {
+      return NextResponse.json({ success: true, data: cachedWord, fromCache: true });
+    }
 
     const prompt = `Bạn là từ điển Nga-Việt chuyên nghiệp, chính xác tuyệt đối. Hệ thống của bạn hoạt động như một cỗ máy tạo JSON. Tra cứu từ/cụm từ tiếng Nga: "${trimmedWord}"
 
@@ -117,8 +128,7 @@ BẮT BUỘC TRẢ VỀ DUY NHẤT 1 ĐỐI TƯỢNG JSON CHUẨN XÁC, KHÔNG G
 
     const wordData = parseAIResponse(response.text);
 
-    const result = {
-      id: `ai-${Date.now()}`,
+    const resultPayload = {
       topic_slug: "ai-search",
       russian_word: wordData.russian_word || trimmedWord,
       vietnamese_meaning: wordData.vietnamese_meaning || "",
@@ -127,10 +137,30 @@ BẮT BUỘC TRẢ VỀ DUY NHẤT 1 ĐỐI TƯỢNG JSON CHUẨN XÁC, KHÔNG G
       definition_usage: wordData.definition_usage || null,
       examples: Array.isArray(wordData.examples) ? wordData.examples : [],
       grammar_structure: Array.isArray(wordData.grammar_structure) ? wordData.grammar_structure : [],
+    };
+
+    // 2. Lưu từ mới vào DB để làm cache cho các lần tra cứu sau
+    try {
+      const { data: insertedWord } = await supabase
+        .from("dictionary_words")
+        .insert(resultPayload)
+        .select()
+        .single();
+
+      if (insertedWord) {
+        return NextResponse.json({ success: true, data: insertedWord });
+      }
+    } catch (dbErr) {
+      console.warn("Không thể lưu cache từ điển vào DB:", dbErr);
+    }
+
+    const fallbackResult = {
+      id: `ai-${Date.now()}`,
+      ...resultPayload,
       created_at: new Date().toISOString(),
     };
 
-    return NextResponse.json({ success: true, data: result });
+    return NextResponse.json({ success: true, data: fallbackResult });
   } catch (error: unknown) {
     const msg = error instanceof Error ? error.message : "Lỗi không xác định";
     console.error("Lỗi dictionary-lookup API:", msg);

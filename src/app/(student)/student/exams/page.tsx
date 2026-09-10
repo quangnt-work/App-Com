@@ -1,8 +1,7 @@
 // src/app/(student)/student/exams/page.tsx
 import React from 'react';
-import { FileText, BookOpen, Headphones, ListChecks, Activity, Component } from 'lucide-react';
+import { FileText, BookOpen, Headphones, ListChecks } from 'lucide-react';
 import { ExamCard, type ExamItem } from '@/components/student/exams/ExamCard';
-import { HeroBanner } from '@/components/common/HeroBanner';
 import { createClient } from '@/lib/supabase/server';
 import { redirect } from 'next/navigation';
 
@@ -15,22 +14,25 @@ export default async function ExamsPage() {
     redirect('/login');
   }
 
-  // Fetch real exams
-  const { data: examsData, error } = await supabase
-    .from('exams')
-    .select('*')
-    .eq('status', 'published')
-    .order('created_at', { ascending: false });
+  // Chạy song song cả 2 truy vấn và chỉ lấy các trường cần thiết cho Card
+  const [
+    { data: examsData, error },
+    { data: submissions }
+  ] = await Promise.all([
+    supabase
+      .from('exams')
+      .select('id, title, exam_type, level, duration, question_count')
+      .eq('status', 'published')
+      .order('created_at', { ascending: false }),
+    supabase
+      .from('exam_submissions')
+      .select('exam_id')
+      .eq('user_id', user.id)
+  ]);
 
   if (error) {
     console.error("Error fetching exams:", error.message);
   }
-
-  // Lấy danh sách các bài đã làm
-  const { data: submissions } = await supabase
-    .from('exam_submissions')
-    .select('exam_id')
-    .eq('user_id', user.id);
 
   const completedExamIds = new Set((submissions || []).map(s => s.exam_id));
 

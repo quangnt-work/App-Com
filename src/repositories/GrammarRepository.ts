@@ -71,7 +71,7 @@ export const GrammarRepository = {
     const supabase = await createClient();
     return supabase
       .from('grammars')
-      .select('*')
+      .select('id, title, category, description, thumbnail, type, created_at, slug')
       .eq('category', category)
       .eq('status', 'published') // Chỉ lấy bài đã public
       .order('created_at', { ascending: false })
@@ -84,7 +84,7 @@ export const GrammarRepository = {
     const end = start + pageSize - 1;
     return supabase
       .from('grammars')
-      .select('*', { count: 'exact' })
+      .select('id, title, category, description, thumbnail, type, created_at, slug', { count: 'exact' })
       .eq('type', type)
       .eq('status', 'published')
       .order('created_at', { ascending: true }) // ASC: Bài cũ (Bài 1) hiển thị trước

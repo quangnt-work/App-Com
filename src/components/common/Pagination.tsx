@@ -54,26 +54,26 @@ export function Pagination({ totalPages }: PaginationProps) {
   if (totalPages <= 1) return null;
 
   return (
-    <div className="flex items-center justify-center gap-2 mt-16">
+    <div className="flex items-center justify-center gap-1.5 mt-6">
       {/* Nút Previous */}
       <Link
         href={createPageURL(currentPage - 1)}
-        className={`w-10 h-10 flex items-center justify-center rounded-lg border bg-white ${
+        className={`w-8 h-8 sm:w-9 sm:h-9 flex items-center justify-center rounded-xl border bg-white ${
           currentPage <= 1 
-            ? 'pointer-events-none text-gray-300 border-gray-100' 
-            : 'text-gray-600 border-gray-200 hover:bg-gray-50'
+            ? 'pointer-events-none text-slate-300 border-slate-100' 
+            : 'text-slate-600 border-slate-200 hover:bg-slate-50'
         }`}
         aria-disabled={currentPage <= 1}
       >
         <span className="sr-only">Trang trước</span>
-        <ChevronLeft size={20} />
+        <ChevronLeft size={16} />
       </Link>
 
       {/* Render các số trang và dấu "..." */}
       {allPages.map((page, index) => {
         if (page === '...') {
           return (
-            <span key={`ellipsis-${index}`} className="flex items-center justify-center px-2 text-gray-400">
+            <span key={`ellipsis-${index}`} className="flex items-center justify-center px-1 text-xs text-slate-400">
               ...
             </span>
           );
@@ -83,10 +83,10 @@ export function Pagination({ totalPages }: PaginationProps) {
           <Link
             key={page}
             href={createPageURL(page)}
-            className={`w-10 h-10 flex items-center justify-center rounded-lg border transition-colors font-medium ${
+            className={`w-8 h-8 sm:w-9 sm:h-9 flex items-center justify-center rounded-xl border text-xs transition-all font-semibold ${
               currentPage === page
-                ? 'bg-blue-600 text-white border-blue-600 shadow-md shadow-blue-500/20 font-bold' // Trạng thái đang chọn
-                : 'bg-white text-gray-600 border-gray-200 hover:bg-gray-50' // Trạng thái bình thường
+                ? 'bg-gradient-to-r from-blue-600 to-indigo-600 text-white border-transparent shadow-xs shadow-blue-500/20'
+                : 'bg-white text-slate-600 border-slate-200 hover:border-blue-300 hover:text-blue-600'
             }`}
           >
             {page}
@@ -97,15 +97,15 @@ export function Pagination({ totalPages }: PaginationProps) {
       {/* Nút Next */}
       <Link
         href={createPageURL(currentPage + 1)}
-        className={`w-10 h-10 flex items-center justify-center rounded-lg border bg-white ${
+        className={`w-8 h-8 sm:w-9 sm:h-9 flex items-center justify-center rounded-xl border bg-white ${
           currentPage >= totalPages 
-            ? 'pointer-events-none text-gray-300 border-gray-100' 
-            : 'text-gray-600 border-gray-200 hover:bg-gray-50'
+            ? 'pointer-events-none text-slate-300 border-slate-100' 
+            : 'text-slate-600 border-slate-200 hover:bg-slate-50'
         }`}
         aria-disabled={currentPage >= totalPages}
       >
         <span className="sr-only">Trang sau</span>
-        <ChevronRight size={20} />
+        <ChevronRight size={16} />
       </Link>
     </div>
   );

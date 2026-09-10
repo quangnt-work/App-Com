@@ -41,24 +41,24 @@ export const CategoryCard = ({
   }[colorScheme];
 
   return (
-    <div className={`bg-white rounded-3xl p-8 flex flex-col items-center text-center shadow-sm border border-slate-100 ${styles.border} hover:shadow-xl hover:-translate-y-1 transition-all duration-300 h-full`}>
+    <div className={`bg-white rounded-2xl p-5 sm:p-6 flex flex-col items-center text-center shadow-md shadow-slate-200/50 border border-slate-200/80 ${styles.border} hover:shadow-lg hover:-translate-y-1 transition-all duration-200 h-full`}>
       {/* Icon */}
-      <div className={`w-16 h-16 ${styles.icon} rounded-2xl flex items-center justify-center mb-6`}>
+      <div className={`w-12 h-12 ${styles.icon} rounded-xl flex items-center justify-center mb-3 shadow-inner`}>
         {icon}
       </div>
 
       {/* Nội dung */}
-      <h3 className="font-bold text-gray-900 text-xl mb-3">
+      <h3 className="font-extrabold text-slate-900 text-base mb-1">
         {title}
       </h3>
-      <p className="text-gray-500 text-sm leading-relaxed mb-8 flex-1">
+      <p className="text-slate-500 text-xs leading-relaxed mb-4 flex-1">
         {description}
       </p>
 
       {/* Nút Bắt đầu */}
       <Link 
         href={href}
-        className={`w-full py-3.5 px-6 text-white font-bold rounded-xl shadow-md ${styles.btn} hover:shadow-lg hover:-translate-y-0.5 transition-all mt-auto`}
+        className={`w-full py-2.5 px-4 text-white text-xs font-bold uppercase tracking-wider rounded-xl shadow-xs ${styles.btn} hover:shadow-md transition-all mt-auto`}
       >
         Bắt đầu
       </Link>

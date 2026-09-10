@@ -21,56 +21,55 @@ export default async function AudioLessonsPage({ searchParams }: AudioLessonsPag
   const totalPages = Math.ceil((count || 0) / pageSize);
 
   return (
-    <div className="min-h-screen bg-[#F8FAFC] flex flex-col font-sans">
-      <main className="flex-1 container mx-auto px-4 py-8 max-w-[1200px]">
-
-        {/* Banner Bài Nghe */}
-        <div className="relative bg-gradient-to-r from-blue-700 via-blue-600 to-indigo-700 text-white rounded-[2rem] p-10 flex items-center gap-5 mb-12 shadow-xl shadow-blue-900/10 overflow-hidden">
-          <div className="bg-white/15 p-3.5 rounded-2xl backdrop-blur-md border border-white/20 shadow-inner">
-            <Headphones size={32} strokeWidth={2.5} />
+    <div className="container mx-auto px-4 py-2 max-w-6xl font-sans">
+      {/* Compact Header Bài Nghe */}
+      <div className="flex items-center justify-between gap-4 mb-5 pb-3 border-b border-slate-200/80">
+        <div className="flex items-center gap-3">
+          <div className="bg-gradient-to-br from-indigo-600 to-violet-600 text-white p-2.5 rounded-xl shadow-xs shadow-indigo-500/20">
+            <Headphones size={20} strokeWidth={2.2} />
           </div>
           <div>
-            <h1 className="text-3xl md:text-4xl font-extrabold tracking-wide">
-              Bài Nghe
-            </h1>
-            {count != null && (
-              <p className="text-blue-100/90 text-sm mt-1">{count} bài nghe</p>
-            )}
+            <div className="flex items-center gap-2">
+              <h1 className="text-lg md:text-xl font-black text-slate-900 tracking-tight">
+                Luyện nghe tiếng Nga
+              </h1>
+              <span className="text-[10px] font-extrabold uppercase tracking-wider text-indigo-600 bg-indigo-50 px-2 py-0.5 rounded-md border border-indigo-100">
+                Аудио
+              </span>
+            </div>
+            <p className="text-xs text-slate-500 mt-0.5">
+              {count != null ? `Tổng cộng ${count} bài nghe phát âm chuẩn bản xứ` : 'Luyện tập kỹ năng nghe hiểu tiếng Nga'}
+            </p>
           </div>
-          {/* Icon trang trí mờ */}
-          <Headphones
-            className="absolute -right-6 top-1/2 -translate-y-1/2 w-48 h-48 md:w-64 md:h-64 opacity-10 -rotate-12"
-            strokeWidth={1.5}
-          />
         </div>
+      </div>
 
-        {/* Empty state */}
-        {isEmpty ? (
-          <div className="flex flex-col items-center justify-center py-20 bg-white rounded-2xl border border-gray-100 shadow-sm">
-            <div className="bg-slate-50 p-6 rounded-full mb-4">
-              <Inbox className="h-12 w-12 text-slate-300" />
-            </div>
-            <h3 className="text-xl font-bold text-slate-900">Chưa có bài nghe nào</h3>
-            <p className="text-slate-500 mt-2">Hệ thống đang được cập nhật. Vui lòng quay lại sau.</p>
+      {/* Empty state */}
+      {isEmpty ? (
+        <div className="flex flex-col items-center justify-center py-10 bg-white rounded-2xl border border-slate-200/80 shadow-xs">
+          <div className="bg-slate-50 p-4 rounded-full mb-3">
+            <Inbox className="h-8 w-8 text-slate-300" />
           </div>
-        ) : (
-          <>
-            {/* Grid 4 cột — đồng bộ với grammars page */}
-            <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6">
-              {lessons.map((lesson, index) => (
-                <AudioLessonCard
-                  key={lesson.id}
-                  lesson={lesson}
-                  index={(currentPage - 1) * pageSize + index}
-                />
-              ))}
-            </div>
-            
-            {/* Pagination */}
-            {totalPages > 1 && <Pagination totalPages={totalPages} />}
-          </>
-        )}
-      </main>
+          <h3 className="text-base font-bold text-slate-900">Chưa có bài nghe nào</h3>
+          <p className="text-slate-500 text-xs mt-1">Hệ thống đang được cập nhật. Vui lòng quay lại sau.</p>
+        </div>
+      ) : (
+        <>
+          {/* Grid 4 cột — đồng bộ với grammars page */}
+          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4 sm:gap-5">
+            {lessons.map((lesson, index) => (
+              <AudioLessonCard
+                key={lesson.id}
+                lesson={lesson}
+                index={(currentPage - 1) * pageSize + index}
+              />
+            ))}
+          </div>
+          
+          {/* Pagination */}
+          {totalPages > 1 && <Pagination totalPages={totalPages} />}
+        </>
+      )}
     </div>
   );
 }

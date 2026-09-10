@@ -34,8 +34,7 @@ export default async function RootLayout({ children }: { children: React.ReactNo
         <NextTopLoader color="#3B82F6" showSpinner={false} speed={200} />
         <Header initialUser={user} />
         {children}
-        <Toaster position="top-center" richColors /> {/* <-- Thêm dòng này */}
-        <Footer/>
+        <Toaster position="top-center" richColors />
       </body>
     </html>
   )

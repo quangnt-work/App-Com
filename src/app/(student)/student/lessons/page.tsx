@@ -22,48 +22,49 @@ export default async function StudentCategoryPage() {
   const categories = [
     {
       title: "Ngữ pháp",
-      description: `Gồm ${grammarCount ?? 0} bài giảng`,
-      icon: <Book size={36} />,
-      href: "/student/lessons/grammars"
+      description: `Gồm ${grammarCount ?? 0} bài giảng lý thuyết & ví dụ`,
+      icon: <Book size={24} strokeWidth={2.2} />,
+      href: "/student/lessons/grammars",
+      colorScheme: 'blue' as const,
     },
     {
-      title: "Nghe",
-      description: `Gồm ${audioCount ?? 0} file nghe`,
-      icon: <Headphones size={36} />,
-      href: "/student/lessons/audios"
+      title: "Luyện nghe",
+      description: `Gồm ${audioCount ?? 0} file audio chuẩn phát âm`,
+      icon: <Headphones size={24} strokeWidth={2.2} />,
+      href: "/student/lessons/audios",
+      colorScheme: 'indigo' as const,
     },
     {
-      title: "Video",
-      description: `Gồm ${videoCount ?? 0} video`,
-      icon: <PlayCircle size={36} />,
-      href: "/student/lessons/videos"
+      title: "Video bài giảng",
+      description: `Gồm ${videoCount ?? 0} video bài học trực quan`,
+      icon: <PlayCircle size={24} strokeWidth={2.2} />,
+      href: "/student/lessons/videos",
+      colorScheme: 'orange' as const,
     }
   ];
 
   return (
-    <div className="min-h-screen bg-[#F8FAFC] flex flex-col font-sans">
-      <main className="flex-1 container mx-auto px-4 py-8 max-w-[1200px]">
+    <div className="container mx-auto px-4 py-2 max-w-5xl">
+      {/* Banner Title "BÀI HỌC" */}
+      <HeroBanner
+        title="BÀI HỌC"
+        description="Khám phá kho tàng bài giảng đa dạng giúp bạn làm chủ tiếng Nga một cách toàn diện."
+        icon={BookOpen}
+      />
 
-        {/* Banner Title "BÀI HỌC" */}
-        <HeroBanner
-          title="BÀI HỌC"
-          description="Khám phá kho tàng bài giảng đa dạng giúp bạn làm chủ tiếng Nga một cách toàn diện."
-          icon={BookOpen}
-        />
-
-        {/* Grid Categories */}
-        <div className="grid grid-cols-1 md:grid-cols-3 gap-8">
-          {categories.map((cat, index) => (
-            <CategoryCard
-              key={index}
-              title={cat.title}
-              description={cat.description}
-              icon={cat.icon}
-              href={cat.href}
-            />
-          ))}
-        </div>
-      </main>
+      {/* Grid Categories */}
+      <div className="grid grid-cols-1 md:grid-cols-3 gap-4 sm:gap-5">
+        {categories.map((cat, index) => (
+          <CategoryCard
+            key={index}
+            title={cat.title}
+            description={cat.description}
+            icon={cat.icon}
+            href={cat.href}
+            colorScheme={cat.colorScheme}
+          />
+        ))}
+      </div>
     </div>
   );
 }

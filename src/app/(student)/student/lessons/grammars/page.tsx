@@ -20,71 +20,70 @@ export default async function LessonsPage({ searchParams }: GrammarsPageProps) {
   const isEmpty = lessonsToDisplay.length === 0;
 
   return (
-    <div className="min-h-screen bg-[#F8FAFC] flex flex-col font-sans">
-
-      <main className="flex-1 container mx-auto px-4 py-8 max-w-[1200px]">
-
-        {/* Banner Ngữ pháp */}
-        <div className="relative bg-gradient-to-r from-blue-700 via-blue-600 to-indigo-700 text-white rounded-[2rem] p-10 flex items-center gap-5 mb-12 shadow-xl shadow-blue-900/10 overflow-hidden">
-          <div className="bg-white/15 p-3.5 rounded-2xl backdrop-blur-md border border-white/20 shadow-inner">
-            <BookOpen size={32} strokeWidth={2.5} />
+    <div className="container mx-auto px-4 py-2 max-w-6xl font-sans">
+      {/* Compact Header Ngữ pháp */}
+      <div className="flex items-center justify-between gap-4 mb-5 pb-3 border-b border-slate-200/80">
+        <div className="flex items-center gap-3">
+          <div className="bg-gradient-to-br from-blue-600 to-indigo-600 text-white p-2.5 rounded-xl shadow-xs shadow-blue-500/20">
+            <BookOpen size={20} strokeWidth={2.2} />
           </div>
           <div>
-            <h1 className="text-3xl md:text-4xl font-extrabold tracking-wide relative z-10">
-              Ngữ pháp
-            </h1>
-            {totalCount > 0 && (
-              <p className="text-blue-100/90 text-sm mt-1">{totalCount} bài giảng</p>
-            )}
-          </div>
-          {/* Icon Book mờ làm background */}
-          <BookOpen
-            className="absolute -right-6 top-1/2 -translate-y-1/2 w-48 h-48 md:w-64 md:h-64 opacity-10 transform -rotate-12"
-            strokeWidth={1.5}
-          />
-        </div>
-
-        {isEmpty ? (
-          <div className="flex flex-col items-center justify-center py-20 bg-white rounded-2xl border border-gray-100 shadow-sm">
-            <div className="bg-slate-50 p-6 rounded-full mb-4">
-              <Inbox className="h-12 w-12 text-slate-300" />
+            <div className="flex items-center gap-2">
+              <h1 className="text-lg md:text-xl font-black text-slate-900 tracking-tight">
+                Ngữ pháp tiếng Nga
+              </h1>
+              <span className="text-[10px] font-extrabold uppercase tracking-wider text-blue-600 bg-blue-50 px-2 py-0.5 rounded-md border border-blue-100">
+                Грамматика
+              </span>
             </div>
-            <h3 className="text-xl font-bold text-slate-900">Chưa có bài học nào</h3>
-            <p className="text-slate-500 mt-2">Hệ thống đang được cập nhật. Vui lòng quay lại sau.</p>
+            <p className="text-xs text-slate-500 mt-0.5">
+              {totalCount > 0 ? `Tổng cộng ${totalCount} bài giảng lý thuyết & ví dụ minh họa` : 'Hệ thống bài giảng ngữ pháp chuẩn hóa'}
+            </p>
           </div>
-        ) : (
-          <>
-            {/* Grid Thẻ bài học */}
-            <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6">
-              {lessonsToDisplay.map((grammar, index) => (
-                <GrammarCard
-                  key={grammar.id}
-                  grammar={grammar}
-                  index={index}
-                />
+        </div>
+      </div>
+
+      {isEmpty ? (
+        <div className="flex flex-col items-center justify-center py-10 bg-white rounded-2xl border border-slate-200/80 shadow-xs">
+          <div className="bg-slate-50 p-4 rounded-full mb-3">
+            <Inbox className="h-8 w-8 text-slate-300" />
+          </div>
+          <h3 className="text-base font-bold text-slate-900">Chưa có bài học nào</h3>
+          <p className="text-slate-500 text-xs mt-1">Hệ thống đang được cập nhật. Vui lòng quay lại sau.</p>
+        </div>
+      ) : (
+        <>
+          {/* Grid Thẻ bài học */}
+          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4 sm:gap-5">
+            {lessonsToDisplay.map((grammar, index) => (
+              <GrammarCard
+                key={grammar.id}
+                grammar={grammar}
+                index={index}
+              />
+            ))}
+          </div>
+
+          {/* Phân trang */}
+          {totalPages > 1 && (
+            <div className="mt-6 flex justify-center gap-1.5">
+              {Array.from({ length: totalPages }, (_, i) => i + 1).map((page) => (
+                <a
+                  key={page}
+                  href={`?page=${page}`}
+                  className={`w-9 h-9 flex items-center justify-center rounded-xl text-xs font-semibold transition-all ${
+                    page === currentPage
+                      ? 'bg-gradient-to-r from-blue-600 to-indigo-600 text-white shadow-xs shadow-blue-500/20'
+                      : 'bg-white border border-slate-200 text-slate-600 hover:border-blue-400 hover:text-blue-600 shadow-2xs'
+                  }`}
+                >
+                  {page}
+                </a>
               ))}
             </div>
-
-            {/* Phân trang */}
-            {totalPages > 1 && (
-              <div className="mt-12 flex justify-center gap-2">
-                {Array.from({ length: totalPages }, (_, i) => i + 1).map((page) => (
-                  <a
-                    key={page}
-                    href={`?page=${page}`}
-                    className={`px-4 py-2 rounded-xl text-sm font-medium transition-colors ${page === currentPage
-                        ? 'bg-[#f07b32] text-white shadow-sm'
-                        : 'bg-white border border-gray-200 text-gray-600 hover:border-[#f07b32] hover:text-[#f07b32]'
-                      }`}
-                  >
-                    {page}
-                  </a>
-                ))}
-              </div>
-            )}
-          </>
-        )}
-      </main>
+          )}
+        </>
+      )}
     </div>
   )
 }

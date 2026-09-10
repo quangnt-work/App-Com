@@ -62,46 +62,56 @@ export default async function ExamsPage() {
   });
 
   return (
-    <div className="min-h-screen bg-[#F8FAFC] flex flex-col font-sans">
-      <main className="flex-1 container mx-auto px-4 py-8 max-w-[1200px]">
-        
-        {/* Banner KIỂM TRA */}
-        <HeroBanner 
-          title="KIỂM TRA"
-          description="Đánh giá năng lực tiếng Nga của bạn thông qua các bài kiểm tra đa dạng."
-          icon={FileText}
-          gradient="from-amber-600 via-orange-600 to-rose-600"
-        />
-
-        {/* Lưới Thẻ Bài Kiểm Tra (3 cột theo thiết kế) */}
-        {exams.length > 0 ? (
-          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8">
-            {exams.map((exam) => (
-              <ExamCard key={exam.id} exam={exam} />
-            ))}
+    <div className="container mx-auto px-4 py-2 max-w-6xl font-sans">
+      {/* Compact Header KIỂM TRA */}
+      <div className="flex items-center justify-between gap-4 mb-5 pb-3 border-b border-slate-200/80">
+        <div className="flex items-center gap-3">
+          <div className="bg-gradient-to-br from-amber-500 to-orange-600 text-white p-2.5 rounded-xl shadow-xs shadow-amber-500/20">
+            <FileText size={20} strokeWidth={2.2} />
           </div>
-        ) : (
-          <div className="text-center py-20 text-slate-500 bg-white rounded-2xl shadow-sm border border-slate-200/80">
-            Hiện tại chưa có bài kiểm tra nào được phát hành.
+          <div>
+            <div className="flex items-center gap-2">
+              <h1 className="text-lg md:text-xl font-black text-slate-900 tracking-tight">
+                Kiểm tra đánh giá năng lực
+              </h1>
+              <span className="text-[10px] font-extrabold uppercase tracking-wider text-amber-600 bg-amber-50 px-2 py-0.5 rounded-md border border-amber-100">
+                Тесты
+              </span>
+            </div>
+            <p className="text-xs text-slate-500 mt-0.5">
+              {exams.length > 0 ? `Tổng hợp ${exams.length} bài kiểm tra ngữ pháp, đọc hiểu và nghe hiểu` : 'Đánh giá năng lực tiếng Nga của bạn'}
+            </p>
           </div>
-        )}
+        </div>
+      </div>
 
-        {/* Phân trang (Mockup theo ảnh) */}
-        {exams.length > 0 && (
-          <div className="mt-16 flex justify-center gap-2">
-            <button className="w-10 h-10 flex items-center justify-center rounded-lg border border-slate-200 text-slate-400 hover:bg-slate-50 bg-white">
-              <span className="sr-only">Trang trước</span>
-              &lt;
-            </button>
-            <button className="w-10 h-10 flex items-center justify-center rounded-lg bg-gradient-to-r from-amber-500 to-orange-600 text-white font-bold shadow-sm shadow-orange-500/20">1</button>
-            <button className="w-10 h-10 flex items-center justify-center rounded-lg border border-slate-200 text-slate-400 hover:bg-slate-50 bg-white">
-              <span className="sr-only">Trang sau</span>
-              &gt;
-            </button>
-          </div>
-        )}
+      {/* Lưới Thẻ Bài Kiểm Tra (3 cột) */}
+      {exams.length > 0 ? (
+        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4 sm:gap-5">
+          {exams.map((exam) => (
+            <ExamCard key={exam.id} exam={exam} />
+          ))}
+        </div>
+      ) : (
+        <div className="text-center py-10 text-slate-500 bg-white rounded-2xl shadow-xs border border-slate-200/80 text-xs">
+          Hiện tại chưa có bài kiểm tra nào được phát hành.
+        </div>
+      )}
 
-      </main>
+      {/* Phân trang */}
+      {exams.length > 0 && (
+        <div className="mt-6 flex justify-center gap-1.5">
+          <button className="w-9 h-9 flex items-center justify-center rounded-xl border border-slate-200 text-slate-400 hover:bg-slate-50 bg-white text-xs">
+            <span className="sr-only">Trang trước</span>
+            &lt;
+          </button>
+          <button className="w-9 h-9 flex items-center justify-center rounded-xl bg-gradient-to-r from-amber-500 to-orange-600 text-white font-bold text-xs shadow-xs shadow-orange-500/20">1</button>
+          <button className="w-9 h-9 flex items-center justify-center rounded-xl border border-slate-200 text-slate-400 hover:bg-slate-50 bg-white text-xs">
+            <span className="sr-only">Trang sau</span>
+            &gt;
+          </button>
+        </div>
+      )}
     </div>
   );
 }

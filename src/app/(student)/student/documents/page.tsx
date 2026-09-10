@@ -36,29 +36,38 @@ export default function DocumentsPage({
   const currentDocuments = allDocuments.slice(startIndex, endIndex);
 
   return (
-    <div className="min-h-screen bg-[#F8FAFC] flex flex-col font-sans">
-      <main className="flex-1 container mx-auto px-4 py-8 max-w-[1200px]">
-        
-        {/* Banner TÀI LIỆU (Tái sử dụng) */}
-        <HeroBanner 
-          title="Tài Liệu Tiếng Nga"
-          description="Khám phá kho tài liệu phong phú giúp bạn học tiếng Nga hiệu quả hơn mỗi ngày."
-          icon={FolderOpen}
-          gradient="from-teal-700 via-emerald-600 to-teal-800"
-        />
-
-        {/* Lưới Thẻ Tài liệu */}
-        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6">
-          {currentDocuments.map((doc) => (
-            <DocumentCard key={doc.id} document={doc} />
-          ))}
+    <div className="container mx-auto px-4 py-2 max-w-6xl font-sans">
+      {/* Compact Header TÀI LIỆU */}
+      <div className="flex items-center justify-between gap-4 mb-5 pb-3 border-b border-slate-200/80">
+        <div className="flex items-center gap-3">
+          <div className="bg-gradient-to-br from-teal-600 to-emerald-600 text-white p-2.5 rounded-xl shadow-xs shadow-teal-500/20">
+            <FolderOpen size={20} strokeWidth={2.2} />
+          </div>
+          <div>
+            <div className="flex items-center gap-2">
+              <h1 className="text-lg md:text-xl font-black text-slate-900 tracking-tight">
+                Kho tài liệu tiếng Nga
+              </h1>
+              <span className="text-[10px] font-extrabold uppercase tracking-wider text-teal-600 bg-teal-50 px-2 py-0.5 rounded-md border border-teal-100">
+                Материалы
+              </span>
+            </div>
+            <p className="text-xs text-slate-500 mt-0.5">
+              {allDocuments.length > 0 ? `Tổng hợp ${allDocuments.length} tài liệu giáo trình, từ vựng và bảng tra cứu` : 'Kho tài liệu phong phú hỗ trợ học tập'}
+            </p>
+          </div>
         </div>
+      </div>
 
-        {/* Gọi Component Pagination */}
-        {/* Nếu allDocuments <= 8 thì component này sẽ tự động ẩn */}
-        <Pagination totalPages={totalPages} />
+      {/* Lưới Thẻ Tài liệu */}
+      <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4 sm:gap-5">
+        {currentDocuments.map((doc) => (
+          <DocumentCard key={doc.id} document={doc} />
+        ))}
+      </div>
 
-      </main>
+      {/* Phân trang */}
+      <Pagination totalPages={totalPages} />
     </div>
   );
 }

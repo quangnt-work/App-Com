@@ -43,19 +43,20 @@ export const Header = ({ initialUser }: { initialUser?: UserData | null }) => {
 
   return (
     <header className="sticky top-0 z-50 w-full border-b bg-white/95 backdrop-blur supports-[backdrop-filter]:bg-white/60">
-      <div className="container mx-auto px-4 h-16 flex items-center justify-between">
-        {/* Left: Quốc kỳ */}
+      <div className="container mx-auto px-4 h-14 md:h-16 flex items-center justify-between">
+        {/* Left: Quốc kỳ & Brand mobile */}
         <div className="flex items-center gap-2">
-          <div className="relative w-8 h-5 shadow-sm border">
+          <div className="relative w-7 h-4.5 md:w-8 md:h-5 shadow-xs border rounded-xs overflow-hidden">
             <Image src="https://flagpedia.net/data/flags/h80/vn.png" alt="VN" fill className="object-cover" unoptimized />
           </div>
-          <div className="relative w-8 h-5 shadow-sm border">
+          <div className="relative w-7 h-4.5 md:w-8 md:h-5 shadow-xs border rounded-xs overflow-hidden">
             <Image src="https://flagpedia.net/data/flags/h80/ru.png" alt="RU" fill className="object-cover" unoptimized />
           </div>
+          <span className="flex md:hidden text-xs font-black text-blue-900 ml-1 tracking-tight">RU·Learn</span>
         </div>
 
-        {/* Center: Title (Ẩn trên mobile nhỏ) */}
-        <h1 className="hidden md:block font-bold text-blue-900 uppercase text-center flex-1 px-4 leading-tight text-sm lg:text-base">
+        {/* Center: Title (Desktop) */}
+        <h1 className="hidden md:block font-bold text-blue-900 uppercase text-center flex-1 px-4 leading-tight text-xs lg:text-sm tracking-wide">
           Phần mềm hỗ trợ giảng dạy và tự học tiếng Nga
         </h1>
 

@@ -46,8 +46,7 @@ export function ProfileClient({ profile, history, chartData, roleplayHistory, sh
   const [activeTab, setActiveTab] = useState<'exam' | 'ai'>('ai');
 
   return (
-    <div className="min-h-screen bg-[#F8FAFC] p-4 md:p-8 font-sans">
-      <div className="max-w-[1400px] mx-auto">
+    <div className="w-full max-w-6xl mx-auto px-4 py-1.5 font-sans flex-1">
 
         {/* Layout Grid: 1 cột cho Mobile, 4 cột cho Desktop */}
         <div className="grid grid-cols-1 xl:grid-cols-4 gap-6 md:gap-8">
@@ -98,6 +97,5 @@ export function ProfileClient({ profile, history, chartData, roleplayHistory, sh
           </div>
         </div>
       </div>
-    </div>
   );
 }

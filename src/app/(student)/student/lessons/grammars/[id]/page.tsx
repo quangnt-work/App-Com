@@ -30,7 +30,7 @@ export default async function GrammarDetailPage(props: GrammarDetailPageProps) {
       <GrammarHeader grammar={grammar} />
 
 
-      <div className="container mx-auto px-4 max-w-7xl mt-6">
+      <div className="container mx-auto px-4 max-w-6xl mt-6">
         <GrammarMainView grammar={grammar} />
       </div>
     </div>

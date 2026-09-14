@@ -3,6 +3,7 @@ import React from 'react';
 import { FolderOpen, FileText, Languages, BookOpen, Headphones, ClipboardCheck, Users, GraduationCap, TableProperties } from 'lucide-react';
 import { DocumentCard, type DocumentItem } from '@/components/student/documents/DocumentCard';
 import { Pagination } from '@/components/common/Pagination';
+import { HeroBanner } from '@/components/common/HeroBanner';
 
 interface DocumentsPageProps {
   searchParams: Promise<{ page?: string }>;
@@ -35,38 +36,31 @@ export default async function DocumentsPage({ searchParams }: DocumentsPageProps
   const currentDocuments = allDocuments.slice(startIndex, endIndex);
 
   return (
-    <div className="container mx-auto px-4 py-2 max-w-6xl font-sans">
-      {/* Compact Header TÀI LIỆU */}
-      <div className="flex items-center justify-between gap-4 mb-5 pb-3 border-b border-slate-200/80">
-        <div className="flex items-center gap-3">
-          <div className="bg-gradient-to-br from-teal-600 to-emerald-600 text-white p-2.5 rounded-xl shadow-xs shadow-teal-500/20">
-            <FolderOpen size={20} strokeWidth={2.2} />
-          </div>
-          <div>
-            <div className="flex items-center gap-2">
-              <h1 className="text-lg md:text-xl font-black text-slate-900 tracking-tight">
-                Kho tài liệu tiếng Nga
-              </h1>
-              <span className="text-[10px] font-extrabold uppercase tracking-wider text-teal-600 bg-teal-50 px-2 py-0.5 rounded-md border border-teal-100">
-                Материалы
-              </span>
-            </div>
-            <p className="text-xs text-slate-500 mt-0.5">
-              {allDocuments.length > 0 ? `Tổng hợp ${allDocuments.length} tài liệu giáo trình, từ vựng và bảng tra cứu` : 'Kho tài liệu phong phú hỗ trợ học tập'}
-            </p>
-          </div>
+    <div className="container mx-auto px-4 py-1.5 max-w-6xl font-sans flex-1 flex flex-col justify-between">
+      <div>
+        {/* Banner TÀI LIỆU - Đồng bộ thiết kế & kích thước */}
+        <HeroBanner
+          title="KHO TÀI LIỆU TIẾNG NGA"
+          ruTitle="МАТЕРИАЛЫ"
+          description={allDocuments.length > 0 ? `Tổng hợp ${allDocuments.length} tài liệu giáo trình, từ vựng và bảng tra cứu chuyên sâu` : 'Kho tài liệu phong phú hỗ trợ học tập'}
+          icon={FolderOpen}
+          gradient="from-teal-600 via-emerald-600 to-teal-700"
+        />
+
+        {/* Lưới Thẻ Tài liệu */}
+        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4 sm:gap-5">
+          {currentDocuments.map((doc) => (
+            <DocumentCard key={doc.id} document={doc} />
+          ))}
         </div>
       </div>
 
-      {/* Lưới Thẻ Tài liệu */}
-      <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4 sm:gap-5">
-        {currentDocuments.map((doc) => (
-          <DocumentCard key={doc.id} document={doc} />
-        ))}
-      </div>
-
-      {/* Phân trang */}
-      <Pagination totalPages={totalPages} />
+      {/* Phân trang cố định sát Footer */}
+      {totalPages > 1 && (
+        <div className="mt-auto pt-3 pb-1 flex justify-center">
+          <Pagination totalPages={totalPages} />
+        </div>
+      )}
     </div>
   );
 }

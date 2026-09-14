@@ -7,6 +7,7 @@ import { ChevronLeft, ChevronRight } from 'lucide-react';
 
 interface PaginationProps {
   totalPages: number;
+  className?: string;
 }
 
 // Hàm tính toán mảng phân trang có chứa dấu "..."
@@ -38,7 +39,7 @@ const generatePagination = (currentPage: number, totalPages: number) => {
   ];
 };
 
-export function Pagination({ totalPages }: PaginationProps) {
+export function Pagination({ totalPages, className = "" }: PaginationProps) {
   const pathname = usePathname();
   const searchParams = useSearchParams();
   
@@ -54,7 +55,7 @@ export function Pagination({ totalPages }: PaginationProps) {
   if (totalPages <= 1) return null;
 
   return (
-    <div className="flex items-center justify-center gap-1.5 mt-6">
+    <div className={`flex items-center justify-center gap-1.5 ${className}`}>
       {/* Nút Previous */}
       <Link
         href={createPageURL(currentPage - 1)}

@@ -3,6 +3,7 @@ import { GrammarRepository } from '@/repositories/GrammarRepository';
 import { type Grammar } from '@/types/grammar'
 import { GrammarCard } from '@/components/student/lessons/grammars/GrammarCard';
 import { Pagination } from '@/components/common/Pagination';
+import { HeroBanner } from '@/components/common/HeroBanner';
 
 interface GrammarsPageProps {
   searchParams: Promise<{ page?: string }>;
@@ -11,9 +12,9 @@ interface GrammarsPageProps {
 export default async function LessonsPage({ searchParams }: GrammarsPageProps) {
   const params = await searchParams;
   const currentPage = Number(params.page) || 1;
-  const pageSize = 12;
+  const pageSize = 8;
 
-  // Lấy tất cả bài ngữ pháp (type='file') đã published, có phân trang
+  // Lấy tất cả bài ngữ pháp (type='file') đã published, có phân trang (8 bài/trang)
   const { data, count, error } = await GrammarRepository.getByType('file', currentPage, pageSize);
   const lessonsToDisplay = (data as unknown as Grammar[]) || [];
   const totalCount = count ?? 0;
@@ -21,53 +22,44 @@ export default async function LessonsPage({ searchParams }: GrammarsPageProps) {
   const isEmpty = lessonsToDisplay.length === 0;
 
   return (
-    <div className="container mx-auto px-4 py-2 max-w-6xl font-sans">
-      {/* Compact Header Ngữ pháp */}
-      <div className="flex items-center justify-between gap-4 mb-5 pb-3 border-b border-slate-200/80">
-        <div className="flex items-center gap-3">
-          <div className="bg-gradient-to-br from-blue-600 to-indigo-600 text-white p-2.5 rounded-xl shadow-xs shadow-blue-500/20">
-            <BookOpen size={20} strokeWidth={2.2} />
-          </div>
-          <div>
-            <div className="flex items-center gap-2">
-              <h1 className="text-lg md:text-xl font-black text-slate-900 tracking-tight">
-                Ngữ pháp tiếng Nga
-              </h1>
-              <span className="text-[10px] font-extrabold uppercase tracking-wider text-blue-600 bg-blue-50 px-2 py-0.5 rounded-md border border-blue-100">
-                Грамматика
-              </span>
-            </div>
-            <p className="text-xs text-slate-500 mt-0.5">
-              {totalCount > 0 ? `Tổng cộng ${totalCount} bài giảng lý thuyết & ví dụ minh họa` : 'Hệ thống bài giảng ngữ pháp chuẩn hóa'}
-            </p>
-          </div>
-        </div>
-      </div>
+    <div className="container mx-auto px-4 py-1.5 max-w-6xl font-sans flex-1 flex flex-col justify-between">
+      <div>
+        {/* Banner Ngữ pháp - Đồng bộ thiết kế & kích thước */}
+        <HeroBanner
+          title="NGỮ PHÁP TIẾNG NGA"
+          ruTitle="ГРАММАТИКА"
+          description={totalCount > 0 ? `Tổng cộng ${totalCount} bài giảng lý thuyết & ví dụ minh họa chuẩn hóa` : 'Hệ thống bài giảng ngữ pháp chuẩn hóa'}
+          icon={BookOpen}
+          gradient="from-blue-700 via-blue-600 to-indigo-700"
+        />
 
-      {isEmpty ? (
-        <div className="flex flex-col items-center justify-center py-10 bg-white rounded-2xl border border-slate-200/80 shadow-xs">
-          <div className="bg-slate-50 p-4 rounded-full mb-3">
-            <Inbox className="h-8 w-8 text-slate-300" />
+        {isEmpty ? (
+          <div className="flex flex-col items-center justify-center py-8 bg-white/95 backdrop-blur-md rounded-2xl border border-slate-200/80 shadow-xs">
+            <div className="bg-slate-50 p-3 rounded-full mb-2">
+              <Inbox className="h-7 w-7 text-slate-300" />
+            </div>
+            <h3 className="text-sm font-bold text-slate-900">Chưa có bài học nào</h3>
+            <p className="text-slate-500 text-xs mt-0.5">Hệ thống đang được cập nhật. Vui lòng quay lại sau.</p>
           </div>
-          <h3 className="text-base font-bold text-slate-900">Chưa có bài học nào</h3>
-          <p className="text-slate-500 text-xs mt-1">Hệ thống đang được cập nhật. Vui lòng quay lại sau.</p>
-        </div>
-      ) : (
-        <>
-          {/* Grid Thẻ bài học */}
-          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4 sm:gap-5">
+        ) : (
+          /* Grid Thẻ bài học (4 cột x 2 hàng = 8 thẻ vừa vặn màn hình) */
+          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-3 sm:gap-4">
             {lessonsToDisplay.map((grammar, index) => (
               <GrammarCard
                 key={grammar.id}
                 grammar={grammar}
-                index={index}
+                index={(currentPage - 1) * pageSize + index}
               />
             ))}
           </div>
+        )}
+      </div>
 
-          {/* Phân trang */}
-          {totalPages > 1 && <Pagination totalPages={totalPages} />}
-        </>
+      {/* Phân trang cố định sát Footer */}
+      {totalPages > 1 && (
+        <div className="mt-auto pt-3 pb-1 flex justify-center">
+          <Pagination totalPages={totalPages} />
+        </div>
       )}
     </div>
   )

@@ -22,48 +22,60 @@ export default async function StudentCategoryPage() {
   const categories = [
     {
       title: "Ngữ pháp",
+      ruTitle: "ГРАММАТИКА",
       description: `Gồm ${grammarCount ?? 0} bài giảng lý thuyết & ví dụ`,
-      icon: <Book size={24} strokeWidth={2.2} />,
+      icon: <Book size={32} strokeWidth={2.2} />,
       href: "/student/lessons/grammars",
       colorScheme: 'blue' as const,
+      buttonLabel: 'Khám phá',
     },
     {
       title: "Luyện nghe",
+      ruTitle: "АУДИО",
       description: `Gồm ${audioCount ?? 0} file audio chuẩn phát âm`,
-      icon: <Headphones size={24} strokeWidth={2.2} />,
+      icon: <Headphones size={32} strokeWidth={2.2} />,
       href: "/student/lessons/audios",
       colorScheme: 'indigo' as const,
+      buttonLabel: 'Khám phá',
     },
     {
       title: "Video bài giảng",
+      ruTitle: "ВИДЕО",
       description: `Gồm ${videoCount ?? 0} video bài học trực quan`,
-      icon: <PlayCircle size={24} strokeWidth={2.2} />,
+      icon: <PlayCircle size={32} strokeWidth={2.2} />,
       href: "/student/lessons/videos",
       colorScheme: 'orange' as const,
+      buttonLabel: 'Khám phá',
     }
   ];
 
   return (
-    <div className="container mx-auto px-4 py-2 max-w-5xl">
-      {/* Banner Title "BÀI HỌC" */}
+    <div className="container mx-auto px-4 py-1.5 max-w-6xl flex-1 flex flex-col font-sans">
+      {/* Banner Title "BÀI HỌC" - Sát bên trên */}
       <HeroBanner
         title="BÀI HỌC"
+        ruTitle="УРОКИ"
         description="Khám phá kho tàng bài giảng đa dạng giúp bạn làm chủ tiếng Nga một cách toàn diện."
         icon={BookOpen}
+        gradient="from-[#1a5286] via-blue-600 to-indigo-700"
       />
 
-      {/* Grid Categories */}
-      <div className="grid grid-cols-1 md:grid-cols-3 gap-4 sm:gap-5">
-        {categories.map((cat, index) => (
-          <CategoryCard
-            key={index}
-            title={cat.title}
-            description={cat.description}
-            icon={cat.icon}
-            href={cat.href}
-            colorScheme={cat.colorScheme}
-          />
-        ))}
+      {/* Grid Categories - Bố cục tự nhiên ngay dưới Banner */}
+      <div className="flex-1 flex flex-col justify-start pt-2 sm:pt-4 pb-6">
+        <div className="grid grid-cols-1 md:grid-cols-3 gap-5 lg:gap-6">
+          {categories.map((cat, index) => (
+            <CategoryCard
+              key={index}
+              title={cat.title}
+              ruTitle={cat.ruTitle}
+              description={cat.description}
+              icon={cat.icon}
+              href={cat.href}
+              colorScheme={cat.colorScheme}
+              buttonLabel={cat.buttonLabel}
+            />
+          ))}
+        </div>
       </div>
     </div>
   );

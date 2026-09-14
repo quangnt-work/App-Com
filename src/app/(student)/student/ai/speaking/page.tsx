@@ -11,118 +11,117 @@ import {
   Shirt, 
   Car 
 } from 'lucide-react';
-import { TopicCard, TopicCardProps } from '@/components/student/ai/TopicCard'; // Chỉnh lại đường dẫn import tùy vào cấu trúc của bạn
+import { TopicCard, TopicCardProps } from '@/components/student/ai/TopicCard';
+import { HeroBanner } from '@/components/common/HeroBanner';
+import { Pagination } from '@/components/common/Pagination';
 import { createClient } from '@/lib/supabase/server';
 
-export default async function SpeakingTopicsPage() {
-  // Xác thực (giữ nguyên logic của bạn)
+interface SpeakingPageProps {
+  searchParams: Promise<{ page?: string }>;
+}
+
+export default async function SpeakingTopicsPage({ searchParams }: SpeakingPageProps) {
+  const params = await searchParams;
+  const currentPage = Number(params?.page) || 1;
+  const pageSize = 8;
+
   const supabase = await createClient();
   const { data: { session } } = await supabase.auth.getSession();
   const user = session?.user;
 
-  // Dữ liệu danh sách chủ đề theo thiết kế
-  const topics: TopicCardProps[] = [
+  // Dữ liệu danh sách 8 chủ đề luyện nói
+  const allTopics: TopicCardProps[] = [
     {
       title: "Chào hỏi & Giới thiệu",
       subtitle: "Привет и Знакомство",
-      icon: <Users size={24} strokeWidth={2.5} />,
-      borderColor: "border-blue-500",
-      iconColor: "text-blue-500",
-      iconBgColor: "bg-blue-50",
+      icon: <Users size={22} strokeWidth={2.2} />,
+      colorScheme: "blue",
       href: "/student/ai/speaking/greeting"
     },
     {
       title: "Gia đình & Bạn bè",
       subtitle: "Семья и Друзья",
-      icon: <Heart size={24} strokeWidth={2.5} />,
-      borderColor: "border-red-500",
-      iconColor: "text-red-500",
-      iconBgColor: "bg-red-50",
+      icon: <Heart size={22} strokeWidth={2.2} />,
+      colorScheme: "rose",
       href: "/student/ai/speaking/family"
     },
     {
       title: "Số, Thời gian & Ngày",
       subtitle: "Числа, Время и Даты",
-      icon: <Clock size={24} strokeWidth={2.5} />,
-      borderColor: "border-orange-500",
-      iconColor: "text-orange-500",
-      iconBgColor: "bg-orange-50",
+      icon: <Clock size={22} strokeWidth={2.2} />,
+      colorScheme: "orange",
       href: "/student/ai/speaking/numbers-time"
     },
     {
       title: "Nhà cửa & Đồ đạc",
       subtitle: "Дом и Мебель",
-      icon: <Home size={24} strokeWidth={2.5} />,
-      borderColor: "border-green-500",
-      iconColor: "text-green-500",
-      iconBgColor: "bg-green-50",
+      icon: <Home size={22} strokeWidth={2.2} />,
+      colorScheme: "emerald",
       href: "/student/ai/speaking/house"
     },
     {
       title: "Thức ăn & Đồ uống",
       subtitle: "Еда и Напитки",
-      icon: <Utensils size={24} strokeWidth={2.5} />,
-      borderColor: "border-orange-600",
-      iconColor: "text-orange-600",
-      iconBgColor: "bg-orange-50",
+      icon: <Utensils size={22} strokeWidth={2.2} />,
+      colorScheme: "orange",
       href: "/student/ai/speaking/food"
     },
     {
       title: "Sinh hoạt hàng ngày",
       subtitle: "Распорядок дня",
-      icon: <Sun size={24} strokeWidth={2.5} />,
-      borderColor: "border-cyan-400",
-      iconColor: "text-cyan-500",
-      iconBgColor: "bg-cyan-50",
+      icon: <Sun size={22} strokeWidth={2.2} />,
+      colorScheme: "cyan",
       href: "/student/ai/speaking/daily-routine"
     },
     {
       title: "Quần áo & Màu sắc",
       subtitle: "Одежда и Цвета",
-      icon: <Shirt size={24} strokeWidth={2.5} />,
-      borderColor: "border-purple-500",
-      iconColor: "text-purple-500",
-      iconBgColor: "bg-purple-50",
+      icon: <Shirt size={22} strokeWidth={2.2} />,
+      colorScheme: "purple",
       href: "/student/ai/speaking/clothes"
     },
     {
       title: "Phương tiện & Đi lại",
       subtitle: "Транспорт и Путешествия",
-      icon: <Car size={24} strokeWidth={2.5} />,
-      borderColor: "border-slate-600",
-      iconColor: "text-slate-600",
-      iconBgColor: "bg-slate-100",
+      icon: <Car size={22} strokeWidth={2.2} />,
+      colorScheme: "slate",
       href: "/student/ai/speaking/transport"
     }
   ];
 
-  return (
-    <div className="min-h-screen bg-[#F8FAFC] flex flex-col font-sans">
-      <main className="flex-1 container mx-auto px-4 py-8 max-w-[1200px]">
-        
-        {/* Hero Banner Căn giữa */}
-        <div className="bg-gradient-to-r from-indigo-700 via-violet-600 to-purple-700 text-white rounded-[2rem] p-10 flex items-center justify-between gap-6 mb-12 shadow-sm relative overflow-hidden">
-            <div className="relative z-10 max-w-2xl">
-                <h1 className="text-3xl md:text-4xl lg:text-5xl font-extrabold tracking-wide uppercase mb-4">
-                Luyện nói cùng AI
-                </h1>
-                <p className="text-white/90 text-sm md:text-base font-medium">
-                Cải thiện khả năng phát âm và phản xạ giao tiếp tiếng Nga với trợ lý AI thông minh theo từng chủ đề.
-                </p>
-            </div>
-            <div className="relative z-10 hidden md:flex items-center justify-center w-24 h-24 lg:w-28 lg:h-28 rounded-full border-2 lg:border-4 border-white/30 bg-white/15 backdrop-blur-md shadow-inner">
-                <Mic size={48} strokeWidth={2.5} />
-            </div>
-        </div>
+  const totalPages = Math.ceil(allTopics.length / pageSize);
+  const currentTopics = allTopics.slice((currentPage - 1) * pageSize, currentPage * pageSize);
 
-        {/* Grid Danh sách Chủ đề (2 cột) */}
-        <div className="grid grid-cols-1 md:grid-cols-2 gap-4 lg:gap-6">
-          {topics.map((topic, index) => (
-            <TopicCard key={index} {...topic} />
+  return (
+    <div className="container mx-auto px-4 py-1.5 max-w-6xl font-sans flex-1 flex flex-col justify-between">
+      <div>
+        {/* Banner LUYỆN NÓI - Đồng bộ thiết kế & kích thước */}
+        <HeroBanner
+          title="LUYỆN NÓI CÙNG AI"
+          ruTitle="ГОВОРЕНИЕ"
+          description="Cải thiện khả năng phát âm và phản xạ giao tiếp tiếng Nga với trợ lý AI thông minh theo từng chủ đề."
+          icon={Mic}
+          gradient="from-indigo-700 via-violet-600 to-purple-700"
+        />
+
+        {/* Grid Danh sách Chủ đề (2 cột x 3 hàng = 6 thẻ/trang) */}
+        <div className="grid grid-cols-1 md:grid-cols-2 gap-3 sm:gap-3.5">
+          {currentTopics.map((topic, index) => (
+            <TopicCard 
+              key={topic.href} 
+              {...topic} 
+              index={(currentPage - 1) * pageSize + index + 1} 
+            />
           ))}
         </div>
+      </div>
 
-      </main>
+      {/* Phân trang cố định sát Footer */}
+      {totalPages > 1 && (
+        <div className="mt-auto pt-3 pb-1 flex justify-center">
+          <Pagination totalPages={totalPages} />
+        </div>
+      )}
     </div>
   );
 }

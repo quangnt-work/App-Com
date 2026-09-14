@@ -1,22 +1,25 @@
 // src/app/(auth)/layout.tsx
 import React from "react"
-import { Header } from '@/components/layout/Header'
-import { createClient } from '@/lib/supabase/server'
+import Image from "next/image"
 
 export default async function AuthLayout({ children }: { children: React.ReactNode }) {
-  const supabase = await createClient()
-  const { data: { session } } = await supabase.auth.getSession();
-  const user = session?.user;
-
-  const userData = user ? { 
-    name: user.user_metadata?.full_name, 
-    role: user.user_metadata?.role || 'student' 
-  } : null
-
   return (
-    // Bỏ thẻ <html> và <body> đi
-    <div className="flex flex-col min-h-screen">
-      <div className="flex-1">
+    <div className="flex flex-col min-h-screen relative font-sans">
+      {/* Nền phong cảnh Nga làm mờ xuyên suốt */}
+      <div className="fixed inset-0 z-0 pointer-events-none overflow-hidden">
+        <Image
+          src="/bg.jpg"
+          alt="Phong cảnh nước Nga"
+          fill
+          priority
+          sizes="100vw"
+          className="object-cover object-center scale-105 filter blur-[8px]"
+          quality={85}
+        />
+        <div className="absolute inset-0 bg-slate-900/30" />
+      </div>
+
+      <div className="relative z-10 flex-1">
         {children}
       </div>
     </div>

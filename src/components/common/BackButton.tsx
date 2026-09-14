@@ -56,7 +56,11 @@ export function getParentRoute(pathname: string): string | null {
     pathname === '/student/ai/grammar' ||
     pathname === '/student/ai/dictionary' ||
     pathname === '/student/ai/speaking' ||
-    pathname === '/student/ai/immersive'
+    pathname === '/student/ai/shadowing' ||
+    pathname === '/student/ai/roleplay' ||
+    pathname === '/student/ai/immersive' ||
+    pathname === '/student/ai/immersive/roleplay' ||
+    pathname === '/student/ai/immersive/shadowing'
   ) {
     return '/student/ai'
   }
@@ -87,21 +91,20 @@ export function getParentRoute(pathname: string): string | null {
     return '/student/ai/speaking'
   }
 
-  // Immersive (Nhập vai & Phản xạ):
-  // Màn danh sách Roleplay & Shadowing -> Quay về màn trung tâm Immersive
-  if (
-    pathname === '/student/ai/immersive/roleplay' ||
-    pathname === '/student/ai/immersive/shadowing'
-  ) {
-    return '/student/ai/immersive'
+  // Roleplay & Shadowing trực tiếp:
+  if (pathname.startsWith('/student/ai/roleplay/')) {
+    return '/student/ai/roleplay'
   }
-  // Màn chi tiết phòng Roleplay -> Quay về danh sách kịch bản Roleplay
+  if (pathname.startsWith('/student/ai/shadowing/')) {
+    return '/student/ai/shadowing'
+  }
+
+  // Fallback Immersive cũ:
   if (pathname.startsWith('/student/ai/immersive/roleplay/')) {
-    return '/student/ai/immersive/roleplay'
+    return '/student/ai/roleplay'
   }
-  // Màn chi tiết phòng Shadowing -> Quay về danh sách bài Shadowing
   if (pathname.startsWith('/student/ai/immersive/shadowing/')) {
-    return '/student/ai/immersive/shadowing'
+    return '/student/ai/shadowing'
   }
 
   // === BÀI THI / KIỂM TRA (EXAMS) ===
@@ -197,10 +200,10 @@ export function BackButton() {
   return (
     <button
       onClick={handleBack}
-      className="inline-flex items-center gap-2 text-slate-600 hover:text-indigo-600 transition-all font-semibold text-sm group bg-white/80 backdrop-blur-xs px-3.5 py-1.5 rounded-xl border border-slate-200/80 hover:border-indigo-200 hover:shadow-xs focus:outline-none"
+      className="inline-flex items-center gap-2 text-slate-700 hover:text-blue-700 transition-all font-bold text-xs sm:text-sm group bg-white/90 backdrop-blur-md px-3.5 py-2 rounded-xl border border-slate-200/90 shadow-2xs hover:shadow-sm hover:border-blue-300 focus:outline-none"
       title={`Quay lại ${parentRoute}`}
     >
-      <ArrowLeft size={16} strokeWidth={2.5} className="transition-transform group-hover:-translate-x-1 text-slate-500 group-hover:text-indigo-600" />
+      <ArrowLeft size={16} strokeWidth={2.5} className="transition-transform group-hover:-translate-x-1 text-slate-500 group-hover:text-blue-600" />
       <span>Quay lại</span>
     </button>
   )

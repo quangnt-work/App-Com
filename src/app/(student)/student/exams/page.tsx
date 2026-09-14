@@ -2,10 +2,20 @@
 import React from 'react';
 import { FileText, BookOpen, Headphones, ListChecks } from 'lucide-react';
 import { ExamCard, type ExamItem } from '@/components/student/exams/ExamCard';
+import { Pagination } from '@/components/common/Pagination';
+import { HeroBanner } from '@/components/common/HeroBanner';
 import { createClient } from '@/lib/supabase/server';
 import { redirect } from 'next/navigation';
 
-export default async function ExamsPage() {
+interface ExamsPageProps {
+  searchParams: Promise<{ page?: string }>;
+}
+
+export default async function ExamsPage({ searchParams }: ExamsPageProps) {
+  const params = await searchParams;
+  const currentPage = Number(params?.page) || 1;
+  const pageSize = 8;
+
   const supabase = await createClient();
   const { data: { session } } = await supabase.auth.getSession();
   const user = session?.user;
@@ -36,18 +46,18 @@ export default async function ExamsPage() {
 
   const completedExamIds = new Set((submissions || []).map(s => s.exam_id));
 
-  const exams: ExamItem[] = (examsData || []).map(exam => {
-    let icon = <FileText size={24} />;
+  const allExams: ExamItem[] = (examsData || []).map(exam => {
+    let icon = <FileText size={22} />;
     let categoryName = 'TỔNG HỢP';
     
     if (exam.exam_type === 'grammar') {
-      icon = <ListChecks size={24} />;
+      icon = <ListChecks size={22} />;
       categoryName = 'NGỮ PHÁP';
     } else if (exam.exam_type === 'reading') {
-      icon = <BookOpen size={24} />;
+      icon = <BookOpen size={22} />;
       categoryName = 'ĐỌC HIỂU';
     } else if (exam.exam_type === 'listening') {
-      icon = <Headphones size={24} />;
+      icon = <Headphones size={22} />;
       categoryName = 'NGHE HIỂU';
     }
 
@@ -58,60 +68,44 @@ export default async function ExamsPage() {
       duration: `${exam.duration || 0} phút`,
       questionsCount: `${exam.question_count || 0} câu hỏi`,
       icon,
-      href: `/student/exams/${exam.id}`, // Placeholder until detail page is built
+      href: `/student/exams/${exam.id}`,
       isCompleted: completedExamIds.has(exam.id),
     };
   });
 
+  const totalPages = Math.ceil(allExams.length / pageSize);
+  const currentExams = allExams.slice((currentPage - 1) * pageSize, currentPage * pageSize);
+
   return (
-    <div className="container mx-auto px-4 py-2 max-w-6xl font-sans">
-      {/* Compact Header KIỂM TRA */}
-      <div className="flex items-center justify-between gap-4 mb-5 pb-3 border-b border-slate-200/80">
-        <div className="flex items-center gap-3">
-          <div className="bg-gradient-to-br from-amber-500 to-orange-600 text-white p-2.5 rounded-xl shadow-xs shadow-amber-500/20">
-            <FileText size={20} strokeWidth={2.2} />
+    <div className="container mx-auto px-4 py-1.5 max-w-6xl font-sans flex-1 flex flex-col justify-between">
+      <div>
+        {/* Banner KIỂM TRA - Đồng bộ thiết kế & kích thước */}
+        <HeroBanner
+          title="KIỂM TRA ĐÁNH GIÁ NĂNG LỰC"
+          ruTitle="ТЕСТЫ"
+          description={allExams.length > 0 ? `Tổng hợp ${allExams.length} bài kiểm tra ngữ pháp, đọc hiểu và nghe hiểu` : 'Đánh giá năng lực tiếng Nga của bạn'}
+          icon={FileText}
+          gradient="from-amber-600 via-orange-500 to-amber-600"
+        />
+
+        {/* Lưới Thẻ Bài Kiểm Tra (4 cột x 2 hàng = 8 thẻ) */}
+        {currentExams.length > 0 ? (
+          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-3 sm:gap-4">
+            {currentExams.map((exam) => (
+              <ExamCard key={exam.id} exam={exam} />
+            ))}
           </div>
-          <div>
-            <div className="flex items-center gap-2">
-              <h1 className="text-lg md:text-xl font-black text-slate-900 tracking-tight">
-                Kiểm tra đánh giá năng lực
-              </h1>
-              <span className="text-[10px] font-extrabold uppercase tracking-wider text-amber-600 bg-amber-50 px-2 py-0.5 rounded-md border border-amber-100">
-                Тесты
-              </span>
-            </div>
-            <p className="text-xs text-slate-500 mt-0.5">
-              {exams.length > 0 ? `Tổng hợp ${exams.length} bài kiểm tra ngữ pháp, đọc hiểu và nghe hiểu` : 'Đánh giá năng lực tiếng Nga của bạn'}
-            </p>
+        ) : (
+          <div className="text-center py-8 text-slate-500 bg-white/95 backdrop-blur-md rounded-2xl shadow-xs border border-slate-200/80 text-xs">
+            Hiện tại chưa có bài kiểm tra nào được phát hành.
           </div>
-        </div>
+        )}
       </div>
 
-      {/* Lưới Thẻ Bài Kiểm Tra (3 cột) */}
-      {exams.length > 0 ? (
-        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4 sm:gap-5">
-          {exams.map((exam) => (
-            <ExamCard key={exam.id} exam={exam} />
-          ))}
-        </div>
-      ) : (
-        <div className="text-center py-10 text-slate-500 bg-white rounded-2xl shadow-xs border border-slate-200/80 text-xs">
-          Hiện tại chưa có bài kiểm tra nào được phát hành.
-        </div>
-      )}
-
-      {/* Phân trang */}
-      {exams.length > 0 && (
-        <div className="mt-6 flex justify-center gap-1.5">
-          <button className="w-9 h-9 flex items-center justify-center rounded-xl border border-slate-200 text-slate-400 hover:bg-slate-50 bg-white text-xs">
-            <span className="sr-only">Trang trước</span>
-            &lt;
-          </button>
-          <button className="w-9 h-9 flex items-center justify-center rounded-xl bg-gradient-to-r from-amber-500 to-orange-600 text-white font-bold text-xs shadow-xs shadow-orange-500/20">1</button>
-          <button className="w-9 h-9 flex items-center justify-center rounded-xl border border-slate-200 text-slate-400 hover:bg-slate-50 bg-white text-xs">
-            <span className="sr-only">Trang sau</span>
-            &gt;
-          </button>
+      {/* Phân trang cố định sát Footer */}
+      {totalPages > 1 && (
+        <div className="mt-auto pt-3 pb-1 flex justify-center">
+          <Pagination totalPages={totalPages} />
         </div>
       )}
     </div>

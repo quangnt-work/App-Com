@@ -6,6 +6,7 @@ import { useRouter } from 'next/navigation';
 import { ChatMessageType, ChatAssessment } from '@/types/ai-chat';
 import { ChatMessage } from '@/components/student/ai/chat/ChatMessage';
 import { useSpeechRecognition } from '@/hooks/useSpeechRecognition';
+import { FlipIconLoader } from '@/components/common/FlipIconLoader';
 import { toast } from 'sonner';
 
 const TOPICS_DATA = [
@@ -40,6 +41,7 @@ export default function AIChatInterfacePage({ params }: { params: Promise<{ topi
   const [isStarted, setIsStarted] = useState(false);
   const [input, setInput] = useState('');
   const [isTyping, setIsTyping] = useState(false);
+  const [isAssessing, setIsAssessing] = useState(false);
   const [assessment, setAssessment] = useState<ChatAssessment | null>(null);
   const [assessmentMode, setAssessmentMode] = useState<'audio' | 'text' | null>(null);
 
@@ -123,6 +125,7 @@ export default function AIChatInterfacePage({ params }: { params: Promise<{ topi
       toast.error('Hãy trò chuyện trước khi kết thúc!');
       return;
     }
+    setIsAssessing(true);
     setIsTyping(true);
     try {
       // Encode tối đa 3 audio blobs gần nhất sang base64
@@ -158,6 +161,7 @@ export default function AIChatInterfacePage({ params }: { params: Promise<{ topi
       toast.error('Đã xảy ra lỗi khi AI đang đánh giá.');
     } finally {
       setIsTyping(false);
+      setIsAssessing(false);
     }
   };
 
@@ -298,15 +302,24 @@ export default function AIChatInterfacePage({ params }: { params: Promise<{ topi
             <p className="text-xs text-slate-400 mb-6 max-w-xs">
               💡 Sử dụng nút <strong>Mic</strong> để ghi âm — AI sẽ đánh giá cả ngữ điệu khi kết thúc
             </p>
-            <button
-              onClick={startChat}
-              disabled={isTyping}
-              className="bg-gradient-to-r from-indigo-600 to-violet-600 hover:from-indigo-700 hover:to-violet-700 text-white px-10 py-4 rounded-2xl font-bold text-lg shadow-md shadow-indigo-500/25 hover:shadow-lg hover:shadow-indigo-500/35 transition-all flex items-center gap-2 disabled:opacity-60"
-            >
-              {isTyping ? (
-                <><Loader2 size={20} className="animate-spin" /> Đang kết nối...</>
-              ) : '🚀 Bắt đầu giao tiếp'}
-            </button>
+            {isTyping ? (
+              <div className="py-4 w-full">
+                <FlipIconLoader
+                  size="md"
+                  message="AI đang khởi tạo buổi trò chuyện..."
+                  subMessage="Подключение виртуального собеседника..."
+                  showTrivia={true}
+                  flipInterval={2200}
+                />
+              </div>
+            ) : (
+              <button
+                onClick={startChat}
+                className="bg-gradient-to-r from-indigo-600 to-violet-600 hover:from-indigo-700 hover:to-violet-700 text-white px-10 py-4 rounded-2xl font-bold text-lg shadow-md shadow-indigo-500/25 hover:shadow-lg hover:shadow-indigo-500/35 transition-all flex items-center gap-2"
+              >
+                🚀 Bắt đầu giao tiếp
+              </button>
+            )}
           </div>
         ) : (
           <div className="space-y-2">
@@ -372,6 +385,17 @@ export default function AIChatInterfacePage({ params }: { params: Promise<{ topi
             {isRecording ? <Square size={22} fill="white" /> : <Mic size={24} />}
           </button>
         </div>
+      )}
+
+      {/* ─── Fullscreen Loader khi đang đánh giá kết thúc ─── */}
+      {isAssessing && (
+        <FlipIconLoader
+          fullscreen
+          message="AI đang thẩm định ngữ điệu & phân tích toàn diện hội thoại..."
+          subMessage="Комплексная оценка диалога с помощью ИИ..."
+          showTrivia={true}
+          flipInterval={2200}
+        />
       )}
     </div>
   );

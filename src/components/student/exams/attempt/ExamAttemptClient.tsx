@@ -4,6 +4,7 @@ import { useState, useEffect, useRef, useMemo, useCallback } from 'react';
 import { useRouter } from 'next/navigation';
 import { Clock, HelpCircle, AlertCircle, Loader2, Send, CheckCircle2, XCircle, Trophy, BookOpen, RotateCcw } from 'lucide-react';
 import { submitExam } from '@/actions/examSubmissions';
+import { FlipIconLoader } from '@/components/common/FlipIconLoader';
 import { toast } from 'sonner';
 
 type ExamResult = {
@@ -694,6 +695,18 @@ export function ExamAttemptClient({ exam, questions, user }: any) {
             </div>
           </div>
         </div>
+      )}
+
+      {/* Overlay nộp bài & chấm điểm AI với FlipIconLoader */}
+      {isSubmitting && (
+        <FlipIconLoader
+          fullscreen
+          size="lg"
+          message="AI đang chấm điểm & phân tích bài làm của bạn..."
+          subMessage="Проверка и оценка ответов с помощью ИИ..."
+          showTrivia={true}
+          flipInterval={2200}
+        />
       )}
     </div>
   );

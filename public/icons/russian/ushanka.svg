@@ -1,0 +1,50 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 400 400" width="100%" height="100%">
+  <defs>
+    <linearGradient id="hatBody" x1="0%" y1="0%" x2="0%" y2="100%">
+      <stop offset="0%" stop-color="#475569"/>
+      <stop offset="100%" stop-color="#1e293b"/>
+    </linearGradient>
+    <linearGradient id="furGrad" x1="0%" y1="0%" x2="0%" y2="100%">
+      <stop offset="0%" stop-color="#cbd5e1"/>
+      <stop offset="50%" stop-color="#94a3b8"/>
+      <stop offset="100%" stop-color="#64748b"/>
+    </linearGradient>
+    <linearGradient id="starGrad" x1="0%" y1="0%" x2="100%" y2="100%">
+      <stop offset="0%" stop-color="#ef4444"/>
+      <stop offset="100%" stop-color="#b91c1c"/>
+    </linearGradient>
+    <filter id="softShadow" x="-10%" y="-10%" width="120%" height="120%">
+      <feDropShadow dx="0" dy="6" stdDeviation="6" flood-color="#0f172a" flood-opacity="0.2"/>
+    </filter>
+  </defs>
+
+  <g filter="url(#softShadow)">
+    <!-- Hat Main Crown (Top) -->
+    <path d="M 120 160 C 120 100, 280 100, 280 160 L 290 200 L 110 200 Z" fill="url(#hatBody)"/>
+    
+    <!-- Top Crown Seams -->
+    <path d="M 200 115 L 200 190" stroke="#334155" stroke-width="3" opacity="0.6"/>
+
+    <!-- Left Ear Flap hanging down -->
+    <path d="M 100 190 C 85 240, 85 290, 115 310 C 135 320, 145 290, 135 240 L 130 190 Z" fill="url(#furGrad)"/>
+    <!-- Left Flap tie string -->
+    <path d="M 115 310 Q 110 340 120 360" stroke="#94a3b8" stroke-width="4" stroke-linecap="round" fill="none"/>
+
+    <!-- Right Ear Flap hanging down -->
+    <path d="M 300 190 C 315 240, 315 290, 285 310 C 265 320, 255 290, 265 240 L 270 190 Z" fill="url(#furGrad)"/>
+    <!-- Right Flap tie string -->
+    <path d="M 285 310 Q 290 340 280 360" stroke="#94a3b8" stroke-width="4" stroke-linecap="round" fill="none"/>
+
+    <!-- Front Fur Visor / Forehead Flap (rolled up) -->
+    <path d="M 120 195 C 120 145, 280 145, 280 195 C 280 220, 120 220, 120 195 Z" fill="url(#furGrad)"/>
+    <path d="M 130 190 C 140 160, 260 160, 270 190" stroke="#e2e8f0" stroke-width="4" fill="none" opacity="0.5"/>
+
+    <!-- Red Star Cockade (Emblem in center) -->
+    <!-- Gold cockade rim -->
+    <circle cx="200" cy="180" r="22" fill="#eab308" stroke="#ca8a04" stroke-width="2"/>
+    <!-- Five-point Red Star -->
+    <polygon points="200,163 205,175 218,175 208,183 212,196 200,188 188,196 192,183 182,175 195,175" fill="url(#starGrad)"/>
+    <!-- Center golden dot -->
+    <circle cx="200" cy="181" r="3" fill="#fef08a"/>
+  </g>
+</svg>

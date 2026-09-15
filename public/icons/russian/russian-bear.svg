@@ -1,0 +1,61 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 400 400" width="100%" height="100%">
+  <defs>
+    <linearGradient id="bearBody" x1="0%" y1="0%" x2="0%" y2="100%">
+      <stop offset="0%" stop-color="#854d0e"/>
+      <stop offset="50%" stop-color="#713f12"/>
+      <stop offset="100%" stop-color="#451a03"/>
+    </linearGradient>
+    <linearGradient id="snoutGrad" x1="0%" y1="0%" x2="0%" y2="100%">
+      <stop offset="0%" stop-color="#fef08a"/>
+      <stop offset="100%" stop-color="#d97706"/>
+    </linearGradient>
+    <radialGradient id="innerEar" cx="50%" cy="50%" r="50%">
+      <stop offset="0%" stop-color="#fed7aa"/>
+      <stop offset="100%" stop-color="#b45309"/>
+    </radialGradient>
+    <filter id="bearShadow" x="-10%" y="-10%" width="120%" height="120%">
+      <feDropShadow dx="0" dy="6" stdDeviation="6" flood-color="#451a03" flood-opacity="0.25"/>
+    </filter>
+  </defs>
+
+  <g filter="url(#bearShadow)">
+    <!-- Left Ear -->
+    <circle cx="120" cy="135" r="45" fill="url(#bearBody)"/>
+    <circle cx="120" cy="135" r="25" fill="url(#innerEar)"/>
+
+    <!-- Right Ear -->
+    <circle cx="280" cy="135" r="45" fill="url(#bearBody)"/>
+    <circle cx="280" cy="135" r="25" fill="url(#innerEar)"/>
+
+    <!-- Head -->
+    <ellipse cx="200" cy="210" rx="105" ry="95" fill="url(#bearBody)"/>
+    
+    <!-- Fur Cheeks -->
+    <path d="M 95 220 Q 80 250 115 265 Q 95 240 105 210 Z" fill="#713f12"/>
+    <path d="M 305 220 Q 320 250 285 265 Q 305 240 295 210 Z" fill="#713f12"/>
+
+    <!-- Snout / Muzzle -->
+    <ellipse cx="200" cy="245" rx="55" ry="42" fill="url(#snoutGrad)"/>
+
+    <!-- Nose -->
+    <path d="M 180 225 C 180 220, 220 220, 220 225 C 220 242, 180 242, 180 225 Z" fill="#1e1b4b"/>
+    <ellipse cx="193" cy="226" rx="4" ry="2" fill="#ffffff" opacity="0.6"/>
+
+    <!-- Mouth -->
+    <path d="M 200 238 L 200 258" stroke="#78350f" stroke-width="4" stroke-linecap="round"/>
+    <path d="M 185 258 Q 200 270 215 258" stroke="#78350f" stroke-width="4" stroke-linecap="round" fill="none"/>
+
+    <!-- Eyes -->
+    <!-- Left Eye -->
+    <ellipse cx="160" cy="185" rx="10" ry="13" fill="#1e1b4b"/>
+    <circle cx="157" cy="180" r="4" fill="#ffffff"/>
+
+    <!-- Right Eye -->
+    <ellipse cx="240" cy="185" rx="10" ry="13" fill="#1e1b4b"/>
+    <circle cx="237" cy="180" r="4" fill="#ffffff"/>
+
+    <!-- Cheerful eyebrows -->
+    <path d="M 148 165 Q 160 160 172 165" stroke="#451a03" stroke-width="4" stroke-linecap="round" fill="none"/>
+    <path d="M 228 165 Q 240 160 252 165" stroke="#451a03" stroke-width="4" stroke-linecap="round" fill="none"/>
+  </g>
+</svg>

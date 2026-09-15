@@ -12,6 +12,7 @@ import { speakRussian, cancelSpeech } from '@/lib/tts';
 import { toast } from 'sonner';
 import { createClient } from '@/lib/supabase/client';
 import { RoleplayScenario } from '@/types/ai-chat';
+import { FlipIconLoader } from '@/components/common/FlipIconLoader';
 
 // ─── Types ────────────────────────────────────────────────────────────────────
 
@@ -151,7 +152,19 @@ export default function RoleplayRoomPage({ params }: { params: Promise<{ id: str
 
   // ─── Actions ────────────────────────────────────────────────────────────────
 
-  if (!isTopicLoaded || !topic) return <div className="min-h-screen flex items-center justify-center"><Loader2 className="animate-spin text-orange-500" size={40} /></div>;
+  if (!isTopicLoaded || !topic) {
+    return (
+      <div className="min-h-screen flex items-center justify-center bg-[#F8FAFC]">
+        <FlipIconLoader
+          size="lg"
+          message="Đang chuẩn bị bối cảnh nhập vai..."
+          subMessage="Подготовка ролевой ситуации..."
+          showTrivia={true}
+          flipInterval={2200}
+        />
+      </div>
+    );
+  }
 
   const saveHistory = async (finalMessages: RoleplayMessageData[], finalCompletedIds: string[]) => {
     try {

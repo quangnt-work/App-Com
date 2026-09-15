@@ -32,6 +32,36 @@ const RUSSIAN_ICONS = [
     src: '/icons/russian/matryoshka.png',
     title: 'Búp bê Matryoshka',
   },
+  {
+    name: 'Samovar',
+    src: '/icons/russian/samovar.png',
+    title: 'Ấm trà Samovar',
+  },
+  {
+    name: 'Balalaika',
+    src: '/icons/russian/balalaika.png',
+    title: 'Đàn Balalaika',
+  },
+  {
+    name: 'Kremlin',
+    src: '/icons/russian/kremlin.png',
+    title: 'Tháp Spasskaya Kremlin',
+  },
+  {
+    name: 'Sputnik',
+    src: '/icons/russian/sputnik.svg',
+    title: 'Vệ tinh Sputnik',
+  },
+  {
+    name: 'Ushanka',
+    src: '/icons/russian/ushanka.svg',
+    title: 'Mũ lông Ushanka',
+  },
+  {
+    name: 'Russian Bear',
+    src: '/icons/russian/russian-bear.svg',
+    title: 'Gấu nâu Nga',
+  },
 ];
 
 export function RussianLoader({

@@ -23,6 +23,7 @@ import { TopicCard, TopicCardProps } from '@/components/student/ai/TopicCard';
 import { HeroBanner } from '@/components/common/HeroBanner';
 import { DictionaryWord } from '@/types/dictionary';
 import { WordContent } from '@/components/student/ai/dictionary/WordContent';
+import { FlipIconLoader } from '@/components/common/FlipIconLoader';
 import { toast } from 'sonner';
 
 export default function AIDictionaryPage() {
@@ -202,9 +203,14 @@ export default function AIDictionaryPage() {
         {(isSearching || searchResult) && (
           <div className="mb-4 animate-in fade-in slide-in-from-top-2 duration-300">
             {isSearching ? (
-              <div className="bg-white/90 backdrop-blur-xl rounded-2xl shadow-xs border border-white/80 p-8 flex flex-col items-center justify-center">
-                <Loader2 size={32} className="animate-spin text-amber-500 mb-3" />
-                <p className="text-slate-500 font-medium text-xs">AI đang tra cứu &quot;{searchQuery}&quot;...</p>
+              <div className="bg-white/90 backdrop-blur-xl rounded-2xl shadow-xs border border-white/80 p-6 flex flex-col items-center justify-center">
+                <FlipIconLoader
+                  size="md"
+                  message={`AI đang tra cứu từ "${searchQuery}"...`}
+                  subMessage="Поиск слова в словаре..."
+                  showTrivia={true}
+                  flipInterval={2200}
+                />
               </div>
             ) : searchResult ? (
               <div>

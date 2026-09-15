@@ -11,6 +11,7 @@ import { GrammarQuestion, GrammarAnswer, GrammarLevel, GrammarQuizResult } from 
 import { QuizProgress } from '@/components/student/ai/grammar/QuizProgress';
 import { QuizQuestion } from '@/components/student/ai/grammar/QuizQuestion';
 import { QuizResult } from '@/components/student/ai/grammar/QuizResult';
+import { FlipIconLoader } from '@/components/common/FlipIconLoader';
 import { toast } from 'sonner';
 
 // ─── Topic data ───────────────────────────────────────────────────────────────
@@ -248,14 +249,16 @@ export default function GrammarQuizPage({ params }: { params: Promise<{ topicSlu
               </div>
             )}
 
-            {/* ── Loading ── */}
+            {/* ── Loading với FlipIconLoader ── */}
             {isLoading && (
-              <div className="py-20 flex flex-col items-center justify-center text-center animate-in fade-in duration-300">
-                <div className="w-20 h-20 bg-indigo-50 rounded-full flex items-center justify-center mb-6">
-                  <Loader2 size={36} className="animate-spin text-indigo-600" />
-                </div>
-                <h3 className="text-xl font-bold text-slate-700 mb-2">AI đang tạo câu hỏi...</h3>
-                <p className="text-sm text-slate-400">Vui lòng đợi trong giây lát</p>
+              <div className="py-6 animate-in fade-in duration-300">
+                <FlipIconLoader
+                  size="lg"
+                  message="AI đang soạn bộ 20 câu hỏi ngữ pháp..."
+                  subMessage="Генерация теста с помощью ИИ..."
+                  showTrivia={true}
+                  flipInterval={2300}
+                />
               </div>
             )}
 

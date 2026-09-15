@@ -1,38 +1,61 @@
 // src/components/admin/common/AdminPageHeader.tsx
-import { Button } from '@/components/ui/button';
-import { LucideIcon } from 'lucide-react';
+import React from 'react';
 import Link from 'next/link';
+import { LucideIcon, Plus } from 'lucide-react';
+import { Button } from '@/components/ui/button';
 
-interface AdminPageHeaderProps {
+export interface AdminPageHeaderProps {
   title: string;
-  description?: string;
-  icon?: LucideIcon;
+  subtitle?: string;
+  icon: LucideIcon;
+  badgeText?: string;
+  badgeIcon?: LucideIcon;
   action?: {
     label: string;
-    href: string; // Bắt buộc dùng Link cho action chính để tối ưu SEO/UX
+    href: string;
     icon?: LucideIcon;
   };
+  bannerColor?: string;
 }
 
-export function AdminPageHeader({ title, description, icon: Icon, action }: AdminPageHeaderProps) {
+export function AdminPageHeader({
+  title,
+  subtitle,
+  icon: MainIcon,
+  badgeText,
+  badgeIcon: BadgeIcon,
+  action,
+  bannerColor = 'bg-[#f97316]'
+}: AdminPageHeaderProps) {
   return (
-    <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4 mb-8">
-      <div>
-        <h1 className="text-2xl md:text-3xl font-bold text-slate-900 flex items-center gap-3">
-          {Icon && <Icon className="w-8 h-8 text-sky-500" />}
-          {title}
-        </h1>
-        {description && <p className="text-slate-500 mt-1 text-sm">{description}</p>}
+    <div>
+      {/* Banner */}
+      <div className={`${bannerColor} rounded-2xl p-8 mb-6 flex flex-col md:flex-row justify-between items-start md:items-center text-white shadow-md`}>
+        <div className="flex items-center gap-4">
+          <MainIcon size={40} className="opacity-90 shrink-0" />
+          <h1 className="text-3xl font-bold tracking-wide uppercase">{title}</h1>
+        </div>
+        {(badgeText || subtitle) && (
+          <div className="flex items-center gap-2 mt-4 md:mt-0 text-orange-100 flex-col md:flex-row md:items-center">
+            <span className="text-sm font-medium">{badgeText || subtitle}</span>
+            {BadgeIcon && <BadgeIcon size={20} />}
+          </div>
+        )}
       </div>
-      
+
+      {/* Action Button */}
       {action && (
-        <Link href={action.href}>
-          <Button className="bg-sky-600 hover:bg-sky-700 shadow-sm text-white">
-            {action.icon && <action.icon className="w-4 h-4 mr-2" />}
-            {action.label}
-          </Button>
-        </Link>
+        <div className="flex items-center gap-3">
+          <Link href={action.href}>
+            <Button className={`${bannerColor} hover:brightness-90 text-white shadow-sm font-medium rounded-lg px-6 h-11 transition-all`}>
+              {action.icon ? <action.icon className="w-5 h-5 mr-2" /> : <Plus className="w-5 h-5 mr-2" />}
+              {action.label}
+            </Button>
+          </Link>
+        </div>
       )}
     </div>
   );
 }
+
+export default AdminPageHeader;

@@ -37,6 +37,8 @@ export default function AIDictionaryPage() {
     {
       title: "Chào hỏi & Giới thiệu",
       subtitle: "Привет и Знакомство",
+      description: "Hệ thống từ vựng chào hỏi, xưng hô và làm quen",
+      detail: "Từ vựng & Ví dụ",
       icon: <Users size={22} strokeWidth={2.2} />,
       colorScheme: "blue",
       href: "/student/ai/dictionary/greeting"
@@ -44,6 +46,8 @@ export default function AIDictionaryPage() {
     {
       title: "Gia đình & Bạn bè",
       subtitle: "Семья и Друзья",
+      description: "Từ vựng gia phả, mối quan hệ và tình bạn",
+      detail: "Từ vựng & Ví dụ",
       icon: <Heart size={22} strokeWidth={2.2} />,
       colorScheme: "rose",
       href: "/student/ai/dictionary/family"
@@ -51,6 +55,8 @@ export default function AIDictionaryPage() {
     {
       title: "Số, Thời gian & Ngày",
       subtitle: "Числа, Время и Даты",
+      description: "Số đếm, số thứ tự, đơn vị thời gian và thứ ngày",
+      detail: "Từ vựng & Ví dụ",
       icon: <Clock size={22} strokeWidth={2.2} />,
       colorScheme: "orange",
       href: "/student/ai/dictionary/numbers-time"
@@ -58,6 +64,8 @@ export default function AIDictionaryPage() {
     {
       title: "Nhà cửa & Đồ đạc",
       subtitle: "Дом и Мебель",
+      description: "Các phòng trong nhà, nội thất và vật dụng thiết yếu",
+      detail: "Từ vựng & Ví dụ",
       icon: <Home size={22} strokeWidth={2.2} />,
       colorScheme: "emerald",
       href: "/student/ai/dictionary/house"
@@ -65,6 +73,8 @@ export default function AIDictionaryPage() {
     {
       title: "Thức ăn & Đồ uống",
       subtitle: "Еда и Напитки",
+      description: "Rau củ, thịt cá, món ăn truyền thống Nga và đồ uống",
+      detail: "Từ vựng & Ví dụ",
       icon: <Utensils size={22} strokeWidth={2.2} />,
       colorScheme: "orange",
       href: "/student/ai/dictionary/food"
@@ -72,6 +82,8 @@ export default function AIDictionaryPage() {
     {
       title: "Sinh hoạt hàng ngày",
       subtitle: "Распорядок дня",
+      description: "Hành động sinh hoạt, thói quen và hoạt động thường nhật",
+      detail: "Từ vựng & Ví dụ",
       icon: <Sun size={22} strokeWidth={2.2} />,
       colorScheme: "cyan",
       href: "/student/ai/dictionary/daily-routine"
@@ -79,6 +91,8 @@ export default function AIDictionaryPage() {
     {
       title: "Quần áo & Màu sắc",
       subtitle: "Одежда и Цвета",
+      description: "Trang phục theo mùa, phụ kiện thời trang và tính từ màu sắc",
+      detail: "Từ vựng & Ví dụ",
       icon: <Shirt size={22} strokeWidth={2.2} />,
       colorScheme: "purple",
       href: "/student/ai/dictionary/clothes"
@@ -86,6 +100,8 @@ export default function AIDictionaryPage() {
     {
       title: "Phương tiện & Đi lại",
       subtitle: "Транспорт и Путешествия",
+      description: "Phương tiện giao thông công cộng, nhà ga và du lịch",
+      detail: "Từ vựng & Ví dụ",
       icon: <Car size={22} strokeWidth={2.2} />,
       colorScheme: "slate",
       href: "/student/ai/dictionary/transport"

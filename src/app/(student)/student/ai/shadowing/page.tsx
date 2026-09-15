@@ -12,6 +12,21 @@ interface ShadowingPageProps {
   searchParams?: Promise<{ page?: string }>;
 }
 
+const LEVEL_WEIGHT: Record<string, number> = {
+  'A1': 1,
+  'A2': 2,
+  'B1': 3,
+  'B2': 4,
+  'C1': 5,
+  'C2': 6,
+};
+
+const compareLevels = (a: string, b: string) => {
+  const weightA = LEVEL_WEIGHT[a] ?? 99;
+  const weightB = LEVEL_WEIGHT[b] ?? 99;
+  return weightA - weightB;
+};
+
 export default async function ShadowingListPage({ searchParams }: ShadowingPageProps) {
   const params = await searchParams;
   const currentPage = Number(params?.page) || 1;
@@ -23,20 +38,26 @@ export default async function ShadowingListPage({ searchParams }: ShadowingPageP
 
   const { data: dbTopics, error } = await supabase
     .from('shadowing_topics')
-    .select('*, shadowing_sentences(id)')
+    .select('*, shadowing_sentences(id, ru, order_index)')
     .order('created_at', { ascending: false });
 
   if (error) {
     console.error('Error loading shadowing topics:', error);
   }
 
-  // Lấy lịch sử để kiểm tra chủ đề nào đã học
+  // Lấy lịch sử để kiểm tra chủ đề nào đã học và điểm số cao nhất
   const { data: historyData } = await supabase
     .from('shadowing_history')
-    .select('topic_id')
+    .select('topic_id, score')
     .eq('user_id', user?.id || '');
 
-  const completedTopicIds = new Set((historyData || []).map(h => h.topic_id));
+  const historyScores = new Map<string, number>();
+  (historyData || []).forEach(h => {
+    const current = historyScores.get(h.topic_id);
+    if (current === undefined || h.score > current) {
+      historyScores.set(h.topic_id, h.score);
+    }
+  });
 
   const getLevelString = (level: number) => {
     switch(level) {
@@ -49,30 +70,43 @@ export default async function ShadowingListPage({ searchParams }: ShadowingPageP
   };
 
   // Kết hợp data cũ từ JSON và data mới từ DB
-  const validDbTopics = (dbTopics || []).map((t: any) => ({
-    id: t.id,
-    title: t.title,
-    level: typeof t.level === 'number' ? getLevelString(t.level) : t.level,
-    description: t.description || 'Luyện phản xạ nghe và lặp lại lập tức',
-    sentenceCount: t.shadowing_sentences?.length || 0,
-    source: 'db',
-    isDone: completedTopicIds.has(t.id)
-  }));
+  const validDbTopics = (dbTopics || []).map((t: any) => {
+    const levelStr = typeof t.level === 'number' ? getLevelString(t.level) : t.level;
+    const sortedSentences = [...(t.shadowing_sentences || [])].sort((a: any, b: any) => (a.order_index ?? 0) - (b.order_index ?? 0));
+    const firstRu = sortedSentences[0]?.ru;
+    return {
+      id: t.id,
+      title: t.title,
+      level: levelStr,
+      sampleSentence: firstRu ? `Ví dụ: "${firstRu}"` : undefined,
+      description: t.description || 'Luyện phản xạ nghe và lặp lại lập tức theo phương pháp Shadowing',
+      sentenceCount: t.shadowing_sentences?.length || 0,
+      source: 'db',
+      isDone: historyScores.has(t.id),
+      bestScore: historyScores.get(t.id)
+    };
+  });
 
-  const validJsonTopics = shadowingData.map(t => ({
-    id: t.id,
-    title: t.title,
-    level: typeof t.level === 'number' ? getLevelString(t.level) : t.level,
-    description: (t as any).description || 'Luyện phản xạ nghe và lặp lại lập tức',
-    sentenceCount: t.sentences?.length || 0,
-    source: 'json',
-    isDone: completedTopicIds.has(t.id)
-  }));
+  const validJsonTopics = shadowingData.map(t => {
+    const levelStr = typeof t.level === 'number' ? getLevelString(t.level) : t.level;
+    const firstRu = t.sentences?.[0]?.ru;
+    return {
+      id: t.id,
+      title: t.title,
+      level: levelStr,
+      sampleSentence: firstRu ? `Ví dụ: "${firstRu}"` : undefined,
+      description: (t as any).description || 'Luyện phản xạ nghe và lặp lại lập tức theo phương pháp Shadowing',
+      sentenceCount: t.sentences?.length || 0,
+      source: 'json',
+      isDone: historyScores.has(t.id),
+      bestScore: historyScores.get(t.id)
+    };
+  });
 
   const allTopics = [...validJsonTopics, ...validDbTopics];
   
-  // Sắp xếp theo trình độ (A1, A2, B1, B2, C1)
-  allTopics.sort((a, b) => a.level.localeCompare(b.level));
+  // Sắp xếp theo trình độ chuẩn (A1 -> A2 -> B1 -> B2 -> C1)
+  allTopics.sort((a, b) => compareLevels(a.level, b.level));
 
   const totalPages = Math.ceil(allTopics.length / pageSize);
   const currentTopics = allTopics.slice((currentPage - 1) * pageSize, currentPage * pageSize);
@@ -99,12 +133,14 @@ export default async function ShadowingListPage({ searchParams }: ShadowingPageP
               <TopicCard
                 key={topic.id}
                 title={topic.title}
-                subtitle={topic.description}
+                subtitle={topic.sampleSentence}
+                description={topic.description}
                 icon={<Mic2 size={22} strokeWidth={2.2} />}
                 href={`/student/ai/shadowing/${topic.id}`}
                 badge={`Cấp độ ${topic.level}`}
                 badgeClass={getLevelBadgeClass(topic.level)}
                 detail={`${topic.sentenceCount} câu`}
+                score={topic.bestScore !== undefined ? `${topic.bestScore}%` : undefined}
                 isDone={topic.isDone}
                 index={(currentPage - 1) * pageSize + idx + 1}
                 colorScheme="indigo"

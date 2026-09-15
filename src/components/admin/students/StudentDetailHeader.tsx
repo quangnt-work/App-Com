@@ -1,7 +1,8 @@
 // src/components/admin/students/StudentDetailHeader.tsx
 import { BackButton } from "@/components/common/BackButton";
-import { Mail, Calendar, GraduationCap } from "lucide-react";
-import Image from "next/image";
+import { Calendar } from "lucide-react";
+import { UserAvatar } from "@/components/common/UserAvatar";
+import { formatDate } from "@/lib/utils";
 
 interface StudentDetailHeaderProps {
   profile: {
@@ -16,33 +17,19 @@ interface StudentDetailHeaderProps {
 export function StudentDetailHeader({ profile }: StudentDetailHeaderProps) {
   const displayName = profile.full_name ?? profile.username ?? "Học viên";
 
-  const initials = (profile.full_name ?? profile.username ?? "?")
-    .split(" ")
-    .map((w) => w[0])
-    .slice(0, 2)
-    .join("")
-    .toUpperCase();
-
-  const joinedDate = profile.created_at
-    ? new Date(profile.created_at).toLocaleDateString("vi-VN", {
-      day: "2-digit",
-      month: "2-digit",
-      year: "numeric",
-    })
-    : "—";
+  const joinedDate = formatDate(profile.created_at);
 
   return (
     <div className="bg-white rounded-2xl shadow-sm border border-gray-100 p-8 mb-8">
 
       <div className="flex flex-col md:flex-row items-center md:items-start gap-6">
         {/* Avatar */}
-        <div className="relative w-24 h-24 bg-orange-50 text-[#ea580c] rounded-full flex items-center justify-center border-4 border-orange-100 flex-shrink-0 overflow-hidden shadow-sm">
-          {profile.avatar_url ? (
-            <Image src={profile.avatar_url} alt={displayName} fill sizes="96px" className="object-cover" />
-          ) : (
-            <span className="font-bold text-3xl select-none">{initials}</span>
-          )}
-        </div>
+        <UserAvatar
+          src={profile.avatar_url}
+          name={displayName}
+          className="w-24 h-24 border-4 border-orange-100 shadow-sm"
+          fallbackClassName="bg-orange-50 text-[#ea580c] text-3xl font-bold"
+        />
 
         {/* Info */}
         <div className="flex-1 text-center md:text-left mt-2 md:mt-0">

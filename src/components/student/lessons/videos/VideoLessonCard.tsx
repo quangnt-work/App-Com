@@ -57,7 +57,7 @@ export function VideoLessonCard({ lesson, index }: VideoLessonCardProps) {
         </span>
 
         {/* Tiêu đề */}
-        <h3 className="font-extrabold text-slate-900 text-xs sm:text-sm line-clamp-1 mb-0.5 group-hover:text-rose-600 transition-colors leading-snug">
+        <h3 className="font-extrabold text-slate-900 text-sm sm:text-[15px] line-clamp-2 mb-1 group-hover:text-rose-600 transition-colors leading-snug min-h-[2.5rem]">
           {lesson.title}
         </h3>
 
@@ -72,7 +72,7 @@ export function VideoLessonCard({ lesson, index }: VideoLessonCardProps) {
         <div className="mt-auto pt-1.5 border-t border-slate-100/80">
           <Link
             href={`/student/lessons/videos/${lesson.id}`}
-            className="h-8 flex items-center justify-center w-full bg-gradient-to-r from-rose-600 to-red-600 text-white font-bold rounded-xl shadow-xs shadow-rose-500/20 hover:shadow-md hover:from-rose-700 hover:to-red-700 transition-all text-xs uppercase tracking-wider"
+            className="h-9 flex items-center justify-center w-full bg-gradient-to-r from-rose-600 to-red-600 text-white font-bold rounded-xl shadow-xs shadow-rose-500/20 hover:shadow-md hover:from-rose-700 hover:to-red-700 transition-all text-xs uppercase tracking-wider"
           >
             <span>Xem video</span>
             <ExternalLink className="w-3.5 h-3.5 ml-1.5" />

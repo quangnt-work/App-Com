@@ -12,6 +12,7 @@ export default function AIHubPage() {
           href="/admin/dashboard"
           className="inline-flex items-center text-gray-500 hover:text-indigo-600 mb-6 font-medium transition-colors"
         >
+          <ArrowLeft size={18} className="mr-2" /> Quay lại Dashboard
         </Link>
         
         <div className="bg-indigo-600 rounded-2xl p-8 mb-10 flex flex-col md:flex-row justify-between items-start md:items-center text-white shadow-md">

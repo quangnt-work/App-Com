@@ -43,21 +43,21 @@ export function ProfileClient({ profile, history, chartData, roleplayHistory, sh
     return () => window.removeEventListener('popstate', handlePopState);
   }, []);
 
-  const [activeTab, setActiveTab] = useState<'exam' | 'ai'>('ai');
+  const [activeTab, setActiveTab] = useState<'exam' | 'ai'>('exam');
 
   return (
     <div className="w-full max-w-6xl mx-auto px-4 py-1.5 font-sans flex-1">
 
-        {/* Layout Grid: 1 cột cho Mobile, 4 cột cho Desktop */}
-        <div className="grid grid-cols-1 xl:grid-cols-4 gap-6 md:gap-8">
+        {/* Layout Flex: Cột Trái cố định, Cột Phải co giãn - Đảm bảo KHÔNG BAO GIỜ đè lên nhau */}
+        <div className="flex flex-col lg:flex-row gap-6 lg:gap-8 items-start">
 
           {/* Cột Trái: Profile Card */}
-          <div className="xl:col-span-1 min-w-[300px]">
+          <div className="w-full lg:w-[280px] xl:w-[300px] shrink-0">
             <UserProfileCard profile={profile} />
           </div>
 
           {/* Cột Phải: Thống kê & Lịch sử */}
-          <div className="xl:col-span-3 space-y-6 w-full overflow-hidden">
+          <div className="flex-1 min-w-0 w-full space-y-6">
 
             {/* Header Thống kê & Bộ lọc */}
             <div className="bg-white p-4 rounded-2xl shadow-sm border border-slate-200/80 flex items-center justify-between">

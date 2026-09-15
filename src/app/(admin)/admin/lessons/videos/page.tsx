@@ -1,7 +1,8 @@
 // src/app/(admin)/admin/lessons/videos/page.tsx
-import VideoHeader from "@/components/admin/lessons/videos/VideoHeader";
+import { AdminPageHeader } from "@/components/admin/common/AdminPageHeader";
 import VideoTable from "@/components/admin/lessons/videos/VideoTable";
-import { GrammarPagination } from "@/components/admin/lessons/grammars/GrammarPagination";
+import { Pagination } from "@/components/common/Pagination";
+import { PlayCircle, Plus } from "lucide-react";
 import { getGrammars } from "@/actions/GrammarActions";
 import { Grammar } from "@/types/grammar";
 
@@ -34,14 +35,25 @@ export default async function AdminVideosPage({ searchParams }: VideosPageProps)
     return (
         <div className="min-h-screen bg-[#f8f9fc] p-6 lg:p-10 font-sans">
             <div className="max-w-6xl mx-auto">
-                <VideoHeader />
+                <AdminPageHeader
+                    title="QUẢN LÝ VIDEO"
+                    icon={PlayCircle}
+                    badgeText="Danh sách bài học video"
+                    badgeIcon={PlayCircle}
+                    action={{
+                        label: "Thêm video mới",
+                        href: "/admin/lessons/videos/create",
+                        icon: Plus,
+                    }}
+                />
                 <div className="bg-white rounded-2xl shadow-sm border border-gray-100 mt-6 overflow-hidden">
                     <VideoTable data={videos} />
                     <div className="p-6 border-t border-gray-100 bg-white">
-                        <GrammarPagination
+                        <Pagination
                             currentPage={currentPage}
                             totalItems={count ?? 0}
                             pageSize={pageSize}
+                            itemLabel="video"
                         />
                     </div>
                 </div>

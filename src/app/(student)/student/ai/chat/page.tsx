@@ -27,6 +27,7 @@ export default async function AIChatPage({ searchParams }: ChatPageProps) {
       title: 'Xã giao & Đời sống',
       subtitle: 'Общение и Жизнь',
       description: 'Trò chuyện kết nối và duy trì quan hệ xã hội',
+      detail: 'Hội thoại AI',
       icon: <Users size={22} strokeWidth={2.2} />,
       colorScheme: 'emerald',
       href: '/student/ai/chat/social'
@@ -35,6 +36,7 @@ export default async function AIChatPage({ searchParams }: ChatPageProps) {
       title: 'Du lịch & Di chuyển',
       subtitle: 'Путешествия и Поездки',
       description: 'Hỏi đường, sân bay, khách sạn và phương tiện',
+      detail: 'Hội thoại AI',
       icon: <Plane size={22} strokeWidth={2.2} />,
       colorScheme: 'cyan',
       href: '/student/ai/chat/travel'
@@ -43,6 +45,7 @@ export default async function AIChatPage({ searchParams }: ChatPageProps) {
       title: 'Dịch vụ & Mua sắm',
       subtitle: 'Сервис и Покупки',
       description: 'Gọi món nhà hàng, mua sắm đồ đạc, giao dịch',
+      detail: 'Hội thoại AI',
       icon: <ShoppingBag size={22} strokeWidth={2.2} />,
       colorScheme: 'purple',
       href: '/student/ai/chat/service'
@@ -51,6 +54,7 @@ export default async function AIChatPage({ searchParams }: ChatPageProps) {
       title: 'Sức khỏe & Khẩn cấp',
       subtitle: 'Здоровье и Помощь',
       description: 'Hỏi thăm tại bệnh viện, hiệu thuốc, cấp cứu',
+      detail: 'Hội thoại AI',
       icon: <HeartPulse size={22} strokeWidth={2.2} />,
       colorScheme: 'rose',
       href: '/student/ai/chat/health'
@@ -59,6 +63,7 @@ export default async function AIChatPage({ searchParams }: ChatPageProps) {
       title: 'Học tập & Công việc',
       subtitle: 'Учеба и Работа',
       description: 'Thảo luận lớp học, trường học và công sở',
+      detail: 'Hội thoại AI',
       icon: <Briefcase size={22} strokeWidth={2.2} />,
       colorScheme: 'orange',
       href: '/student/ai/chat/work'

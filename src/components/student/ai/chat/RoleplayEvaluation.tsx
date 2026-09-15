@@ -121,7 +121,7 @@ export function RoleplayEvaluation({
               <RotateCcw size={18} /> Chơi lại
             </button>
             <button
-              onClick={() => router.replace('/student/ai/immersive/roleplay')}
+              onClick={() => router.replace('/student/ai/roleplay')}
               className="px-6 py-3 bg-gradient-to-r from-indigo-600 to-violet-600 hover:from-indigo-700 hover:to-violet-700 text-white font-bold rounded-xl shadow-md shadow-indigo-500/25 transition-all"
             >
               Chọn kịch bản khác

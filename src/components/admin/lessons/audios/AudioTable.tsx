@@ -4,9 +4,9 @@
 import Link from "next/link";
 import { Button } from "@/components/ui/button";
 import { Edit, Headphones, Music } from "lucide-react";
-import DeleteAudioButton from "./DeleteAudioButton";
-import { format, isValid, parseISO } from "date-fns";
-import { vi } from "date-fns/locale";
+import { AdminDeleteButton } from "@/components/admin/common/AdminDeleteButton";
+import { deleteGrammar } from "@/actions/GrammarActions";
+import { formatDate } from "@/lib/utils";
 import {
     Table,
     TableBody,
@@ -21,11 +21,6 @@ interface AudioTableProps {
     data: Grammar[];
 }
 
-function safeFormatDate(dateString?: string | null): string {
-    if (!dateString) return "-";
-    const date = typeof dateString === "string" ? parseISO(dateString) : new Date(dateString);
-    return isValid(date) ? format(date, "dd/MM/yyyy", { locale: vi }) : "-";
-}
 
 function StatusBadge({ status }: { status?: string | boolean | null }) {
     const isPublished = status === "published" || status === true;
@@ -89,7 +84,7 @@ export default function AudioTable({ data }: AudioTableProps) {
 
                             {/* Ngày tạo */}
                             <TableCell className="py-4 px-6 text-center text-gray-500">
-                                {safeFormatDate(lesson.created_at)}
+                                {formatDate(lesson.created_at)}
                             </TableCell>
 
                             {/* Thao tác */}
@@ -105,7 +100,12 @@ export default function AudioTable({ data }: AudioTableProps) {
                                             <Edit className="w-4 h-4" />
                                         </Link>
                                     </Button>
-                                    <DeleteAudioButton id={lesson.id} title={lesson.title} />
+                                    <AdminDeleteButton
+                                        id={lesson.id}
+                                        title={lesson.title}
+                                        itemTypeLabel="bài nghe"
+                                        onDelete={deleteGrammar}
+                                    />
                                 </div>
                             </TableCell>
                         </TableRow>

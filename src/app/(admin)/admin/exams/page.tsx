@@ -1,7 +1,8 @@
 // src/app/(admin)/admin/exams/page.tsx
-import ExamHeader from "@/components/admin/exams/ExamHeader";
+import { AdminPageHeader } from "@/components/admin/common/AdminPageHeader";
 import ExamTable from "@/components/admin/exams/ExamTable";
-import { ExamPagination } from "@/components/admin/exams/ExamPagination";
+import { Pagination } from "@/components/common/Pagination";
+import { ClipboardList, FileText, Plus } from "lucide-react";
 import { getExams } from "@/actions/ExamActions";
 import { Exam } from "@/types/database-custom";
 
@@ -42,7 +43,17 @@ export default async function ExamsPage({ searchParams }: ExamsPageProps) {
       <div className="max-w-6xl mx-auto">
 
         {/* Header & Banner */}
-        <ExamHeader />
+        <AdminPageHeader
+          title="QUẢN LÝ ĐỀ THI"
+          icon={ClipboardList}
+          badgeText="Danh sách đề thi"
+          badgeIcon={FileText}
+          action={{
+            label: "Thêm mới đề thi",
+            href: "/admin/exams/create",
+            icon: Plus,
+          }}
+        />
 
         {/* Bảng dữ liệu */}
         <div className="bg-white rounded-2xl shadow-sm border border-gray-100 mt-6 overflow-hidden">
@@ -50,10 +61,11 @@ export default async function ExamsPage({ searchParams }: ExamsPageProps) {
 
           {/* Footer & Pagination */}
           <div className="p-6 border-t border-gray-100 bg-white">
-            <ExamPagination
+            <Pagination
               currentPage={currentPage}
               totalItems={totalItems}
               pageSize={pageSize}
+              itemLabel="đề thi"
             />
           </div>
         </div>

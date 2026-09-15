@@ -5,9 +5,9 @@ import Link from "next/link";
 import Image from "next/image";
 import { Button } from "@/components/ui/button";
 import { Edit, PlayCircle, Link2 } from "lucide-react";
-import DeleteVideoButton from "./DeleteVideoButton";
-import { format, isValid, parseISO } from "date-fns";
-import { vi } from "date-fns/locale";
+import { AdminDeleteButton } from "@/components/admin/common/AdminDeleteButton";
+import { deleteGrammar } from "@/actions/GrammarActions";
+import { formatDate } from "@/lib/utils";
 import {
     Table,
     TableBody,
@@ -22,11 +22,6 @@ interface VideoTableProps {
     data: Grammar[];
 }
 
-function safeFormatDate(dateString?: string | null): string {
-    if (!dateString) return "-";
-    const date = typeof dateString === "string" ? parseISO(dateString) : new Date(dateString);
-    return isValid(date) ? format(date, "dd/MM/yyyy", { locale: vi }) : "-";
-}
 
 function StatusBadge({ status }: { status?: string | boolean | null }) {
     const isPublished = status === "published" || status === true;
@@ -106,7 +101,7 @@ export default function VideoTable({ data }: VideoTableProps) {
 
                             {/* Ngày tạo */}
                             <TableCell className="py-4 px-6 text-center text-gray-500">
-                                {safeFormatDate(lesson.created_at)}
+                                {formatDate(lesson.created_at)}
                             </TableCell>
 
                             {/* Thao tác */}
@@ -122,7 +117,12 @@ export default function VideoTable({ data }: VideoTableProps) {
                                             <Edit className="w-4 h-4" />
                                         </Link>
                                     </Button>
-                                    <DeleteVideoButton id={lesson.id} title={lesson.title} />
+                                    <AdminDeleteButton
+                                        id={lesson.id}
+                                        title={lesson.title}
+                                        itemTypeLabel="video"
+                                        onDelete={deleteGrammar}
+                                    />
                                 </div>
                             </TableCell>
                         </TableRow>

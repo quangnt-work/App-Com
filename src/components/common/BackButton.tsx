@@ -57,10 +57,7 @@ export function getParentRoute(pathname: string): string | null {
     pathname === '/student/ai/dictionary' ||
     pathname === '/student/ai/speaking' ||
     pathname === '/student/ai/shadowing' ||
-    pathname === '/student/ai/roleplay' ||
-    pathname === '/student/ai/immersive' ||
-    pathname === '/student/ai/immersive/roleplay' ||
-    pathname === '/student/ai/immersive/shadowing'
+    pathname === '/student/ai/roleplay'
   ) {
     return '/student/ai'
   }
@@ -99,13 +96,6 @@ export function getParentRoute(pathname: string): string | null {
     return '/student/ai/shadowing'
   }
 
-  // Fallback Immersive cũ:
-  if (pathname.startsWith('/student/ai/immersive/roleplay/')) {
-    return '/student/ai/roleplay'
-  }
-  if (pathname.startsWith('/student/ai/immersive/shadowing/')) {
-    return '/student/ai/shadowing'
-  }
 
   // === BÀI THI / KIỂM TRA (EXAMS) ===
   // Màn làm bài kiểm tra chi tiết -> Luôn quay về danh sách bài kiểm tra

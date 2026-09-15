@@ -9,16 +9,12 @@ import {
 } from "@/components/ui/dialog";
 import { Badge } from "@/components/ui/badge";
 import { Separator } from "@/components/ui/separator";
-import { ScrollArea } from "@/components/ui/scroll-area";
-import { ClipboardList, Clock, CalendarDays } from "lucide-react";
-import { format, isValid, parseISO } from "date-fns";
-import { vi } from "date-fns/locale";
+import { ClipboardList, Clock, Loader2, Layers, AlignLeft, X } from "lucide-react";
 import { Exam } from "@/types/database-custom";
 import { EXAM_LEVEL_LABELS, EXAM_TYPE_LABELS, ExamQuestion } from "@/lib/schemas/exam";
 import { ExamPreviewQuestions } from "./ExamPreviewQuestions";
 import { getExamQuestions } from "@/actions/ExamActions";
 import { useState, useEffect } from "react";
-import { Loader2, Layers, AlignLeft, X } from "lucide-react";
 import { Button } from "@/components/ui/button";
 
 interface ExamPreviewModalProps {
@@ -26,13 +22,6 @@ interface ExamPreviewModalProps {
   onClose: () => void;
   exam: Exam | null;
 }
-
-const safeFormatDate = (dateString?: string | null) => {
-  if (!dateString) return "-";
-  const date =
-    typeof dateString === "string" ? parseISO(dateString) : new Date(dateString);
-  return isValid(date) ? format(date, "dd/MM/yyyy", { locale: vi }) : "-";
-};
 
 const formatDuration = (minutes?: number | null) => {
   if (!minutes) return "Chưa cập nhật";

@@ -2,8 +2,6 @@
 
 import { useState } from "react";
 import Link from "next/link";
-import { format, isValid, parseISO } from "date-fns";
-import { vi } from "date-fns/locale";
 import { ClipboardList, Edit, Eye } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import {
@@ -14,22 +12,17 @@ import {
   TableHeader,
   TableRow,
 } from "@/components/ui/table";
-import ExamDeleteButton from "./ExamDeleteButton";
+import { AdminDeleteButton } from "@/components/admin/common/AdminDeleteButton";
+import { deleteExam } from "@/actions/ExamActions";
 import { ExamPreviewModal } from "./ExamPreviewModal";
 import { Exam } from "@/types/database-custom";
 import { EXAM_TYPE_LABELS, EXAM_LEVEL_LABELS } from "@/lib/schemas/exam";
 import { Badge } from "@/components/ui/badge";
+import { formatDate } from "@/lib/utils";
 
 interface ExamTableProps {
   data: Exam[];
 }
-
-const safeFormatDate = (dateString?: string | null) => {
-  if (!dateString) return "-";
-  const date =
-    typeof dateString === "string" ? parseISO(dateString) : new Date(dateString);
-  return isValid(date) ? format(date, "dd/MM/yyyy", { locale: vi }) : "-";
-};
 
 const formatDuration = (minutes?: number | null) => {
   if (!minutes) return "-";
@@ -96,7 +89,7 @@ export default function ExamTable({ data }: ExamTableProps) {
 
                 {/* Ngày tạo */}
                 <TableCell className="py-4 px-6 text-center text-gray-500">
-                  {safeFormatDate(exam.created_at)}
+                  {formatDate(exam.created_at)}
                 </TableCell>
 
                 {/* Thao tác */}
@@ -128,7 +121,12 @@ export default function ExamTable({ data }: ExamTableProps) {
                     </Button>
 
                     {/* Xóa */}
-                    <ExamDeleteButton id={exam.id} title={exam.title} />
+                    <AdminDeleteButton
+                      id={exam.id}
+                      title={exam.title}
+                      itemTypeLabel="đề thi"
+                      onDelete={deleteExam}
+                    />
                   </div>
                 </TableCell>
               </TableRow>

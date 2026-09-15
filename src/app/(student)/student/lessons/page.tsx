@@ -61,7 +61,7 @@ export default async function StudentCategoryPage() {
       />
 
       {/* Grid Categories - Bố cục tự nhiên ngay dưới Banner */}
-      <div className="flex-1 flex flex-col justify-start pt-2 sm:pt-4 pb-6">
+      <div className="pb-6">
         <div className="grid grid-cols-1 md:grid-cols-3 gap-5 lg:gap-6">
           {categories.map((cat, index) => (
             <CategoryCard

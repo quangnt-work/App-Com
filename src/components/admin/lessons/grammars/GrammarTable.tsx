@@ -3,9 +3,9 @@
 import Link from "next/link";
 import { Button } from "@/components/ui/button";
 import { Edit, Eye, FileText, FileUp, FileSignature } from "lucide-react";
-import DeleteGrammarButton from "./DeleteGrammarButton";
-import { format, isValid, parseISO } from "date-fns";
-import { vi } from "date-fns/locale";
+import { AdminDeleteButton } from "@/components/admin/common/AdminDeleteButton";
+import { deleteGrammar } from "@/actions/GrammarActions";
+import { formatDate } from "@/lib/utils";
 import { useState } from "react";
 import {
   Table,
@@ -50,12 +50,6 @@ export default function GrammarTable({ data }: GrammarTableProps) {
     );
   };
 
-  const safeFormatDate = (dateString?: string | null) => {
-    if (!dateString) return "-";
-    const date = typeof dateString === 'string' ? parseISO(dateString) : new Date(dateString);
-    return isValid(date) ? format(date, "dd/MM/yyyy", { locale: vi }) : "-";
-  };
-
   return (
     <>
       <div className="overflow-x-auto">
@@ -83,7 +77,7 @@ export default function GrammarTable({ data }: GrammarTableProps) {
 
                 {/* Ngày tạo */}
                 <TableCell className="py-4 px-6 text-center text-gray-500">
-                  {safeFormatDate(lesson.created_at)}
+                  {formatDate(lesson.created_at)}
                 </TableCell>
 
                 {/* Thao tác */}
@@ -108,7 +102,12 @@ export default function GrammarTable({ data }: GrammarTableProps) {
                       </Link>
                     </Button>
 
-                    <DeleteGrammarButton id={lesson.id} title={lesson.title} />
+                    <AdminDeleteButton
+                      id={lesson.id}
+                      title={lesson.title}
+                      itemTypeLabel="bài học"
+                      onDelete={deleteGrammar}
+                    />
                   </div>
                 </TableCell>
               </TableRow>

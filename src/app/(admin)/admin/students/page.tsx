@@ -1,10 +1,11 @@
 // src/app/(admin)/admin/students/page.tsx
 import { Suspense } from "react";
 import { createClient } from "@/lib/supabase/server";
-import { StudentPageHeader } from "@/components/admin/students/StudentPageHeader";
+import { AdminPageHeader } from "@/components/admin/common/AdminPageHeader";
+import { Users, Settings } from "lucide-react";
 import { StudentGrid } from "@/components/admin/students/StudentGrid";
 import { StudentSearchBar } from "@/components/admin/students/StudentSearchBar";
-import { StudentPagination } from "@/components/admin/students/StudentPagination";
+import { Pagination } from "@/components/common/Pagination";
 import { StudentWithStats } from "@/types/admin";
 
 export const metadata = {
@@ -47,7 +48,12 @@ export default async function StudentsPage({ searchParams }: StudentsPageProps) 
     return (
       <div className="min-h-screen bg-[#f8f9fc] p-6 lg:p-10 font-sans">
         <div className="max-w-7xl mx-auto">
-          <StudentPageHeader />
+          <AdminPageHeader
+            title="QUẢN LÝ HỌC VIÊN"
+            icon={Users}
+            badgeText="Trang quản trị học viên"
+            badgeIcon={Settings}
+          />
           <div className="mt-6 p-6 text-center text-red-500 bg-red-50 rounded-2xl border border-red-200">
             <h3 className="font-bold text-lg">Đã xảy ra lỗi</h3>
             <p className="text-sm mt-1">Không thể tải dữ liệu: {profilesError.message}</p>
@@ -126,7 +132,12 @@ export default async function StudentsPage({ searchParams }: StudentsPageProps) 
   return (
     <div className="min-h-screen bg-[#f8f9fc] p-6 lg:p-10 font-sans">
       <div className="max-w-6xl mx-auto">
-        <StudentPageHeader />
+        <AdminPageHeader
+          title="QUẢN LÝ HỌC VIÊN"
+          icon={Users}
+          badgeText="Trang quản trị học viên"
+          badgeIcon={Settings}
+        />
 
         <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4 mb-6">
           <Suspense fallback={<div className="h-10 w-80 bg-gray-100 rounded-xl animate-pulse" />}>
@@ -143,10 +154,11 @@ export default async function StudentsPage({ searchParams }: StudentsPageProps) 
         {totalItems > pageSize && (
           <div className="mt-8 bg-white rounded-2xl shadow-sm border border-gray-100 p-4">
             <Suspense fallback={null}>
-              <StudentPagination
+              <Pagination
                 currentPage={currentPage}
                 totalItems={totalItems}
                 pageSize={pageSize}
+                itemLabel="học viên"
               />
             </Suspense>
           </div>

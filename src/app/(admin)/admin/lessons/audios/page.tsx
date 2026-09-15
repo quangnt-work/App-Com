@@ -1,7 +1,8 @@
 // src/app/(admin)/admin/lessons/audios/page.tsx
-import AudioHeader from "@/components/admin/lessons/audios/AudioHeader";
+import { AdminPageHeader } from "@/components/admin/common/AdminPageHeader";
 import AudioTable from "@/components/admin/lessons/audios/AudioTable";
-import { GrammarPagination } from "@/components/admin/lessons/grammars/GrammarPagination";
+import { Pagination } from "@/components/common/Pagination";
+import { Headphones, Plus } from "lucide-react";
 import { getGrammars } from "@/actions/GrammarActions";
 import { Grammar } from "@/types/grammar";
 
@@ -34,14 +35,25 @@ export default async function AdminAudiosPage({ searchParams }: AudiosPageProps)
     return (
         <div className="min-h-screen bg-[#f8f9fc] p-6 lg:p-10 font-sans">
             <div className="max-w-6xl mx-auto">
-                <AudioHeader />
+                <AdminPageHeader
+                    title="QUẢN LÝ BÀI NGHE"
+                    icon={Headphones}
+                    badgeText="Danh sách bài học audio"
+                    badgeIcon={Headphones}
+                    action={{
+                        label: "Thêm bài nghe mới",
+                        href: "/admin/lessons/audios/create",
+                        icon: Plus,
+                    }}
+                />
                 <div className="bg-white rounded-2xl shadow-sm border border-gray-100 mt-6 overflow-hidden">
                     <AudioTable data={audios} />
                     <div className="p-6 border-t border-gray-100 bg-white">
-                        <GrammarPagination
+                        <Pagination
                             currentPage={currentPage}
                             totalItems={count ?? 0}
                             pageSize={pageSize}
+                            itemLabel="bài nghe"
                         />
                     </div>
                 </div>

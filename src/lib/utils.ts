@@ -5,14 +5,18 @@ export function cn(...inputs: ClassValue[]) {
   return twMerge(clsx(inputs));
 }
 
-// Thêm hàm này
-export function formatDate(dateString: string | Date | null) {
-  if (!dateString) return "N/A";
-  return new Date(dateString).toLocaleDateString("vi-VN", {
+export function formatDate(
+  dateString: string | Date | null | undefined,
+  fallback = "-"
+): string {
+  if (!dateString) return fallback;
+  const d = typeof dateString === "string" ? new Date(dateString) : dateString;
+  if (isNaN(d.getTime())) return fallback;
+  return d.toLocaleDateString("vi-VN", {
     day: "2-digit",
     month: "2-digit",
     year: "numeric",
-  }); // Kết quả: 30/12/2025
+  });
 }
 
 export function formatCurrency(amount: number) {

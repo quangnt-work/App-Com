@@ -74,7 +74,7 @@ export default function AIPracticePage() {
       />
 
       {/* Grid 6 tính năng AI - Lưới 3 cột x 2 hàng cân đối trong max-w-6xl */}
-      <div className="flex-1 flex flex-col justify-center my-auto pt-2 pb-3">
+      <div className="pb-4">
         <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-3.5 sm:gap-4 md:gap-4.5">
           {features.map((feature, index) => (
             <CategoryCard 

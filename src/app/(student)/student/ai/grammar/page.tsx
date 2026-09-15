@@ -26,7 +26,8 @@ export default async function GrammarTopicsPage({ searchParams }: GrammarPagePro
     {
       title: 'Xã giao & Đời sống',
       subtitle: 'Приветствие и Знакомство',
-      description: 'Ngữ pháp giao tiếp hàng ngày · 20 câu hỏi',
+      description: 'Ngữ pháp giao tiếp và quy tắc đặt câu hàng ngày',
+      detail: '20 câu hỏi',
       icon: <Users size={22} strokeWidth={2.2} />,
       colorScheme: 'emerald',
       href: '/student/ai/grammar/social'
@@ -34,7 +35,8 @@ export default async function GrammarTopicsPage({ searchParams }: GrammarPagePro
     {
       title: 'Du lịch & Di chuyển',
       subtitle: 'Путешествия и Транспорт',
-      description: 'Cấu trúc câu khi đi du lịch · 20 câu hỏi',
+      description: 'Cấu trúc câu chỉ hướng, địa điểm và phương tiện',
+      detail: '20 câu hỏi',
       icon: <Plane size={22} strokeWidth={2.2} />,
       colorScheme: 'cyan',
       href: '/student/ai/grammar/travel'
@@ -42,7 +44,8 @@ export default async function GrammarTopicsPage({ searchParams }: GrammarPagePro
     {
       title: 'Dịch vụ & Mua sắm',
       subtitle: 'Услуги и Покупки',
-      description: 'Câu mệnh lệnh, yêu cầu, so sánh · 20 câu hỏi',
+      description: 'Câu mệnh lệnh, yêu cầu lịch sự và so sánh giá',
+      detail: '20 câu hỏi',
       icon: <ShoppingBag size={22} strokeWidth={2.2} />,
       colorScheme: 'purple',
       href: '/student/ai/grammar/service'
@@ -50,7 +53,8 @@ export default async function GrammarTopicsPage({ searchParams }: GrammarPagePro
     {
       title: 'Sức khỏe & Khẩn cấp',
       subtitle: 'Здоровье и Безопасность',
-      description: 'Thể bị động, câu điều kiện · 20 câu hỏi',
+      description: 'Thể bị động, câu điều kiện và diễn đạt triệu chứng',
+      detail: '20 câu hỏi',
       icon: <HeartPulse size={22} strokeWidth={2.2} />,
       colorScheme: 'rose',
       href: '/student/ai/grammar/health'
@@ -58,7 +62,8 @@ export default async function GrammarTopicsPage({ searchParams }: GrammarPagePro
     {
       title: 'Học tập & Công việc',
       subtitle: 'Учеба и Работа',
-      description: 'Ngữ pháp học thuật, công sở · 20 câu hỏi',
+      description: 'Ngữ pháp học thuật, mẫu câu trao đổi công sở',
+      detail: '20 câu hỏi',
       icon: <Briefcase size={22} strokeWidth={2.2} />,
       colorScheme: 'orange',
       href: '/student/ai/grammar/work'

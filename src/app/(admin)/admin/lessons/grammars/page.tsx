@@ -1,9 +1,8 @@
-import Link from 'next/link';
-import { ArrowLeft } from 'lucide-react';
-import GrammarHeader from "@/components/admin/lessons/grammars/GrammarHeader";
+import { AdminPageHeader } from "@/components/admin/common/AdminPageHeader";
 import GrammarTable from "@/components/admin/lessons/grammars/GrammarTable";
 import { getGrammars } from "@/actions/GrammarActions";
-import { GrammarPagination } from "@/components/admin/lessons/grammars/GrammarPagination";
+import { Pagination } from "@/components/common/Pagination";
+import { BookOpen, FileText, Plus } from "lucide-react";
 
 interface GrammarsPageProps {
   searchParams: Promise<{
@@ -58,7 +57,17 @@ export default async function GrammarsPage({ searchParams }: GrammarsPageProps) 
       <div className="max-w-6xl mx-auto">
 
         {/* Header & Banner */}
-        <GrammarHeader />
+        <AdminPageHeader
+          title="QUẢN LÝ NGỮ PHÁP"
+          icon={BookOpen}
+          badgeText="Danh sách bài học ngữ pháp"
+          badgeIcon={FileText}
+          action={{
+            label: "Thêm mới bài học",
+            href: "/admin/lessons/grammars/create",
+            icon: Plus,
+          }}
+        />
 
         {/* Khung Bảng dữ liệu */}
         <div className="bg-white rounded-2xl shadow-sm border border-gray-100 mt-6 overflow-hidden">
@@ -66,10 +75,11 @@ export default async function GrammarsPage({ searchParams }: GrammarsPageProps) 
 
           {/* Footer & Pagination */}
           <div className="p-6 border-t border-gray-100 bg-white">
-            <GrammarPagination
+            <Pagination
               currentPage={currentPage}
               totalItems={totalItems}
               pageSize={pageSize}
+              itemLabel="bài học"
             />
           </div>
         </div>

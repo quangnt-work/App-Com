@@ -5,7 +5,7 @@
 
 import { NextResponse } from "next/server";
 import { ChatMessageType } from "@/types/ai-chat";
-import { generateContentWithFallback, parseAIResponse } from "@/lib/gemini";
+import { generateContentWithFallback, parseAIResponse, AUDIO_MODELS_FALLBACK, TEXT_MODELS_FALLBACK } from "@/lib/gemini";
 import { createClient } from "@/lib/supabase/server";
 
 interface AssessChatBody {
@@ -76,15 +76,14 @@ Trả về kết quả bằng tiếng Việt. BẮT BUỘC theo đúng JSON sau:
                     responseMimeType: "application/json",
                     temperature: 0.2,
                 },
-            }, "gemini-3.1-flash-lite");
+            }, AUDIO_MODELS_FALLBACK);
 
             const assessmentData = parseAIResponse(response.text);
             return NextResponse.json({ success: true, data: assessmentData, mode: "audio" });
         }
 
         // ============================================================
-        // CASE B: Không có audio → Gemini 2.0 Flash (text-only)
-        // Trước đây dùng Groq LLaMA → nay thống nhất Gemini để giảm phụ thuộc Groq
+        // CASE B: Không có audio → Text-only model
         // ============================================================
         const textPrompt = `Bạn là chuyên gia khảo thí tiếng Nga. Đánh giá học viên qua hội thoại sau về chủ đề "${topic}". 
 Trả về JSON với đúng các trường: vocabulary, intonation, overall_level, general_feedback. Bằng tiếng Việt.
@@ -99,7 +98,7 @@ ${conversationText}`;
                 responseMimeType: "application/json",
                 temperature: 0.2,
             },
-        }, "gemini-3.1-flash-lite");
+        }, TEXT_MODELS_FALLBACK);
 
         const assessmentData = parseAIResponse(response.text);
         return NextResponse.json({ success: true, data: assessmentData, mode: "text" });

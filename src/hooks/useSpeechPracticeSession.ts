@@ -26,6 +26,7 @@ export function useSpeechPracticeSession({
   const {
     isRecording,
     transcript,
+    audioBlob,
     startRecording,
     stopRecording,
     resetTranscript,
@@ -88,14 +89,17 @@ export function useSpeechPracticeSession({
   }, [isSupported, isRecording, stopRecording, resetTranscript, startRecording]);
 
   const requestAiAnalysis = useCallback(async () => {
-    if (!transcript) return;
+    if (!transcript && !audioBlob) return;
     setIsEvaluating(true);
     try {
       const formData = new FormData();
-      const dummyBlob = new Blob(['dummy audio'], { type: 'audio/webm' });
-      formData.append('audio', dummyBlob);
+      if (audioBlob && audioBlob.size > 0) {
+        formData.append('audio', audioBlob, 'recording.webm');
+      }
       formData.append('targetText', currentTargetText);
-      formData.append('studentText', transcript);
+      if (transcript) {
+        formData.append('studentText', transcript);
+      }
 
       const res = await fetch('/api/evaluate-speech', {
         method: 'POST',
@@ -110,13 +114,16 @@ export function useSpeechPracticeSession({
       const data = await res.json();
 
       let combinedTip = data.feedback || '';
+      if (data.stress_guide) {
+        combinedTip += ` Trọng âm chuẩn: "${data.stress_guide}".`;
+      }
       if (data.errors && Array.isArray(data.errors) && data.errors.length > 0) {
         combinedTip += ` Lỗi phát âm: ${data.errors.join(', ')}.`;
       }
 
       setEvaluation({
         score: data.score,
-        tip: combinedTip || 'Phát âm tốt!',
+        tip: combinedTip || 'Phát âm rất tốt!',
       });
     } catch (error) {
       console.error(error);
@@ -128,7 +135,7 @@ export function useSpeechPracticeSession({
     } finally {
       setIsEvaluating(false);
     }
-  }, [transcript, currentTargetText]);
+  }, [transcript, audioBlob, currentTargetText]);
 
   const handleNext = useCallback(() => {
     if (isLastItem) {

@@ -101,6 +101,7 @@ export default function ShadowingRoomPage({ params }: { params: Promise<{ id: st
     isRecording,
     transcript,
     interimTranscript,
+    audioBlob,
     audioUrl,
     startRecording,
     stopRecording,
@@ -207,13 +208,13 @@ export default function ShadowingRoomPage({ params }: { params: Promise<{ id: st
     return () => clearTimeout(timer);
   }, [currentIndex, currentSentence, playAudio, resetTranscript, setCurrentEvaluation, currentPosition, totalSentences, sentences]);
 
-  // Evaluate when recording stops and we have a transcript
+  // Evaluate when recording stops and we have a transcript or audio
   useEffect(() => {
     const fullTranscript = (transcript + ' ' + interimTranscript).trim();
-    if (!isRecording && fullTranscript && currentSentence && !currentEvaluation) {
-      handleEvaluation(fullTranscript, currentSentence.ru);
+    if (!isRecording && (fullTranscript || audioBlob) && currentSentence && !currentEvaluation) {
+      handleEvaluation(fullTranscript, currentSentence.ru, audioBlob);
     }
-  }, [isRecording, transcript, interimTranscript, currentSentence, currentEvaluation, handleEvaluation]);
+  }, [isRecording, transcript, interimTranscript, audioBlob, currentSentence, currentEvaluation, handleEvaluation]);
 
   const hasSavedHistory = useRef(false);
   useEffect(() => {
@@ -411,6 +412,16 @@ export default function ShadowingRoomPage({ params }: { params: Promise<{ id: st
               <div className="text-xl font-medium text-slate-800 mb-4">
                 &ldquo;{currentEvaluation.transcript}&rdquo;
               </div>
+
+              {/* Stress guide if present */}
+              {currentEvaluation.stress_guide && (
+                <div className="mb-4 p-2.5 bg-amber-50/80 rounded-xl border border-amber-200/60 text-center">
+                  <div className="text-xs text-amber-600 font-semibold mb-0.5">Trọng âm chuẩn câu mẫu:</div>
+                  <div className="text-lg font-bold text-amber-900 tracking-wide">
+                    {currentEvaluation.stress_guide}
+                  </div>
+                </div>
+              )}
 
               {/* Word Highlight */}
               {currentEvaluation.word_analysis.length > 0 && (

@@ -3,12 +3,37 @@ import { toast } from 'sonner';
 import { evaluateOffline } from '@/lib/shadowingEvaluator';
 import type { ShadowingEvaluation, ShadowingSessionState, ShadowingSentence } from '@/types/shadowing';
 
+async function blobToBase64(blob: Blob): Promise<string> {
+  return new Promise((resolve, reject) => {
+    const reader = new FileReader();
+    reader.onloadend = () => {
+      const result = reader.result as string;
+      const base64 = result ? result.split(',')[1] || '' : '';
+      resolve(base64);
+    };
+    reader.onerror = reject;
+    reader.readAsDataURL(blob);
+  });
+}
+
 // Xóa các tham số Adaptive Streak cũ vì hệ thống giờ mặc định là Mù (Blind)
-async function evaluateWithAI(targetText: string, studentText: string): Promise<ShadowingEvaluation> {
+async function evaluateWithAI(targetText: string, studentText: string, audioBlob?: Blob | null): Promise<ShadowingEvaluation> {
+  let audioBase64: string | undefined;
+  let mimeType: string | undefined;
+
+  if (audioBlob && audioBlob.size > 0) {
+    try {
+      audioBase64 = await blobToBase64(audioBlob);
+      mimeType = audioBlob.type || 'audio/webm';
+    } catch (e) {
+      console.warn('Could not convert audioBlob to base64', e);
+    }
+  }
+
   const res = await fetch('/api/shadowing-evaluate', {
     method: 'POST',
     headers: { 'Content-Type': 'application/json' },
-    body: JSON.stringify({ targetText, studentText }),
+    body: JSON.stringify({ targetText, studentText, audioBase64, mimeType }),
   });
 
   if (!res.ok) {
@@ -51,8 +76,8 @@ export function useShadowingSession(sentences: ShadowingSentence[]) {
   // Hiện hint nếu sai từ 3 lần trở lên
   const showHint = failuresOnCurrent >= 3;
 
-  const handleEvaluation = useCallback(async (studentText: string, targetText: string, onEvaluationDone?: () => void) => {
-    if (!studentText.trim()) return;
+  const handleEvaluation = useCallback(async (studentText: string, targetText: string, audioBlob?: Blob | null, onEvaluationDone?: () => void) => {
+    if (!studentText.trim() && (!audioBlob || audioBlob.size === 0)) return;
 
     setIsEvaluating(true);
     const currentEvalId = ++evalIdRef.current;
@@ -62,7 +87,7 @@ export function useShadowingSession(sentences: ShadowingSentence[]) {
 
       // Do luôn luôn Blind Mode, chúng ta sẽ ưu tiên AI, nếu lỗi mạng thì dự phòng bằng Offline WER
       try {
-        evaluation = await evaluateWithAI(targetText, studentText);
+        evaluation = await evaluateWithAI(targetText, studentText, audioBlob);
       } catch {
         evaluation = evaluateOffline(targetText, studentText);
         if (currentEvalId === evalIdRef.current) {

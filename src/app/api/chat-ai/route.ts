@@ -4,7 +4,7 @@
 
 import { NextResponse } from "next/server";
 import { ChatRequestBody } from "@/types/ai-chat";
-import { generateContentWithFallback, parseAIResponse } from "@/lib/gemini";
+import { generateContentWithFallback, parseAIResponse, TEXT_MODELS_FALLBACK } from "@/lib/gemini";
 import { createClient } from "@/lib/supabase/server";
 import { rateLimit } from "@/lib/rate-limit";
 
@@ -69,7 +69,7 @@ Trả về kết quả bằng tiếng Việt. BẮT BUỘC trả về JSON với
         temperature: isAssessment ? 0.2 : 0.7,
         ...(isAssessment && { responseMimeType: "application/json" }),
       },
-    }, "gemini-3.1-flash-lite");
+    }, TEXT_MODELS_FALLBACK);
 
     const responseText = response.text?.trim();
 

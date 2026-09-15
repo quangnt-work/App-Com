@@ -1,4 +1,4 @@
-import { generateContentWithFallback, parseAIResponse } from '@/lib/gemini';
+import { generateContentWithFallback, parseAIResponse, TEXT_MODELS_FALLBACK } from '@/lib/gemini';
 
 export function parseOptions(q: any): any {
   try {
@@ -138,7 +138,7 @@ Bài làm của học sinh: ${userAnswer}`;
         responseMimeType: "application/json",
         temperature: 0.1,
       },
-    }, "gemini-3.1-flash-lite");
+    }, TEXT_MODELS_FALLBACK);
 
     const parsed = parseAIResponse(response.text, { score: 0, feedback: 'Đã chấm điểm.' });
     const score10 = Number(parsed.score) || 0;

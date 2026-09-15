@@ -47,13 +47,11 @@ export default function AIChatInterfacePage({ params }: { params: Promise<{ topi
 
   // === GHI ÂM STATE ===
   const [isTranscribing, setIsTranscribing] = useState(false);
-  const mediaRecorderRef = useRef<MediaRecorder | null>(null);
-  const audioChunksRef = useRef<Blob[]>([]);
 
   // Lưu tối đa 3 audio blobs gần nhất để đánh giá ngữ điệu
   const audioSamplesRef = useRef<Blob[]>([]);
 
-  const { isRecording, transcript, startRecording, stopRecording, resetTranscript, isSupported } = useSpeechRecognition('ru-RU');
+  const { isRecording, transcript, audioBlob, startRecording, stopRecording, resetTranscript, isSupported } = useSpeechRecognition('ru-RU');
 
   const messagesEndRef = useRef<HTMLDivElement>(null);
   useEffect(() => {
@@ -166,67 +164,42 @@ export default function AIChatInterfacePage({ params }: { params: Promise<{ topi
   };
 
   // Lắng nghe khi kết thúc ghi âm từ Web Speech API
-  // Để tránh duplicate, ta dùng một ref để lưu transcript cuối cùng
   const transcriptRef = useRef('');
   useEffect(() => {
     transcriptRef.current = transcript;
   }, [transcript]);
 
-  const handleStopRecording = async () => {
-    stopRecording();
-    mediaRecorderRef.current?.stop();
-    
-    // Đợi một chút để state cập nhật transcript cuối cùng
-    setTimeout(async () => {
+  const prevRecordingRef = useRef(false);
+  useEffect(() => {
+    if (prevRecordingRef.current && !isRecording) {
+      if (audioBlob && audioBlob.size > 0) {
+        audioSamplesRef.current.push(audioBlob);
+      }
       const finalTranscript = transcriptRef.current.trim();
       if (!finalTranscript) {
         toast.error('Không nhận diện được giọng nói. Vui lòng thử lại.');
-        audioSamplesRef.current.pop(); // Xoá blob vừa lưu vì vô dụng
-        return;
+      } else {
+        handleSend(finalTranscript);
       }
-      await handleSend(finalTranscript);
       resetTranscript();
-    }, 500);
-  };
+    }
+    prevRecordingRef.current = isRecording;
+  }, [isRecording, audioBlob, resetTranscript]);
 
   // === GHI ÂM: TOGGLE MIC ===
-  const toggleRecording = async () => {
+  const toggleRecording = () => {
     if (!isSupported) {
       toast.error("Trình duyệt không hỗ trợ nhận diện giọng nói. Hãy dùng Chrome.");
       return;
     }
 
     if (isRecording) {
-      handleStopRecording();
+      stopRecording();
     } else {
-      try {
-        resetTranscript();
-        transcriptRef.current = '';
-        
-        // Ghi âm Blob song song để dùng cho lúc kết thúc (đánh giá ngữ điệu)
-        const stream = await navigator.mediaDevices.getUserMedia({ audio: true });
-        const recorder = new MediaRecorder(stream);
-        mediaRecorderRef.current = recorder;
-        audioChunksRef.current = [];
-
-        recorder.ondataavailable = (e) => {
-          if (e.data.size > 0) audioChunksRef.current.push(e.data);
-        };
-
-        recorder.onstop = () => {
-          stream.getTracks().forEach(t => t.stop());
-          const audioBlob = new Blob(audioChunksRef.current, { type: 'audio/webm' });
-          audioSamplesRef.current.push(audioBlob);
-        };
-
-        recorder.start();
-        
-        // Bắt đầu Web Speech API để nhận text
-        startRecording();
-        toast.info('Đang ghi âm... Bấm nút đỏ để dừng.');
-      } catch {
-        toast.error('Vui lòng cấp quyền sử dụng Micro.');
-      }
+      resetTranscript();
+      transcriptRef.current = '';
+      startRecording();
+      toast.info('Đang ghi âm... Bấm nút đỏ để dừng.');
     }
   };
 

@@ -20,18 +20,20 @@ export interface ShadowingSentence {
 
 export interface WordAnalysis {
   word: string;
-  status: 'correct' | 'wrong' | 'missing' | 'extra';
-  expected?: string; // Từ đúng nếu status = 'wrong'
+  status: 'correct' | 'wrong' | 'wrong_stress' | 'missing' | 'extra';
+  expected?: string; // Từ đúng nếu status = 'wrong' hoặc từ có dấu trọng âm nếu status = 'wrong_stress'
+  note?: string;     // Ghi chú cụ thể lỗi phát âm nếu có
 }
 
 // ─── Evaluation Result ────────────────────────────────────────────────────────
 
 export interface ShadowingEvaluation {
   score: number;                  // 0-10
-  transcript: string;             // Bóc băng từ Web Speech API
+  transcript: string;             // Bóc băng từ AI hoặc STT
   word_analysis: WordAnalysis[];  // Phân tích từng từ
   feedback: string;               // Nhận xét
   pronunciation_tips?: string;    // Chỉ có khi dùng AI
+  stress_guide?: string;          // Câu mẫu có đánh dấu trọng âm
   evaluated_by: 'offline' | 'ai'; // Nguồn đánh giá
 }
 

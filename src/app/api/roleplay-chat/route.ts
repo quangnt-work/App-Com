@@ -1,6 +1,6 @@
 import { NextResponse } from "next/server";
 import { ChatMessageType } from "@/types/ai-chat";
-import { generateContentWithFallback, parseAIResponse } from "@/lib/gemini";
+import { generateContentWithFallback, parseAIResponse, TEXT_MODELS_FALLBACK } from "@/lib/gemini";
 import { createClient } from "@/lib/supabase/server";
 
 export async function POST(request: Request) {
@@ -74,7 +74,7 @@ Lưu ý:
         responseMimeType: "application/json",
         temperature: 0.5,
       },
-    }, "gemini-3.1-flash-lite");
+    }, TEXT_MODELS_FALLBACK);
 
     const data = parseAIResponse(response.text);
 

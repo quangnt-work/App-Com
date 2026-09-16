@@ -67,29 +67,35 @@ export async function POST(request: Request) {
         },
       };
 
-      const audioPrompt = `Bạn là chuyên gia ngữ âm học tiếng Nga (Russian Phonetics Examiner).
-Nhiệm vụ: Lắng nghe kỹ đoạn ghi âm của học viên và so sánh với câu mẫu chuẩn: "${targetText}".
+      const audioPrompt = `Bạn là chuyên gia ngữ âm học tiếng Nga (Russian Phonetics Examiner) cực kỳ khắt khe.
+Nhiệm vụ: Lắng nghe đoạn ghi âm của học viên và so sánh với câu mẫu chuẩn: "${targetText}".
 
-Hãy đánh giá chân thật và công tâm dựa trên các tiêu chuẩn ngữ âm tiếng Nga thực tế:
-1. Độ chính xác từ ngữ: Học viên có đọc đúng, đọc thiếu, hay nói thêm từ không?
-2. Trọng âm (Ударение): Học viên có đặt trọng âm đúng âm tiết trong từng từ không? Nếu đọc đúng từ nhưng sai trọng âm (ví dụ: nhấn nhầm âm tiết), đánh dấu status là "wrong_stress".
-3. Suy giảm nguyên âm (Редукция гласных): Chữ "О" không mang trọng âm có được phát âm thành /a/ tự nhiên không? Chữ "Е", "Я" không trọng âm có giảm thành /i/ không?
-4. Phụ âm cứng và mềm (Твёрдые и мягкие согласные): Có nuốt dấu mềm Ь không?
-5. Điểm số: Thang điểm 0.0 đến 10.0 (10 = hoàn hảo như người bản xứ; 8-9 = rất tốt, lỗi nhỏ; 5-7 = hiểu được nhưng sai trọng âm/ngữ âm; 1-4 = sai nhiều từ).
+YÊU CẦU ĐÁNH GIÁ KHẮT KHE (KHÔNG ĐƯỢC AUTO-CORRECT):
+1. Lắng nghe chính xác những gì học viên THỰC SỰ nói. Tuyệt đối KHÔNG tự động đoán hoặc sửa lỗi để khớp với câu mẫu.
+2. Độ chính xác từ ngữ: Nếu phát âm sai, không rõ ràng, hoặc thiếu từ, BẮT BUỘC phải đánh dấu là "wrong" hoặc "missing".
+3. Trọng âm (Ударение): Học viên có đặt trọng âm đúng âm tiết trong từng từ không? Nếu đọc đúng từ nhưng sai trọng âm (ví dụ: nhấn nhầm âm tiết), đánh dấu status là "wrong_stress".
+4. Suy giảm nguyên âm & Phụ âm cứng/mềm: Đánh giá cực kỳ khắt khe việc phát âm "О" không trọng âm, và các phụ âm mềm.
+5. Chấm điểm tuyến tính và khắt khe (0.0 đến 10.0):
+   - 10.0: Đọc đúng 100% tất cả các từ, chuẩn trọng âm và biến âm.
+   - 8.0 - 9.0: Đọc đúng phần lớn, sai 1-2 lỗi nhỏ.
+   - 6.0 - 7.0: Đọc đúng 70-80% số từ, còn lại sai hoặc thiếu.
+   - 4.0 - 5.0: Đọc đúng ~50% số từ.
+   - < 4.0: Đọc sai phần lớn.
+Nếu học viên chỉ nói đúng 70% từ thì điểm KHÔNG BAO GIỜ được vượt quá 7.0. Điểm phải phản ánh chính xác tỷ lệ từ đọc đúng.
 
 BẮT BUỘC trả về định dạng JSON thuần túy (không kèm markdown thừa):
 {
-  "score": <số từ 0 đến 10, ví dụ 8.5>,
-  "transcript": "<những từ bạn thực sự nghe thấy từ giọng đọc học viên>",
+  "score": <số từ 0 đến 10, ví dụ 6.5>,
+  "transcript": "<những từ bạn THỰC SỰ nghe thấy, kể cả những từ phát âm sai hoặc thiếu>",
   "word_analysis": [
     {
       "word": "<từ trong câu mẫu>",
-      "status": "correct" | "wrong_stress" | "wrong" | "missing",
+      "status": "correct" | "wrong_stress" | "wrong" | "missing" | "extra",
       "expected": "<từ chuẩn có đánh dấu trọng âm nếu sai, ví dụ спаси́бо>",
-      "note": "<lỗi ngữ âm cụ thể nếu có, ví dụ: 'sai trọng âm ở âm tiết 1' hoặc null>"
+      "note": "<lỗi ngữ âm cụ thể nếu có, ví dụ: 'phát âm sai hoàn toàn', 'sai trọng âm ở âm tiết 1' hoặc null>"
     }
   ],
-  "feedback": "<nhận xét sư phạm bằng tiếng Việt, 1-2 câu ngắn gọn, chỉ rõ chỗ phát âm hay hoặc cần sửa>",
+  "feedback": "<nhận xét sư phạm bằng tiếng Việt, 1-2 câu, chỉ rõ lỗi sai>",
   "pronunciation_tips": "<hướng dẫn mẹo phát âm cụ thể cho từ sai, bằng tiếng Việt>",
   "stress_guide": "<câu mẫu có gắn dấu trọng âm sắc nhọn, ví dụ: Спаси́бо большóе>"
 }`;

@@ -25,7 +25,7 @@ export default function DictionaryDetailClient({ words, topicName }: Props) {
   const activeWord = words.find(w => w.id === activeWordId) || words[0];
 
   return (
-    <div className="min-h-screen bg-[#F8FAFC] font-sans pb-10">
+    <div className="font-sans pb-10 w-full">
 
       <div className="max-w-[1400px] mx-auto px-4 grid grid-cols-1 lg:grid-cols-12 gap-6 h-[calc(100vh-100px)]">
         

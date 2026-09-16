@@ -274,7 +274,7 @@ export default function ShadowingRoomPage({ params }: { params: Promise<{ id: st
   // Render Guards
   if (isLoading) {
     return (
-      <div className="min-h-screen bg-[#F8FAFC] flex items-center justify-center font-sans">
+      <div className="w-full flex items-center justify-center font-sans py-10">
         <div className="flex flex-col items-center gap-4 text-slate-500">
           <Loader2 size={40} className="animate-spin text-indigo-600" />
           <p className="font-medium">Đang tải bài học...</p>

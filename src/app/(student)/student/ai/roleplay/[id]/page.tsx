@@ -154,7 +154,7 @@ export default function RoleplayRoomPage({ params }: { params: Promise<{ id: str
 
   if (!isTopicLoaded || !topic) {
     return (
-      <div className="min-h-screen flex items-center justify-center bg-[#F8FAFC]">
+      <div className="py-20 flex items-center justify-center w-full">
         <FlipIconLoader
           size="lg"
           message="Đang chuẩn bị bối cảnh nhập vai..."

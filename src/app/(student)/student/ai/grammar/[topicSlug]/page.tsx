@@ -170,7 +170,7 @@ export default function GrammarQuizPage({ params }: { params: Promise<{ topicSlu
 
   if (!topic) {
     return (
-      <div className="min-h-screen flex flex-col items-center justify-center bg-[#F8FAFC]">
+      <div className="py-20 flex flex-col items-center justify-center w-full">
         <h1 className="text-2xl font-bold text-slate-800 mb-4">Chủ đề này không tồn tại</h1>
         <button
           onClick={() => router.replace('/student/ai/grammar')}
@@ -186,7 +186,7 @@ export default function GrammarQuizPage({ params }: { params: Promise<{ topicSlu
 
   if (result) {
     return (
-      <div className="min-h-screen bg-[#F8FAFC] font-sans">
+      <div className="font-sans w-full flex flex-col items-center justify-center py-20">
         <main className="container mx-auto px-4 py-8 max-w-[680px]">
           <QuizResult result={result} topicTitle={topic.title} onRetry={handleRetry} />
         </main>
@@ -197,7 +197,7 @@ export default function GrammarQuizPage({ params }: { params: Promise<{ topicSlu
   // ─── Main UI ────────────────────────────────────────────────────────────
 
   return (
-    <div className="min-h-screen bg-[#F8FAFC] font-sans">
+    <div className="font-sans w-full">
       <main className="container mx-auto px-4 py-8 max-w-[780px]">
 
         {/* Quiz Container */}

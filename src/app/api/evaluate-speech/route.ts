@@ -37,20 +37,28 @@ export async function POST(request: Request) {
           },
         };
 
-        const evaluationPrompt = `Bạn là một chuyên gia ngữ âm học tiếng Nga. Nhiệm vụ của bạn là lắng nghe đoạn ghi âm giọng đọc của sinh viên và so sánh chi tiết với câu mẫu: "${targetText}".
+        const evaluationPrompt = `Bạn là một chuyên gia ngữ âm học tiếng Nga khắc nghiệt và cực kỳ nghiêm khắc. Nhiệm vụ của bạn là lắng nghe đoạn ghi âm giọng đọc của sinh viên và so sánh chi tiết với câu mẫu: "${targetText}".
 
-Hãy đánh giá chân thật và công tâm:
-1. Độ chính xác từ ngữ: Sinh viên có đọc đúng nội dung câu mẫu không? Có từ nào đọc sai, đọc thiếu hoặc nói thừa không?
-2. Trọng âm (Ударение): Sinh viên có nhấn đúng trọng âm của từng từ không? (Ví dụ: "хорóшо" hay "хорошó").
-3. Biến âm (Редукция): Nguyên âm không mang trọng âm có được phát âm đúng quy tắc giảm âm không (ví dụ "O" không trọng âm đọc thành /a/)?
-4. Thang điểm từ 1.0 đến 10.0 (10 = hoàn hảo chuẩn bản xứ; 8-9 = rất tốt, lỗi nhỏ; 5-7 = hiểu được nhưng sai trọng âm/ngữ âm; 1-4 = sai nhiều).
+Yêu cầu BẮT BUỘC:
+1. KHÔNG tự động sửa lỗi (auto-correct) hoặc đoán ý định của sinh viên. Nếu họ đọc sai, đọc thiếu hoặc phát âm không rõ ràng, bạn phải đánh giá là sai.
+2. Lắng nghe chính xác những gì sinh viên THỰC SỰ nói, không phải những gì họ NÊN nói.
+3. Độ chính xác từ ngữ: Sinh viên có đọc đúng 100% nội dung câu mẫu không? Liệt kê toàn bộ các từ đọc sai, đọc thiếu hoặc nói thừa.
+4. Trọng âm (Ударение): Sinh viên có nhấn đúng trọng âm của từng từ không? (Ví dụ: "хорóшо" hay "хорошó").
+5. Biến âm (Редукция): Nguyên âm không mang trọng âm có được phát âm đúng quy tắc giảm âm không?
+6. Chấm điểm cực kỳ KHẮT KHE từ 1.0 đến 10.0 dựa trên tỷ lệ từ phát âm đúng:
+   - 10.0: Hoàn hảo 100%, không sai một từ hay trọng âm nào, ngữ điệu tự nhiên.
+   - 8.0 - 9.0: Đúng > 90%, sai 1-2 lỗi rất nhỏ về trọng âm/biến âm.
+   - 6.0 - 7.0: Đúng 70% - 80%, sai một số từ hoặc trọng âm rõ rệt.
+   - 4.0 - 5.0: Đúng khoảng 50%, khó nghe, sai nhiều từ.
+   - Dưới 4.0: Sai gần hết hoặc không nói đúng câu mẫu.
+Nếu đọc đúng 70% số từ thì điểm KHÔNG ĐƯỢC VƯỢT QUÁ 7.0.
 
 BẮT BUỘC trả về định dạng JSON chính xác như sau, không kèm bất kỳ văn bản nào khác:
 {
-  "transcript": "<những gì bạn thực sự nghe thấy từ giọng đọc>",
-  "score": <Điểm số từ 1.00 đến 10.00>,
-  "feedback": "<Nhận xét sư phạm bằng tiếng Việt, 1-2 câu ngắn gọn>",
-  "errors": ["Lỗi phát âm hoặc trọng âm cụ thể 1", "Lỗi cụ thể 2"],
+  "transcript": "<những gì bạn THỰC SỰ nghe thấy từ giọng đọc, kể cả sai lệch>",
+  "score": <Điểm số từ 1.00 đến 10.00 theo thang điểm khắt khe trên>,
+  "feedback": "<Nhận xét sư phạm bằng tiếng Việt, 1-2 câu ngắn gọn, chỉ ra chỗ sai>",
+  "errors": ["Lỗi cụ thể 1", "Lỗi cụ thể 2"],
   "stress_guide": "<câu mẫu có gắn dấu trọng âm, ví dụ: Спаси́бо большóе>"
 }`;
 

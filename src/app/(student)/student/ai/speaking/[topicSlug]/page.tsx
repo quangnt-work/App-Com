@@ -48,7 +48,7 @@ export default async function PracticeSelectionPage({
 
   if (!currentTopic) {
     return (
-      <div className="min-h-screen bg-[#f8f9fc] flex flex-col items-center justify-center">
+      <div className="flex flex-col items-center justify-center py-20">
         <p className="text-gray-600 mb-4">Chủ đề không tồn tại.</p>
         <Link href="/student/ai/speaking" className="text-blue-500 hover:underline">
           Quay lại danh sách
@@ -61,7 +61,7 @@ export default async function PracticeSelectionPage({
   const TopicIcon = currentTopic.icon;
 
   return (
-    <div className="min-h-screen bg-[#f8f9fc] font-sans pb-20">
+    <div className="font-sans pb-20 w-full">
       <div className="container mx-auto px-4 pt-10 max-w-[800px]">
 
         {/* Header Chủ đề */}
